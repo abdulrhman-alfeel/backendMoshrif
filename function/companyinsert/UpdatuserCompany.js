@@ -175,7 +175,7 @@ const UpdatchackAdmininbrinsh = async (
         ]);
         await AddOrUpdatuser(pic.PhoneNumber,deletevalidity,'توكيل لك مهمة مدير فرع',userName)
 
-        console.log(deletevalidity, "deletevalidity");
+        // console.log(deletevalidity, "deletevalidity");
       }
     });
   }
@@ -197,7 +197,7 @@ const Updatchackglobluserinbrinsh = async (
     (key) => !Object.keys(checkGloblenew).includes(key)
   );
   //   المحذوف من الاوبجكت القديم
-  console.log(deletedkeys, "deletedkeys");
+  // console.log(deletedkeys, "deletedkeys");
 
   // const newvalidy = Object.keys(checkGloblenew).filter(
   //   (key) => !Object.keys(checkGlobleold).includes(key)
@@ -246,7 +246,7 @@ const Updatchackglobluserinbrinsh = async (
             JSON.stringify(deletevalidity),
             pic.id,
           ]);
-          console.log(deletevalidity, "deletevalidity");
+          // console.log(deletevalidity, "deletevalidity");
         }
       });
     }
@@ -257,7 +257,7 @@ const Updatchackglobluserinbrinsh = async (
   } else {
     newObject = Object.values(checkGloblenew).filter((key) => key);
   }
-  console.log(newObject, "newvalidyssss");
+  // console.log(newObject, "newvalidyssss");
 
   // عملية اضافة صلاحيات فروع
   for (let index = 0; index < newObject.length; index++) {
@@ -265,7 +265,7 @@ const Updatchackglobluserinbrinsh = async (
     const result = await SELECTTableusersCompanyVerificationID(
       parseInt(element.id)
     );
-    console.log(element, "elementtttddddd");
+    // console.log(element, "elementtttddddd");
     result.forEach(async (pic) => {
       // if (pic?.Validity?.length > 0) {
       let validity = pic?.Validity.length > 0 ? JSON.parse(pic?.Validity) : [];
@@ -288,7 +288,7 @@ const Updatchackglobluserinbrinsh = async (
           validity,
           idBrinsh
         );
-        console.log(arrayBrinsh);
+        // console.log(arrayBrinsh);
 
         validity?.push(arrayBrinsh);
         Booleans = Boolen;
@@ -296,7 +296,7 @@ const Updatchackglobluserinbrinsh = async (
       }
 
       if (Booleans) {
-        console.log(validity, "hhhhhhhhhhhhhhh");
+        // console.log(validity, "hhhhhhhhhhhhhhh");
         const operation = await UpdateTableuserComppany([
           pic.IDCompany,
           pic.userName,
@@ -334,7 +334,7 @@ const AddUserInBrinsh = (validity, idBrinsh) => {
 const AddUserInProject = (validity, idBrinsh, type, Validitynew) => {
   let arrayBrinsh = {};
   let Boolen = false;
-  console.log(validity, "hhhhhhhhhhhhhhh");
+  // console.log(validity, "hhhhhhhhhhhhhhh");
   let projectArray = [];
   try {
     const findValidityIndex = validity.findIndex(
@@ -421,12 +421,12 @@ const UpdateToken = async (req,res) => {
     const tokenOld = req.body.tokenOld;
 
     const PhoneNumber = req.session.user.PhoneNumber;
-    console.log(tokenNew,tokenOld,'hhhhhhhhhhhh');
+    // console.log(tokenNew,tokenOld,'hhhhhhhhhhhh');
     if (!PhoneNumber) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
   }
-  console.log(PhoneNumber) ;
+  // console.log(PhoneNumber) ;
   await UpdateTableLoginActivatytoken(PhoneNumber,tokenNew,tokenOld);
 
   const result = await SELECTTableLoginActivatActivaty(PhoneNumber,'Validity');

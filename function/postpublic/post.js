@@ -88,7 +88,7 @@ const BringPost = async (req, res) => {
 
     // Format the date as "DD-MM-YY"
     const formattedDate = `${year}-${month}-${day}`;
-    console.log(id, formattedDate, PostID);
+    // console.log(id, formattedDate, PostID);
     const result = await SELECTTablePostPublic(id, formattedDate, PostID);
     let arrayPosts = [];
     for (let index = 0; index < result.length; index++) {
@@ -102,7 +102,7 @@ const BringPost = async (req, res) => {
         user
       );
       const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(element.PostID, "Likes");
-      console.log(Likeuser, "hhhhhh", element.PostID, user);
+      // console.log(Likeuser, "hhhhhh", element.PostID, user);
       let data = {
         ...element,
         Likeuser:
@@ -135,7 +135,7 @@ const BringCommentinsert = async (req, res) => {
 
 const SearchPosts = async (req, res) => {
   try {
-    console.log(req.query);
+    // console.log(req.query);
     const id = req.query.CompanyID;
     const DateStart = req.query.DateStart;
     const DateEnd = req.query.DateEnd;

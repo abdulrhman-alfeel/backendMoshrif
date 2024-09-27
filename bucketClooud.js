@@ -36,7 +36,7 @@ async function checkIfFileExists(fileName) {
       const [exists] = await file.exists();
       if (exists) {
         resolve(exists)
-        console.log(`The file ${exists} exists in the bucket ${fileName}.`);
+        // console.log(`The file ${exists} exists in the bucket ${fileName}.`);
       } else {
         resolve(exists)
         // console.log(`The file ${fileName} does not exist in the bucket ${bucketName}.`);

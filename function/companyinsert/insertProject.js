@@ -33,7 +33,6 @@ const {
   UPDATETablecompanySubProjectarchivesFolderinChildern,
 } = require("../../sql/update");
 
-const SubTemplet = require("../../SubTemplet.json");
 const {
   PercentagecalculationforSTage,
 } = require("../companyselect/bringProject");
@@ -62,7 +61,7 @@ const projectBrinsh = async (req, res) => {
     const GuardNumber = req.body.GuardNumber;
     const LocationProject = req.body.LocationProject;
     const Contractsigningdate = new Date();
-    console.log(IDcompanySub);
+    // console.log(IDcompanySub);
     await insertTablecompanySubProject([
       IDcompanySub,
       Nameproject,
@@ -306,13 +305,13 @@ const InsertStage = async (req, res) => {
       ProjectID,
       StageName
     );
-    console.log(findName);
+    // console.log(findName);
     if (findName.length <= 0) {
       const result =
         await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
           ProjectID
         );
-      console.log(result);
+      // console.log(result);
 
       let StartDate;
       let EndDate;
@@ -357,13 +356,13 @@ const insertStageSub = async (req, res) => {
     const StageID = req.body.StageID;
     const ProjectID = req.body.ProjectID;
     const StageSubName = req.body.StageSubName;
-    console.log(StageID, ProjectID, StageSubName);
+    // console.log(StageID, ProjectID, StageSubName);
     const VerifyName = await SELECTTablecompanySubProjectStagesSub(
       ProjectID,
       StageID,
       StageSubName
     );
-    console.log(VerifyName);
+    // console.log(VerifyName);
     if (VerifyName.length <= 0) {
       await insertTablecompanySubProjectStagesSub([
         StageID,
@@ -695,7 +694,7 @@ const ExpenseInsert = async (req, res) => {
     } else {
       arrayImage = null;
     }
-    console.log(arrayImage);
+    // console.log(arrayImage);
     await insertTablecompanySubProjectexpense([
       projectID,
       Amount,
@@ -829,7 +828,7 @@ const AddfileinFolderHomeinArchive = async (req, res) => {
     const children = await SELECTTablecompanySubProjectarchivesotherroad(
       ArchivesID
     );
-    console.log(idsub);
+    // console.log(idsub);
     let Children =
       children.children !== null ? JSON.parse(children.children) : [];
     // console.log(Children)
@@ -895,7 +894,7 @@ const handlerOpreation = async (
             });
           }
           if (childrenNew) {
-            console.log(childrenNew);
+            // console.log(childrenNew);
             resolve(childrenNew);
           } else {
             // children.push(value);
@@ -920,7 +919,7 @@ const CreatChild = (updates, children, idsub) => {
       );
       if (folder) {
         folder?.children?.push(updates);
-        console.log(folder.children, "hhhhhh");
+        // console.log(folder.children, "hhhhhh");
         resolve(children);
       } else {
         const promises = [];

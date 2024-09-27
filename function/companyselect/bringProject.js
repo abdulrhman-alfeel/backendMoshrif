@@ -28,8 +28,7 @@ const {
   SELECTProjectStartdate,
   SELECTTablecompanySubProjectLast_id,
 } = require("../../sql/selected/selected");
-const TempletStage = require("../../TempletStage.json");
-const subTemplet = require("../../SubTemplet.json");
+
 const {
   StatmentAllpdf,
   StatmentExpensePdf,
@@ -45,7 +44,7 @@ const BringProject = async (req, res) => {
   try {
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = req.query.PhoneNumber;
-    console.log(PhoneNumber);
+    // console.log(PhoneNumber);
     let arrayBrinsh = [];
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
     if (Datausere.job !== "Admin") {
@@ -63,7 +62,7 @@ const BringProject = async (req, res) => {
             arrayBrinsh = await BringTotalbalance(result);
           } else {
             for (let index = 0; index < element.project.length; index++) {
-              console.log(validity);
+              // console.log(validity);
               const elementProject = element.project[index];
               const result = await SELECTTablecompanySubProjectLast_id(
                 elementProject.idProject,
@@ -81,7 +80,7 @@ const BringProject = async (req, res) => {
       const result = await SELECTTablecompanySubProject(IDcompanySub);
       arrayBrinsh = await BringTotalbalance(result);
     }
-    console.log(arrayBrinsh);
+    // console.log(arrayBrinsh);
 
     res.send({ success: true, data: arrayBrinsh }).status(200);
   } catch (err) {
@@ -121,7 +120,7 @@ const AccountCostProject = async (id, ConstCompany) => {
   let StartDate = new Date(DataProject[0].Contractsigningdate);
   const date2 = new Date();
   const daysDifference = await differenceInDays(StartDate, date2);
-  console.log(daysDifference);
+  // console.log(daysDifference);
   let Total = parseInt(ConstCompany) * daysDifference;
   if (isNaN(Total)) {
     Total = 0;
@@ -129,7 +128,7 @@ const AccountCostProject = async (id, ConstCompany) => {
   return { daysDifference, Total };
 };
 
-console.log(new Date().getDay() === new Date("2024-09-26T13:55:07.394Z").getDay());
+// console.log(new Date().getDay() === new Date("2024-09-26T13:55:07.394Z").getDay());
 // Function to calculate difference in days
 function differenceInDays(startDate, endDate) {
   const millisecondsPerDay = 1000 * 60 * 60 * 24; // Milliseconds in one day
@@ -178,7 +177,7 @@ const BringProjectindividual = async (req, res) => {
 const BringStageTemplet = async (req, res) => {
   try {
     const Type = req.query.Type;
-    console.log(Type);
+    // console.log(Type);
     const result = await SELECTFROMTablecompanysubprojectStageTemplet(Type);
 
     res.send({ success: true, data: result }).status(200);
@@ -210,7 +209,7 @@ const BringStage = async (req, res) => {
     const ProjectID = req.query.ProjectID;
     const result = await SELECTTablecompanySubProjectStageCUST(ProjectID);
     let arrayresult = [];
-    console.log(result.length, ProjectID);
+    // console.log(result.length, ProjectID);
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
       const rate = await PercentagecalculationforSTage(
@@ -417,7 +416,7 @@ const BringStatmentFinancialforproject = async (req, res) => {
     let chackprojct = false;
     const sevepdf = await SELECTTableSavepdf(ProjectID);
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
-    console.log(sevepdf);
+    // console.log(sevepdf);
     if (sevepdf !== 0 && sevepdf?.Total !== undefined) {
       if (parseInt(sevepdf.Total) === parseInt(Totalproject.RemainingBalance)) {
         namefile = type === "all" ? sevepdf.namefileall : sevepdf.namefileparty;
@@ -506,7 +505,7 @@ const SearchinFinance = async (req, res) => {
       fromtime,
       totime
     );
-    console.log(result);
+    // console.log(result);
     if (result.length > 0) {
       result.forEach((pic) => {
         array.push({
@@ -643,7 +642,7 @@ const ExtractDatafromFolderHome = async (
   type = "Home",
   idSub = 0
 ) => {
-  console.log(FolderName);
+  // console.log(FolderName);
   try {
     switch (FolderName) {
       case "المراحل":
@@ -708,7 +707,7 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
     idproject,
     "InvoiceNO"
   );
-  console.log(dataHome);
+  // console.log(dataHome);
   let arrayfolder = [];
   if (type === "Home") {
     dataHome.forEach((pic, index) => {
@@ -832,7 +831,7 @@ const BringDataRequests = async (req, res) => {
         });
       })
     );
-    console.log(arraynew);
+    // console.log(arraynew);
     res.send({ success: "تمت العملية بنجاح", data: arraynew }).status(200);
   } catch (error) {
     console.log(error);
@@ -876,7 +875,7 @@ const BringReportforProject = async (req, res) => {
     let arrayresult = [];
     let arrayDelay = [];
     let arrayTrue = [];
-    console.log(result.length, ProjectID);
+    // console.log(result.length, ProjectID);
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
       if (
@@ -1007,7 +1006,7 @@ const ExtractTheMostAccomplished = (ProjectID, countTrue) => {
         arrayNew,
         "PhoneNumber"
       );
-      console.log(similarPhoneNumbers);
+      // console.log(similarPhoneNumbers);
       const largestNumber = await extractLargestNumber(similarPhoneNumbers);
       let arrayUser = [];
       for (let index = 0; index < largestNumber?.user.length; index++) {

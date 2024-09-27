@@ -23,7 +23,7 @@ const CommentUpdate = async (req, res) => {
 };
 const CommentDelete = async (req, res) => {
   try {
-    console.log(req.query);
+    // console.log(req.query);
     const CommentID = req.query.CommentID;
     //   const userName = req.body.userName;
     await DeleteTableCommentPostPublic([CommentID]);

@@ -18,12 +18,15 @@ const fFmpegFunction = (filename, tempFilePath, timePosition) => {
         .on("error", (error) => {
           console.log(error);
 
-          reject(error);
         });
     } catch (error) {
       console.log(error);
     }
   };
+
+  const ffmpeg = require('fluent-ffmpeg');
+
+
 // console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 
 module.exports = {ffmpeg,fFmpegFunction};

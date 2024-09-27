@@ -72,7 +72,7 @@ const inseertCompanybrinsh = async (req, res) => {
     const check = req.body.check;
     const checkGloble = req.body.checkGloble;
     const chackfromCompany = await SELECTTablecompanyName(NumberCompany);
-    console.log(chackfromCompany)
+    // console.log(chackfromCompany)
     if(chackfromCompany !== undefined){
     const checkVerifction = await SELECTTablecompanySubID(
       NameSub,

@@ -78,7 +78,7 @@ const verificationSend = (number, chack) => {
     axios
       .post(url, null, { params, headers })
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
       })
       .catch((error) => {
         console.error(error);
@@ -91,7 +91,7 @@ const verificationSend = (number, chack) => {
 const LoginVerification = async (req, res) => {
   const output = req.query.output;
   const result = await SELECTTableLoginActivaty(output);
-  console.log(result, "user", output);
+  // console.log(result, "user", output);
   if (result !== null) {
     // create accessToken from data users
     const user = {
@@ -161,7 +161,7 @@ const BringUserCompanyinBrinsh = async (req, res) => {
       // console.log(element.Validity)
       const validity = JSON.parse(element.Validity) || [];
       if (validity.length > 0) {
-        console.log(type, "mmmmmmmm");
+        // console.log(type, "mmmmmmmm");
         if (Number(type)) {
           const datanew = await BringUserinProject(
             validity,
@@ -185,7 +185,7 @@ const BringUserCompanyinBrinsh = async (req, res) => {
                 item.job === type
             );
           }
-          console.log(resultdata, "hhhhhhhhhhhhhhhhhhhhh");
+          // console.log(resultdata, "hhhhhhhhhhhhhhhhhhhhh");
           if (resultdata) {
             arrayvalidityuser.push(element);
           }

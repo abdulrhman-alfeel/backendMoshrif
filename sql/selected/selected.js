@@ -66,7 +66,7 @@ const SELECTTablecompanySubCount = (id) => {
           } else {
             resolve(result);
           }
-          console.log(result, "selecttable");
+          // console.log(result, "selecttable");
         }
       );
     });
@@ -87,7 +87,7 @@ const SELECTTablecompanySub = (id) => {
           } else {
             resolve(result);
           }
-          console.log(result, "selecttable");
+          // console.log(result, "selecttable");
         }
       );
     });
@@ -335,7 +335,7 @@ const SELECTFROMTablecompanysubprojectStageTemplet = (Type) => {
 
 // الفروع
 const SELECTFROMTablecompanysubprojectStagesubTeplet = (StageID) => {
-  console.log(StageID, "helll stageID");
+  // console.log(StageID, "helll stageID");
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
@@ -575,7 +575,7 @@ const SELECTTablecompanySubProjectStagesSub = (
           console.log(err.message);
           resolve([]);
         } else {
-          console.log(result);
+          // console.log(result);
           resolve(result);
         }
       });
@@ -702,7 +702,7 @@ const SELECTTablecompanySubProjectfornotification = (
             reject(err);
             console.error(err.message);
           } else {
-            console.log(result, "hello");
+            // console.log(result, "hello");
             resolve(result);
           }
         }
@@ -738,7 +738,7 @@ const SELECTTablecompanySubProjectfornotificationEdit = (
             reject(err);
             console.error(err.message);
           } else {
-            console.log(result, "hello");
+            // console.log(result, "hello");
             resolve(result);
           }
         }
@@ -779,7 +779,7 @@ const SELECTTablecompanySubProjectREVENUE = (idproject) => {
             reject(err);
             console.error(err.message);
           } else {
-            console.log(result);
+            // console.log(result);
             resolve(result);
           }
         }
@@ -866,7 +866,7 @@ const SELECTTableSavepdf = (idproject) => {
 
 // عملية فلتر البحث في المالية
 const SELECTSEARCHINFINANCE = (type, projectID, from, to, fromtime, totime) => {
-  console.log(type, projectID, from, to, fromtime, totime);
+  // console.log(type, projectID, from, to, fromtime, totime);
 
   return new Promise((resolve, reject) => {
     db.serialize(() => {
@@ -953,7 +953,7 @@ const SELECTDataAndTaketDonefromTableRequests = async (
   RequestsID,
   type = "all"
 ) => {
-  console.log(type, "hhhhhhhhhhh");
+  // console.log(type, "hhhhhhhhhhh");
   return new Promise((resolve, reject) => {
     let sqlString =
       type === "all"
@@ -965,7 +965,7 @@ const SELECTDataAndTaketDonefromTableRequests = async (
       type === "all" || type === "allCount" ? [RequestsID] : [type, RequestsID];
     db.serialize(async () => {
       db.get(sqlString, data, function (err, rows) {
-        console.log(RequestsID);
+        // console.log(RequestsID);
 
         if (err) {
           reject(err);
@@ -1062,7 +1062,7 @@ const SELECTTablePostPublicSearch = (
             reject(err);
             console.error(err.message);
           } else {
-            console.log(result);
+            // console.log(result);
             resolve(result);
           }
         }
@@ -1133,7 +1133,7 @@ const SELECTDataPrivatPost = (PostID, type = "Comment", idEdit = null) => {
 
     let Id = idEdit === null ? PostID : idEdit;
     let WhereID = idEdit === null ? "fl.PostId" : "fl.CommentID";
-    console.log(idEdit);
+    // console.log(idEdit);
 
     let SqlString =
       type === "Likes"
@@ -1365,7 +1365,7 @@ const SELECTTableViewChateUser = (chatID, userName, type) => {
 };
 const SELECTLastTableChateStageDontEmpty = (ProjectID, StageID, id) => {
   return new Promise((resolve, reject) => {
-    console.log(id, "hhhh");
+    // console.log(id, "hhhh");
 
     db.serialize(function () {
       db.all(

@@ -48,25 +48,7 @@ app.use("/api/Chate", require("./routes/chatroute"));
 app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
 
-function getAccessToken() {
-  return new Promise(function (resolve, reject) {
-    const key = require("../placeholders/service-account.json");
-    const jwtClient = new google.auth.JWT(
-      key.client_email,
-      null,
-      key.private_key,
-      SCOPES,
-      null
-    );
-    jwtClient.authorize(function (err, tokens) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(tokens.access_token);
-    });
-  });
-}
+
 
 // لاستقبال الملفات والصور
 
@@ -101,23 +83,20 @@ app.post("/api/file", uploads.single("filechate"), async (req, res) => {
       }
       const timePosition = "00:00:00.100";
       const filename = String(req.file.filename).replace("mp4", "png");
-      const tempFilePathtimp = path.join(__dirname, "/temp/", filename);
+      const tempFilePathtimp = `upload/${filename}`;
 
       res
         .send({ success: "Full request", nameFile: req.file.filename })
         .status(200);
       try {
-        console.log(filename, req.file);
+        // console.log(filename, req.file);
         // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
         if (req.file.mimetype === "video/mp4") {
           await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
           setTimeout(async () => {
             await bucket.upload(tempFilePathtimp);
           }, 1000);
-          setTimeout(()=>
-            fs.unlink(tempFilePathtimp, () => {}),
-            1500
-          );
+          setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
         }
       } catch (error) {
         console.log(error);
@@ -138,6 +117,23 @@ app.use(limiter);
 
 app.use(errorHandler);
 
+
+
+
+
+app.all("*", (req, res) => {
+  if (req.accepts("html")) {
+    res.status(404);
+
+    // console.log(req)
+    // res.sendFile(path.json(__dirname, "views", "404.html"));
+  } else if (req.accepts("json")) {
+    res.json({ message: "404 not Found" });
+  } else {
+    res.type("txt").send("404 Not Found");
+  }
+});
+
 // close the database connection
 
 io.on("connection", (Socket) => {
@@ -152,7 +148,7 @@ io.on("connection", (Socket) => {
   Socket.on("disconnect", (data) => {
     // Socket.disconnect()
 
-    console.log("user disconnected", data.id);
+    // console.log("user disconnected", data.id);
   });
 });
 app.all("*", (req, res) => {

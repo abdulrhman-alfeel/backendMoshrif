@@ -305,7 +305,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     );
 
     const { token } = await BringtokenuserCustom(idProject, userName, "Delay");
-    console.log(token,'kkkkkkkkkkkkk');
+    // console.log(token,'kkkkkkkkkkkkk');
     const notification = {
       title: `${type} تأخيرات ${type === "إضافة" ? "جديد" : ""}`,
       body: `  لقد قام  ${userName} ب${type}  تأخيرات  ${
@@ -414,7 +414,7 @@ const Financeinsertnotification = async (
       userName,
       "Finance"
     );
-    console.log(token, result);
+    // console.log(token, result);
     const notification = {
       title: `${type} ${kind} ${type === "إضافة" ? "جديد" : ""}`,
       body: `  لقد قام  ${userName} ب${type}  ${kind}  ${
@@ -563,7 +563,7 @@ const ChateNotfication = async (
 const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
   try {
     const result = await SELECTTableLoginActivatActivaty(PhoneNumber);
-    console.log(result.token);
+    // console.log(result.token);
     const notification = {
       title: type,
       // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,

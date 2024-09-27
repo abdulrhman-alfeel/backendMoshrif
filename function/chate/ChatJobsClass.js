@@ -129,7 +129,7 @@ const ClassChackTableChat = async (req, res) => {
               StageID,
               chatID
             );
-            console.log(count,lengthChat,number,result,'kkklklllllllllllllllll')
+            // console.log(count,lengthChat,number,result,'kkklklllllllllllllllll')
 
         } else {
           result = Number(StageID)
@@ -198,7 +198,7 @@ const ClassViewChat = async (req, res) => {
 
 //  لاستقبال مشاهدات الرسائل
 const ClassreceiveMessageViews = async (req, res) => {
-  console.log('helllow')
+  // console.log('helllow')
   const userName = req.body.userName;
   const ProjectID = req.body.ProjectID;
   const type = req.body.type;

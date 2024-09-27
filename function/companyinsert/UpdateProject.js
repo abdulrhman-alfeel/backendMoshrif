@@ -307,7 +307,7 @@ const UpdateNameFolderOrfileinArchive = async (req, res) => {
       // Get a reference to the file
       await Switchbetweendeleteorupdatefiles(nameOld, name, kidopreation);
       await ClassUpdataNmaeinArchive(ArchivesID, name, idsub, kidopreation);
-      console.log("okkkk");
+      // console.log("okkkk");
       res.send({ success: "تمت العملية بنجاح" }).status(200);
     }
   } catch (error) {
@@ -390,7 +390,7 @@ const ExpenseUpdate = async (req, res) => {
     let arrayImage = [...Imageoldindatabese];
 
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
-      console.log(Imageoldindatabese, Imageolddelete, "arrays");
+      // console.log(Imageoldindatabese, Imageolddelete, "arrays");
 
       // Delete old images from the database and bucket storage
       const imagesToDelete = Imageolddelete ? [Imageolddelete] : [];
@@ -463,9 +463,9 @@ const RevenuesUpdate = async (req, res) => {
     const Imageoldindatabese =
       elementUpdate.Image !== null ? JSON.parse(elementUpdate.Image) : [];
     let arrayImage = [...Imageoldindatabese];
-    console.log(req.files, Imageoldindatabese, "kkkkkkk");
+    // console.log(req.files, Imageoldindatabese, "kkkkkkk");
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
-      console.log(Imageolddelete, "arrays");
+      // console.log(Imageolddelete, "arrays");
       const imageDelete = Imageolddelete ? [Imageolddelete] : [];
       await Promise.all(
         imageDelete.map(async (pic) => {
@@ -534,7 +534,7 @@ const ReturnsUpdate = async (req, res) => {
     let arrayImage = [...Imageoldindatabese];
 
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
-      console.log(Imageolddelete, "arrays");
+      // console.log(Imageolddelete, "arrays");
 
       const ImageDelete = Imageolddelete ? [Imageolddelete] : [];
       await Promise.all(

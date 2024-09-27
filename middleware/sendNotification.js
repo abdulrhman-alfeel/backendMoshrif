@@ -48,7 +48,7 @@ async function massges(
       console.error(`Error sending to token ${tokens[index]}:`, resp.error);
     }
   });
-  console.log(res);
+  // console.log(res);
 }
 
 module.exports = { massges };

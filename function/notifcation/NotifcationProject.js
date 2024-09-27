@@ -313,7 +313,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     );
 
     const { token } = await BringtokenuserCustom(idProject, userName, "Delay");
-    console.log(result, "kkkkkkkkkkkkk", idProject, StageID);
+    // console.log(result, "kkkkkkkkkkkkk", idProject, StageID);
     const notification = {
       title: `${type} تأخيرات ${type === "إضافة" ? "جديد" : ""}`,
       body: `  لقد قام  ${userName} ب${type}  تأخيرات  ${
@@ -438,7 +438,7 @@ const Financeinsertnotification = async (
       type: type,
       data: resultObject,
     };
-    console.log(token, notification, notification_type, navigationId, data);
+    // console.log(token, notification, notification_type, navigationId, data);
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -518,7 +518,7 @@ const PostsnotificationCansle = async (
       userName,
       "PublicationsBransh"
     );
-    console.log(result, userName, token);
+    // console.log(result, userName, token);
 
     const notification = {
       title: `إلغاء الاعجاب بمنشور `,
@@ -614,7 +614,7 @@ const ChateNotfication = async (
 const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
   try {
     const result = await SELECTTableLoginActivatActivaty(PhoneNumber);
-    console.log(result.token);
+    // console.log(result.token);
     const notification = {
       title: type,
       // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
