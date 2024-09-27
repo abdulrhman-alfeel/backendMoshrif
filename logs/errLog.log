@@ -244,3 +244,82 @@
 20240801	14:12:08	3e6c110f-da7e-48d3-8f17-ae5257eb38aa	SyntaxError: Unexpected token } in JSON at position 71	POST	/api/Chate/Viewed	undefined
 20240801	14:12:11	e2d49f9a-41fe-4c5b-93c6-6d27e73d2c56	SyntaxError: Unexpected token } in JSON at position 71	POST	/api/Chate/Viewed	undefined
 20240801	14:12:47	aa3b19ff-a7fb-4b07-8efa-9efa41a71bca	SyntaxError: Unexpected token } in JSON at position 71	POST	/api/Chate/Viewed/	undefined
+20240804	11:56:29	40407935-5e67-4947-887d-8489daf6d2c8	SyntaxError: Unexpected number in JSON at position 72	POST	/api/user	undefined
+20240804	11:57:12	52b5413f-7929-42bf-b0bb-dc01ff49c80c	SyntaxError: Unexpected token } in JSON at position 154	POST	/api/user	undefined
+20240804	11:58:29	155b32eb-cb42-4788-a06a-4bbf2932c0c0	SyntaxError: Unexpected number in JSON at position 103	POST	/api/user	undefined
+20240811	09:03:13	59b5ac31-3b61-42ab-a6af-631f1ab38a11	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:04:59	cd0dfb04-c0de-4770-90b7-32cb12125a84	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:05:30	b61e8f85-d88b-499a-a373-c812de1885dc	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:06:08	402a4f0a-fc79-4406-a7fa-fb1faea457e3	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:06:45	311b4cea-ae13-4a80-9489-01ce81d05519	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:07:46	7f0411f1-ef32-4550-aee0-a4c4055e1036	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:08:03	524cc95d-49a3-4ac2-9216-31254ba5eee1	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:29:03	7b88ef85-6176-47b1-82c8-1eee097b99a2	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240811	09:29:51	8bcec25a-283b-4f43-b9ba-173c255b7e5a	SyntaxError: Unexpected token } in JSON at position 5549	POST	/api/brinshCompany/StageSubTemplet	undefined
+20240824	14:03:43	e11325d1-42a6-428e-938f-3f47f7e99c02	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:04:11	37dfd0fa-e0c4-46b0-bb11-359108b5f272	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:04:18	5c3cdfbf-817f-41f7-86dc-91550c84c581	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:05:24	5a7bd68f-68c1-45a1-8245-41a315aa8063	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:06:24	f45c8311-ea7e-401b-95ad-a3bee9e1b8c7	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:16:46	82b364c1-742f-4bf6-8a64-6a13bcf63599	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240824	14:17:42	252da6f7-b220-420e-8646-0f45469795d8	MulterError: Unexpected field	PUT	/api/brinshCompany/UpdateNotesStage	undefined
+20240904	09:01:42	9fb73ac6-5a01-4f17-850d-807699642562	TypeError: path.json is not a function	GET	/favicon.ico	undefined
+20240904	09:01:42	395c938e-37f0-4a14-8595-8f95001188e4	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:01:43	b0346702-184e-46a1-981d-ea9a667832c9	TypeError: path.json is not a function	GET	/css/style.css	undefined
+20240904	09:01:46	310eb54c-5bd3-459f-9663-5e6e961ee0ad	TypeError: path.json is not a function	GET	/css/style.css	undefined
+20240904	09:02:03	34cb1cbc-17da-410a-9c49-c4e24a5cd199	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:02:17	14f73885-9d02-4f52-8653-687714687f15	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:02:21	7c855d00-712c-40da-ba7e-0c5338f4f8bb	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:02:24	7354a4a6-e8f0-4f15-b46b-1e7d403baed7	TypeError: path.json is not a function	GET	/css/style.css	undefined
+20240904	09:02:29	ae759a8a-6ad1-4e06-942b-370cf33e04aa	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:02:48	2858132c-6722-4f3f-91c6-8986d7daf7ab	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240904	09:02:51	d2f31402-d23c-4af1-a1d1-63347cc4d482	TypeError: path.json is not a function	GET	/Vector.png	undefined
+20240908	12:23:03	48d555fb-b905-41e3-b758-759fd0d843bc	MulterError: Unexpected field	PUT	/api/brinshCompany/ExpenseUpdate	undefined
+20240908	12:25:01	36ee151f-c059-464f-9381-db97fc206abd	MulterError: Unexpected field	PUT	/api/brinshCompany/ExpenseUpdate	undefined
+20240908	12:31:49	4fb6f432-3d8c-4107-9bfe-9d268495e3f4	MulterError: Unexpected field	PUT	/api/brinshCompany/ExpenseUpdate	undefined
+20240908	12:40:02	edec0fce-d64a-4bb1-b7e5-b502b5170e50	MulterError: Unexpected field	PUT	/api/brinshCompany/ExpenseUpdate	undefined
+20240908	12:43:14	392e7143-2c40-4ac1-99de-393cc50a5522	MulterError: Unexpected field	PUT	/api/brinshCompany/ExpenseUpdate	undefined
+20240909	11:41:46	f05fcd3a-7936-4c31-a4a0-b136d97307c8	MulterError: Field value too long	PUT	/api/brinshCompany/ReturnsUpdate	undefined
+20240909	11:46:00	79d25fae-1b1f-4bbf-b1ef-c9e54ba2ff38	MulterError: Field value too long	PUT	/api/brinshCompany/ReturnsUpdate	undefined
+20240909	11:47:36	cb7fdded-4d5f-422c-99e2-6658a03265b7	MulterError: Field value too long	PUT	/api/brinshCompany/ReturnsUpdate	undefined
+20240909	11:48:56	f5e508d4-d878-4610-9c6c-c264131bbcd8	MulterError: Field value too long	PUT	/api/brinshCompany/ReturnsUpdate	undefined
+20240912	08:50:58	98a51254-808f-410a-a57c-a33138e70d8b	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:51:18	432ab9bc-fccb-4ba6-ab55-e187c1d3a9e4	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:52:31	093af336-ea99-41ee-843b-e134ee6b4351	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:55:32	081044ca-55da-488a-a2a5-fc84448ae932	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:56:42	04b8d85b-76a2-4107-8c8d-835ef4266ed9	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:57:24	ee0ec2cc-b53c-42fd-b432-3908069ea672	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:58:22	67cfcc14-8349-4a76-9b4a-ede4a8b3df8e	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:59:20	8c16da5b-126b-4fbf-b84d-6c35cc8dcef1	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	08:59:56	0e8bf919-86ce-4316-8ed4-30dcd5f8438c	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	09:00:16	a673db34-fe64-404b-9550-ccf69eafc486	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	09:00:41	a80b2a03-0805-44da-904d-aa4d747df859	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	09:01:08	ece2fb6f-aa68-46bf-9a7c-c52ab6134ef4	SyntaxError: Unexpected token n in JSON at position 0	PUT	/api/brinshCompany/UPDATEdataRequests	undefined
+20240912	10:46:54	b613fa6d-896d-4b1c-a9cc-77b855616e57	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:47:58	0fb305cc-ddb8-4f66-bb8d-a2013474a2a8	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:49:47	09f8f899-5400-4dfb-b210-533f1a649aef	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:53:52	9f7bc872-d47a-4048-98b3-46dc2140b300	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:55:33	bae975f9-1a88-4c80-838c-d028005dd48a	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:56:09	2b10f506-e1de-4f29-8e84-e7a89ef27370	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	10:57:36	6dc4d07b-bed2-4418-a755-024d43f27a93	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	11:03:41	b8bc50cb-926a-42b7-943c-eba37ac2ae91	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	11:04:39	ee5da1a7-1dea-42b2-b27e-006cb68240e0	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	11:08:25	2bef4d1c-ec2a-4b7f-bc81-956481584355	MulterError: Unexpected field	POST	/api/file	undefined
+20240912	11:09:06	b60916f6-49d3-49ce-a10d-b493ff03675b	MulterError: Unexpected field	POST	/api/file	undefined
+20240913	19:58:02	6fc75244-94b6-4bc5-bb07-269a0bf5c4be	MulterError: Unexpected field	POST	/api/file	undefined
+20240925	09:47:18	3beefbb6-e762-4b60-b28a-73cb06dbe463	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:47:18	e7282444-3763-4179-8755-bedc7696b08a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:48:09	56fdf8f3-7c4d-40d1-9740-e2fb9694e19c	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:48:09	2e265930-ca55-467a-ac3b-a0ab61f89082	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:49:34	31cec5bc-b49a-4c5e-8111-34cd2729d71a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:49:34	f14e0d75-0f47-4760-bd55-f90c958ba4d6	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:49:36	1bb1e5d0-a923-41f0-9ee1-6101053efa10	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:49:54	ef56e5ca-d7fa-4ba5-80a4-042c4901840c	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:49:54	04ecfd98-9743-4701-8c89-0939218ae4f0	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompany?IDCompany=1	undefined
+20240925	09:52:02	a811de9d-1565-4bca-abc6-fb397a16101f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/Chate/ChateView?chatID=85&type=2	undefined
+20240925	09:53:32	dec8bf00-f0be-4f02-93b8-db80440b14a1	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/Chate/ChateView?chatID=85&type=2	undefined
+20240925	09:58:01	23c58ea7-9fe6-499c-b731-26806ca64aa2	ReferenceError: err is not defined	GET	/api/brinshCompany/BringProject?IDcompanySub=1&PhoneNumber=502464530	undefined
+20240925	09:58:01	dd2e8701-4e02-4a0e-9a88-462a9f27d2a1	ReferenceError: err is not defined	GET	/api/brinshCompany/BringProject?IDcompanySub=1&PhoneNumber=502464530	undefined
+20240925	09:58:04	14f053e9-09d7-49ca-b56a-f9be218d6d41	ReferenceError: err is not defined	GET	/api/brinshCompany/BringProject?IDcompanySub=1&PhoneNumber=502464530	undefined
+20240925	14:28:33	026ac263-b431-41c6-a15e-923365b9cea5	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/posts/Commentinsert	undefined
+20240925	14:29:40	a3b5b246-69e1-488a-8ad8-adbd65b44412	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/posts/Commentinsert	undefined

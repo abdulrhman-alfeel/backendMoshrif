@@ -1,6 +1,6 @@
 const fs = require("fs");
 const multer = require("multer");
-
+const path = require('path');
 const storages = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = "upload/";
@@ -16,6 +16,9 @@ const storages = multer.diskStorage({
     });
   },
   filename: function (req, file, cb) {
+    // const timestamp = Date.now();
+    // const uniqueFileName = `${timestamp}${path.extname(file.originalname)}`;
+  
     cb(null, file.originalname);
   },
 });

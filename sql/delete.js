@@ -1,136 +1,64 @@
 const db = require("./sqlite");
 
-const DeleteTablecompany = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
+const DeleteTablecompany = () => {};
+const DeleteTablecompanySub = () => {};
+const DeleteTablecompanySubProject = () => {};
+const DeleteTablecompanySubProjectphase = (id) => {
+  db.run(`DELETE FROM  StagesCUST WHERE ProjectID=?`, [id], function (err) {
+    if (err) {
+      console.error(err.message);
     }
-  );
-};
-const DeleteTablecompanySub = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
-const DeleteTablecompanySubProject = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
-const DeleteTablecompanySubProjectphase = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
+    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
 };
 
-const DeleteTablecompanySubProjectCovenant = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
+const DeleteTablecompanySubProjectCovenant = () => {};
+const DeleteTablecompanySubProjectReturned = () => {};
+const DeleteTablecompanySubProjectexpense = () => {};
+
+const DELETETableLoginActivaty = (data) => {
+  db.serialize(function () {
+    db.run(
+      `DELETE FROM LoginActivaty  WHERE PhoneNumber=?`,
+      data,
+      function (err) {
+        // console.log(`Row with the ID has been inserted.`);
       }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
+    );
+  });
 };
-const DeleteTablecompanySubProjectReturned = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
+const DeleteTablecompanySubProjectarchives = (id) => {
+  console.log(id);
+  db.run(`DELETE FROM Archives WHERE ArchivesID=?`, [id], function (err) {
+    if (err) {
+      console.error(err);
+    }
+    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
+const sqlDropOldTable = (tableName) => {
+  const sqlDropOldTable = `DROP TABLE ${tableName};`;
+  db.serialize(() => {
+    // Create a temporary table with the structure of the original table
+    db.run(sqlDropOldTable, (err) => {
       if (err) {
-        console.error(err.message);
+        console.error("Error creating temporary table:", err.message);
+        callback(err);
+        return;
       }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
+    });
+  });
 };
-const DeleteTablecompanySubProjectexpense = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
-const DeleteTablecompanySubProjectarchives = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
-const DeleteTablecompanySubProjectPublic = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
+const DeleteTablecompanySubProjectPublic = () => {};
 
 const DeleteTableCommentPostPublic = (data) => {
   db.serialize(function () {
-    db.run(
-      `Delete FROM Comment WHERE CommentID=?`,
-      data,
-      function (err) {
-        if (err) {
-          console.error(err.message);
-        }
-        console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+    db.run(`Delete FROM Comment WHERE CommentID=?`, data, function (err) {
+      if (err) {
+        console.error(err.message);
       }
-    );
+      console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+    });
   });
 };
 const DeleteTableLikesPostPublic = (data) => {
@@ -148,19 +76,7 @@ const DeleteTableLikesPostPublic = (data) => {
   });
 };
 
-const DeleteTablecompanySubProjectChate = () => {
-  const data = ["sammy", "blue", 1900];
-  db.run(
-    `DELETE FROM  sharks WHERE ID=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.error(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
+const DeleteTablecompanySubProjectChate = () => {};
 
 module.exports = {
   DeleteTablecompany,
@@ -174,6 +90,6 @@ module.exports = {
   DeleteTablecompanySubProjectPublic,
   DeleteTablecompanySubProjectChate,
   DeleteTableLikesPostPublic,
-  DeleteTableCommentPostPublic
-
+  DeleteTableCommentPostPublic,
+  DELETETableLoginActivaty
 };

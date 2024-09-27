@@ -4,7 +4,7 @@ const insertTablecompany = async (data) => {
   let V = true;
   db.serialize(function () {
     db.run(
-      `INSERT INTO company (CommercialRegistrationNumber, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -22,31 +22,31 @@ const insertTablecompany = async (data) => {
   return V;
 };
 const insertTablecompanySub = async (data) => {
-  let V = true;
-  db.serialize(function () {
-    db.run(
-      `INSERT INTO companySub (NumberCompany, NameSub, BranchAddress,Email,PhoneNumber) VALUES (?, ?, ?,?,?)`,
-      data,
-      function (err) {
-        if (err) {
-          V = false;
-          console.error(err.message);
-        } else {
-          V = true;
-        }
-        // console.log(`Row with the ID has been inserted.`);
-      }
-    );
-    // db.close();
-  });
-  return V;
-
-};
-const insertTableuserComppany = (data) => {
-  try{
+  return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.run(
-        `INSERT INTO usersCompany (IDCompany,userName,IDNumber,PhoneNumber,image,job) VALUES (?,?,?,?,?,?)`,
+        `INSERT INTO companySub (NumberCompany, NameSub, BranchAddress,Email,PhoneNumber) VALUES (?, ?, ?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            resolve(false);
+            console.log(err.message);
+          } else {
+            resolve(true);
+          }
+          // console.log(`Row with the ID has been inserted.`);
+        }
+      );
+      // db.close();
+    });
+  });
+};
+const insertTableuserComppany = (data) => {
+  console.log(data, "databese");
+  try {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO usersCompany (IDCompany,userName,IDNumber,PhoneNumber,job,jobHOM,Validity) VALUES (?,?,?,?,?,?,?)`,
         data,
         function (err) {
           if (err) {
@@ -56,16 +56,16 @@ const insertTableuserComppany = (data) => {
         }
       );
     });
-    return true
-  }catch(err){
-    console.log(err)
-    return false
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
   }
 };
 const insertTableLoginActivaty = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,Validity,codeVerification) VALUES (?, ?, ?,?,?,?,?,?,?,?)`,
+      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,Validity,codeVerification,token) VALUES (?, ?, ?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -97,7 +97,7 @@ const insertTableuserComppanySub = (data) => {
 const insertTablecompanySubProject = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,ProjectStartdate,Imageproject) VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject) VALUES (?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -114,7 +114,7 @@ const insertTablecompanySubProject = (data) => {
 const insertTablecompanySubProjectStagetemplet = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesTemplet (Type, StageName, Days,OrderBy) VALUES (?, ?,?,?)`,
+      `INSERT INTO StagesTemplet (StageID,Type, StageName, Days,OrderBy) VALUES (?,?, ?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -146,13 +146,13 @@ const insertTablecompanySubProjectStageSubtemplet = (data) => {
 const insertTablecompanySubProjectStageCUST = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,Difference) VALUES (?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy) VALUES (?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -160,7 +160,7 @@ const insertTablecompanySubProjectStageCUST = (data) => {
 const insertTablecompanySubProjectStageNotes = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StageNotes (StagHOMID,ProjectID,Type,Note,RecordedBy,countdayDelay,ImageAttachment) VALUES (?, ?,?,?,?,?,?)`,
+      `INSERT INTO StageNotes (StagHOMID,ProjectID,Type,Note,RecordedBy,countdayDelay,ImageAttachment) VALUES (?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -206,7 +206,7 @@ const insertTablecompanySubProjectStageSubNotes = (data) => {
 const insertTablecompanySubProjectexpense = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Expense (CustID, Amount, Data,ClassificationName,Image,InvoiceNo,Taxable,CreatedDate) VALUES (?, ?, ?,?,?,?,?,?)`,
+      `INSERT INTO Expense (projectID, Amount, Data,ClassificationName,Image,InvoiceNo,Taxable) VALUES (?, ?, ?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -222,7 +222,7 @@ const insertTablecompanySubProjectexpense = (data) => {
 const insertTablecompanySubProjectREVENUE = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Revenue (CustID, Amount, Data,Bank) VALUES (?, ?, ?,?)`,
+      `INSERT INTO Revenue (projectID, Amount, Data,Bank,Image) VALUES (?,?, ?, ?,?)`,
       data,
       function (err) {
         if (err) {
@@ -238,7 +238,21 @@ const insertTablecompanySubProjectREVENUE = (data) => {
 const insertTablecompanySubProjectReturned = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Returns (CustID, Amount, Data) VALUES (?, ?, ?)`,
+      `INSERT INTO Returns (projectID, Amount, Data,Image) VALUES (?,?, ?, ?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTableSabepdf = (data, typename = "namefileall") => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Savepdf (projectID,${typename}, Total) VALUES (?,?, ?)`,
       data,
       function (err) {
         if (err) {
@@ -254,7 +268,7 @@ const insertTablecompanySubProjectReturned = (data) => {
 const insertTablecompanySubProjectarchivesFolder = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Archives (CustID, FolderName) VALUES (?, ?)`,
+      `INSERT INTO Archives (ProjectID, FolderName) VALUES (?, ?)`,
       data,
       function (err) {
         if (err) {
@@ -265,11 +279,11 @@ const insertTablecompanySubProjectarchivesFolder = (data) => {
     );
   });
 };
-const insertTablecompanySubProjectarchivesfile = (data, ID) => {
+const insertTablecompanySubProjectarchivesFolderforcreatproject = (data) => {
   db.serialize(function () {
     db.run(
-      `UPDATE Archives SET FolderContent =? WHERE ArchivesID=?`,
-      [data, ID],
+      `INSERT INTO Archives (ProjectID, FolderName,ActivationHome,Activationchildren) VALUES (?,?,?,?)`,
+      data,
       function (err) {
         if (err) {
           console.error(err.message);
@@ -280,15 +294,32 @@ const insertTablecompanySubProjectarchivesfile = (data, ID) => {
   });
 };
 
-//
+// ******************************************
+// ****************الطلبيات ****************
+
+const insertTablecompanySubProjectRequestsForcreatOrder = async (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Requests (ProjectID,Type, Data,InsertBy,Image) VALUES (?,?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+
 // اليوميات
 // المنشورات
 
 const insertTablePostPublic = (data) => {
-  console.log(data)
+  console.log(data);
   db.serialize(function () {
     db.run(
-      `INSERT INTO Post (postBy,url,Type,Location,StageID,ProjectID,brunshCommpanyID,CommpanyID) VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO Post (postBy,url,Type,Data,timeminet,StageID,ProjectID,brunshCommpanyID,CommpanyID) VALUES (?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -320,7 +351,7 @@ const insertTablePostPublic = (data) => {
 const insertTableCommentPostPublic = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Comment (PostId,commentText,userName) VALUES (?,?,?)`,
+      `INSERT INTO Comment (PostId,commentText,Date,userName) VALUES (?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -334,11 +365,11 @@ const insertTableCommentPostPublic = (data) => {
 const insertTableLikesPostPublic = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Likes (PostId,TypeLikes,userName) VALUES (?,?,?)`,
+      `INSERT INTO Likes (PostId,userName) VALUES (?,?)`,
       data,
       function (err) {
         if (err) {
-          console.error(err.message);
+          console.log(err.message);
         }
         console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
@@ -377,7 +408,7 @@ const insertTableViewsChateStage = (data) => {
 };
 // دردشة المشروع مالية وطلبات
 const insertTableChate = (data) => {
-// console.log(data)
+  // console.log(data)
   db.serialize(function () {
     db.run(
       `INSERT INTO Chat (idSendr,Type, ProjectID, Sender,message,timeminet,File,Reply) VALUES (?,?,?,?,?,?,?,?)`,
@@ -420,7 +451,6 @@ module.exports = {
   insertTablecompanySubProjectREVENUE,
   insertTablecompanySubProjectexpense,
   insertTablecompanySubProjectarchivesFolder,
-  insertTablecompanySubProjectarchivesfile,
   insertTablePostPublic,
   insertTableCommentPostPublic,
   insertTableuserComppany,
@@ -431,4 +461,7 @@ module.exports = {
   insertTableChate,
   insertTableViewsChate,
   insertTableLikesPostPublic,
+  insertTablecompanySubProjectarchivesFolderforcreatproject,
+  insertTableSabepdf,
+  insertTablecompanySubProjectRequestsForcreatOrder,
 };

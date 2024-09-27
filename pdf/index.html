@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <!-- border-collapse: collapse; -->
+
+<Style>
+  body{
+      width: 95%;
+      margin: auto;
+      margin-top: 35px;
+  }
+  .page {
+    width: 794px;
+    /* height: 1123px; */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    border: 1px dashed #2117fb;
+
+  }
+  .header {
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    border: 2px dashed #2117fb;
+    border-radius: 15px;
+    padding: 10px;
+  }
+  .header1{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: right;
+    margin:10px
+    /* border: 2px dashed black */
+  }
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* border: 2px dashed black */
+  }
+  .text-header-right{
+    font-family: "Tajawal", system-ui;
+    font-size: 17px;
+  }
+
+  h1{
+    font-family: "Tajawal", system-ui;
+    font-size: 20px;
+}
+.header-medium{
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+  .header-left img {
+    width: 100px;
+    height: 100px;
+    margin-right: 10px;
+  }
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+  .header-right p {
+    margin: 0;
+    font-size: 14px;
+    
+  }
+  table {
+  width: 98%;
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  text-align: left;
+  padding: 5px;
+  border-radius: 5px;
+  border: 2px dashed #2117fb;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+} 
+table th {
+background-color: #447dee;
+color: #fff;
+font-weight: bold;
+font-family:'Tajawal';
+font-size: 13px;
+padding: 3px;
+text-transform: uppercase;
+border: 1px solid  #1b1818;
+letter-spacing: 1px; 
+text-align: center;
+}
+
+table td {
+padding: 3px;
+text-align: center;
+font-family:'Tajawal';
+font-size: 11px;
+border: 1px solid  #1b1818;
+font-weight: bold;
+}
+.footer{
+  /* height: 70px; */
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 100px;
+}
+.footerone{
+  font-size: 27px;
+  font-family: "Tajawal";
+  text-align: center;
+}
+h4{
+  font-family:'Tajawal';
+}
+h5 {
+  font-family:'Tajawal';
+  margin: auto;
+}
+p{
+  margin: 5px;
+  font-family:'Tajawal';
+}
+.number{
+  background-color: #447dee;
+  color:#fff
+}
+span{
+  height: 80%;
+  margin: auto;
+  margin-left: 10px;
+  text-align: center;
+}
+.header-clint{
+  background-color:hsl(220, 83%, 60%);
+  margin:10px;
+  margin-top: 30px;
+  color:#fff;
+  height: 33px;
+  /* padding: 1px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</Style>
+<body>
+  <div class="page">
+  <div class="header">
+    <div class="header1">
+      <p class="text-header-right">التاريخ: 02\09\2024م</p>
+    </div>
+
+    <div class="header-medium">
+        <h1>شفق البنيان للمقاولات العامة</h1>
+        <h1 style="font-size: 17px;">الفرع:شمال الرياض</h1>
+        <h1 style="font-size: 17px;"> المشروع: فلة تجريبية</h1>
+        <h1 style="font-size: 17px;">كشف حساب حسب التصنيف</h1>
+      </div>
+    <div class="header-left">
+      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+      <h1>منصة مشرف</h1>
+    </div>
+  
+  </div>
+
+<div class="header-clint">
+  <h4>إيرادات العميل</h4>
+</div>
+<table>
+   <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                
+                    <th scope="col" rowspan="3">البيان </th>
+                    <th scope="col" rowspan="2">تاريخ الإيراد </th>
+                    <th scope="col" rowspan="2">المبلغ</th>
+                    <!-- rowspan="2" هذه للدمج عمودي -->
+                </tr>
+                                               
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+      
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+  
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+<div class="header-clint">
+  <h4>مصروفات العميل</h4>
+</div>
+<table>
+   <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                
+                    <th scope="col" rowspan="2" >الفاتورة </th>
+                    <th scope="col" rowspan="3">البيان </th>
+                    <th scope="col" rowspan="2">التاريخ </th>
+                    <th scope="col" rowspan="2">المبلغ</th>
+                    <!-- rowspan="2" هذه للدمج عمودي -->
+                </tr>
+                                               
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+      
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+  
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+
+
+  <div class="header-clint">
+    <h4>مرتجعات العميل</h4>
+  </div>
+  <table>
+    <thead>
+          <tr>
+      <thead>
+              <tbody>
+              <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                  <tr>
+                  
+                      <th scope="col" rowspan="3">البيان </th>
+                      <th scope="col" rowspan="2">تاريخ المرتجع </th>
+                      <th scope="col" rowspan="2">المبلغ</th>
+                      <!-- rowspan="2" هذه للدمج عمودي -->
+                  </tr>
+              </tbody>
+      </thead>
+      </tr>         
+      <tbody>
+        
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+    
+        <!-- Add more rows as needed -->
+      </tbody>
+    </table>
+<div class="footer">
+  <div class="footerone">
+    <h6>اجمالي مبلغ الإيرادات</h6>
+    <h6 class="number">343423434323</h6>
+  </div>
+  <div class="footerone">
+    <h6>اجمالي مبلغ المصروفات</h6>
+    <h6 class="number">35345343344</h6>
+  </div>
+  <div class="footerone">
+    <h6>اجمالي مبلغ المرتجعات</h6>
+    <h6 class="number">2343445566</h6>
+  </div>
+</div>
+
+        </div>
+</body>
+</html>

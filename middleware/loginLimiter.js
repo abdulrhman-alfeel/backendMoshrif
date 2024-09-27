@@ -1,4 +1,5 @@
 const rateLimit = require("express-rate-limit");
+const logEvents = require("./logger");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -11,7 +12,8 @@ const limiter = rateLimit({
     );
     res.status(options.statusCode).send(options.message);
   },
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+  // legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+  headers: false, // Disable the `X-RateLimit-*` headers.
   // store: ... , // Redis, Memcached, etc. See below.
 });
 

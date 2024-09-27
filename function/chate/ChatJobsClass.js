@@ -19,6 +19,7 @@ const {
   SELECTLastTableChateID,
   SELECTTableViewChateUser,
 } = require("../../sql/selected/selected");
+const { ChateNotfication } = require("../notifcation/NotifcationProject");
 const { insertPostURL } = require("../postpublic/post");
 const time = require("./TIME.JS");
 
@@ -34,21 +35,21 @@ const ClassChatOpration = async (Socket, io) => {
       const newData = Datadistribution(data);
       // console.log(data);
       // console.log(data?.StageID,'undfind')
-
       if (Number(data?.StageID)) {
         await insertTableChateStage(newData);
         result = await SELECTTableChateStageOtherroad(data.idSendr);
         //  ادخال البيانات جدول البوستات
-        insertPostURL(data);
       } else {
         await insertTableChate(newData);
         result = await SELECTTableChateotherroad(data.idSendr);
       }
+      await insertPostURL(data);
       // console.log(result)
-      result.File = JSON.parse(result.File );
+      result.File = JSON.parse(result.File);
       result.Reply = JSON.parse(result.Reply);
       result.arrived = true;
-      io.to(data.ProjectID).timeout(50).emit("received_message", result);
+      io.to(`${data.ProjectID}:${data?.StageID}`).timeout(50).emit("received_message", result);
+      await ChateNotfication(data.ProjectID,data?.StageID,data.message,data.Sender,data.Reply,data.File);
     });
   } catch (err) {
     // console.log(err.message);
@@ -108,25 +109,27 @@ const ClassChackTableChat = async (req, res) => {
     const count = Number(StageID)
       ? await SELECTLengthTableChateStage(ProjectID, StageID)
       : await SELECTLengthTableChate(ProjectID, StageID);
+      
       if (count > lengthChat) {
-      const number = count - lengthChat;
-      if (number > 0) {
-        let Total = number > 80 ? 80 : number;
-        // console.log(Total)
-        // جلب البيانات
-        let result;
-        if (lengthChat > 0) {
-          result = Number(StageID)
+        const number = count - lengthChat;
+        if (number > 0) {
+          let Total = number > 80 ? 80 : number;
+          // console.log(Total)
+          // جلب البيانات
+          let result;
+          if (lengthChat > 0) {
+            result = Number(StageID)
             ? await SELECTLastTableChateStageDontEmpty(
-                ProjectID,
-                StageID,
-                chatID
-              )
+              ProjectID,
+              StageID,
+              chatID
+            )
             : await SELECTLastTableChateTypeDontEmpty(
-                ProjectID,
-                StageID,
-                chatID
-              );
+              ProjectID,
+              StageID,
+              chatID
+            );
+            console.log(count,lengthChat,number,result,'kkklklllllllllllllllll')
 
         } else {
           result = Number(StageID)

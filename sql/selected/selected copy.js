@@ -159,8 +159,6 @@ const SELECTTablecompanySubProject = (id, kind = "all") => {
     let stringSql =
       kind === "all"
         ? `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE IDcompanySub=?`
-        : kind === "difference"
-        ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=?`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=?`;
     db.serialize(function () {
       db.all(stringSql, [id], function (err, result) {
@@ -223,7 +221,7 @@ const SELECTProjectStartdate = (id, kind = "all") => {
     db.serialize(function () {
       db.get(
         kind === "all"
-          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,id FROM companySubprojects WHERE id=? `
+          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject FROM companySubprojects WHERE id=? `
           : "SELECT ca.id,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?",
         [id],
         function (err, result) {
@@ -554,7 +552,7 @@ const SELECTTablecompanySubProjectStagesSub = (
         : kind === "accomplished"
         ? `SELECT closingoperations FROM StagesSub WHERE Done="true" AND ProjectID=?`
         : kind === "notification"
-        ? `SELECT cu.StageName,pr.Nameproject ,pr.IDcompanySub,su.ProjectID,su.StagHOMID AS StageID, MAX(su.StageSubID) AS StageSubID ,su.StagHOMID,su.ProjectID,su.StageSubName, su.closingoperations,su.Note,su.Done,su.CloseDate FROM StagesSub su LEFT JOIN StagesCUST cu ON cu.ProjectID = su.ProjectID AND cu.StageID = su.StagHOMID LEFT JOIN companySubprojects pr ON pr.id = su.ProjectID  WHERE  ${type}`
+        ? `SELECT cu.StageName,pr.Nameproject ,su.ProjectID,su.StagHOMID AS StageID, MAX(su.StageSubID) AS StageSubID ,su.StagHOMID,su.ProjectID,su.StageSubName, su.closingoperations,su.Note,su.Done,su.CloseDate FROM StagesSub su LEFT JOIN StagesCUST cu ON cu.ProjectID = su.ProjectID AND cu.StageID = su.StagHOMID LEFT JOIN companySubprojects pr ON pr.id = su.ProjectID  WHERE  ${type}`
         : `SELECT * FROM StagesSub WHERE StagHOMID=? AND ProjectID=? AND trim(StageSubName) = trim(?)`;
     let data =
       kind === "all"
@@ -679,23 +677,18 @@ const SELECTTablecompanySubProjectfornotification = (
   type = "Expense"
 ) => {
   return new Promise((resolve, reject) => {
-    let project = type === "RequestsID" ? "ProjectID" : "projectID";
-    let projecttype = type === "Requests" ? " ex.projectID" : " ex.ProjectID";
-
     let SqlString =
       type === "Expense"
         ? ` max(Expenseid) AS Expenseid , projectID,InvoiceNo,Amount, Date,Data,Taxable,CreatedDate FROM Expense`
         : type === "Returns"
         ? ` max(ReturnsId) AS ReturnsId , projectID,Amount,Date,Data,Image FROM Returns`
-        : type === "Revenue"
-        ? ` max(RevenueId) AS RevenueId, projectID,Amount,Date,Data,Bank,Image FROM Revenue`
-        : `max(RequestsID) AS RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
+        : ` max(RevenueId) AS RevenueId, projectID,Amount,Date,Data,Bank,Image FROM Revenue`;
     db.serialize(function () {
       db.get(
         `SELECT PR.Nameproject,${SqlString} ex 
-          LEFT JOIN companySubprojects PR ON PR.id = ${projecttype} 
+          LEFT JOIN companySubprojects PR ON PR.id = ex.projectID 
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
-          WHERE  ${project}=?`,
+          WHERE  projectID=?`,
         [projectID],
         function (err, result) {
           if (err) {
@@ -710,26 +703,22 @@ const SELECTTablecompanySubProjectfornotification = (
     });
   });
 };
-
 const SELECTTablecompanySubProjectfornotificationEdit = (
   id,
   type = "Expense",
-  kind = "Expenseid"
+  kind = 'Expenseid'
 ) => {
   return new Promise((resolve, reject) => {
-    let project = type === "Requests" ? " ex.projectID" : " ex.ProjectID";
     let SqlString =
       type === "Expense"
         ? `  Expenseid ,projectID,InvoiceNo,Amount, Date,Data,Taxable,CreatedDate FROM Expense`
         : type === "Returns"
         ? ` ReturnsId , projectID,Amount,Date,Data,Image FROM Returns`
-        : type === "Revenue"
-        ? ` RevenueId, projectID,Amount,Date,Data,Bank,Image FROM Revenue`
-        : `RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
+        : ` RevenueId, projectID,Amount,Date,Data,Bank,Image FROM Revenue`;
     db.serialize(function () {
       db.get(
         `SELECT PR.Nameproject,${SqlString} ex 
-          LEFT JOIN companySubprojects PR ON PR.id = ${project}
+          LEFT JOIN companySubprojects PR ON PR.id = ex.projectID 
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
           WHERE ${kind}=?`,
         [id],
@@ -953,19 +942,20 @@ const SELECTDataAndTaketDonefromTableRequests = async (
   RequestsID,
   type = "all"
 ) => {
-  console.log(type, "hhhhhhhhhhh");
   return new Promise((resolve, reject) => {
     let sqlString =
       type === "all"
         ? `SELECT Done,Image FROM Requests WHERE  RequestsID=?`
-        : type === "allCount"
-        ? `SELECT COUNT(Done) FROM Requests WHERE ProjectID=?`
-        : `SELECT COUNT(Done) FROM Requests WHERE Done=? AND  ProjectID=?`;
+        : (type = "allCount"
+            ? `SELECT COUNT(Done) FROM Requests WHERE ProjectID=?`
+            : `SELECT COUNT(Done) FROM Requests WHERE Done=? AND  ProjectID=?`);
     let data =
-      type === "all" || type === "allCount" ? [RequestsID] : [type, RequestsID];
+      type === "all"
+        ? [RequestsID]
+        : (type = "allCount" ? [RequestsID] : [type, RequestsID]);
     db.serialize(async () => {
       db.get(sqlString, data, function (err, rows) {
-        console.log(RequestsID);
+        console.log(rows);
 
         if (err) {
           reject(err);
@@ -1119,66 +1109,6 @@ const SELECTCOUNTCOMMENTANDLIKPOST = (PostID, type = "Comment") => {
     });
   });
 };
-
-const SELECTDataPrivatPost = (PostID, type = "Comment", idEdit = null) => {
-  return new Promise((resolve, reject) => {
-    let idString =
-      idEdit === null
-        ? type === "Likes"
-          ? "max(fl.LikesID) AS LikesID"
-          : "max(fl.CommentID) AS CommentID"
-        : type === "Likes"
-        ? "fl.LikesID"
-        : "fl.CommentID";
-
-    let Id = idEdit === null ? PostID : idEdit;
-    let WhereID = idEdit === null ? "fl.PostId" : "fl.CommentID";
-    console.log(idEdit);
-
-    let SqlString =
-      type === "Likes"
-        ? `${idString},fl.PostId,fl.Date,fl.userName`
-        : `${idString},fl.PostId,fl.CommentText,fl.Date,fl.userName`;
-    db.serialize(function () {
-      db.get(
-        `SELECT po.ProjectID ,po.postBy, ${SqlString} FROM ${type} fl  LEFT JOIN Post po ON po.PostID = fl.PostId  WHERE ${WhereID} =?`,
-        [Id],
-        function (err, result) {
-          if (err) {
-            reject(err);
-            console.log(err);
-            resolve({});
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
-  });
-};
-const SELECTDataPrivatPostonObject = (
-  PostID,
-) => {
-  return new Promise((resolve, reject) => {
-    db.serialize(function () {
-      db.get(
-        // `SELECT po.ProjectID ,po.postBy,COUNT(${WhereID}) FROM ${type} fl  LEFT JOIN Post po ON po.PostID = fl.PostId  WHERE po.PostID =?`,
-        `SELECT po.ProjectID ,po.postBy FROM Post po  WHERE po.PostID =?`,
-        [PostID],
-        function (err, result) {
-          if (err) {
-            reject(err);
-            console.log(err);
-            resolve({});
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
-  });
-};
-
 //  جلب تعليقات المنشورات للصفحة العامة
 const SELECTTableCommentPostPublic = (PostId, count) => {
   return new Promise((resolve, reject) => {
@@ -1217,7 +1147,6 @@ const SELECTTableCommentID = (PostId) => {
     });
   });
 };
-
 //  جلب الاعجابات المنشورات للصفحة العامة
 const SELECTTableLikesPostPublic = (PostId) => {
   return new Promise((resolve, reject) => {
@@ -1629,7 +1558,5 @@ module.exports = {
   SELECTTablePostPublicSearch,
   SELECTTablecompanySubProjectStageNotesOneObject,
   SELECTTablecompanySubProjectfornotification,
-  SELECTTablecompanySubProjectfornotificationEdit,
-  SELECTDataPrivatPost,
-  SELECTDataPrivatPostonObject
+  SELECTTablecompanySubProjectfornotificationEdit
 };

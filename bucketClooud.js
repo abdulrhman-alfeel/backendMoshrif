@@ -8,8 +8,7 @@ const bucketName = "demo_backendmoshrif_bucket-2";
 
 const bucket = storage.bucket(bucketName);
 async function uploaddata(file) {
-  const blob = bucket.file(file.originalname);
-
+  // const blob = bucket.file(file.filename);
   await bucket.upload(file.path);
   // const blobStream = blob.createWriteStream({
   //   metadata:{
@@ -27,4 +26,26 @@ async function uploaddata(file) {
   // blobStream.end(file.path)
 }
 
-module.exports = { uploaddata, bucket };
+
+async function checkIfFileExists(fileName) {
+  return new Promise(async(resolve,reject)=>{
+    const file = bucket.file(fileName);
+  
+    try {
+      // Check if the file exists
+      const [exists] = await file.exists();
+      if (exists) {
+        resolve(exists)
+        console.log(`The file ${exists} exists in the bucket ${fileName}.`);
+      } else {
+        resolve(exists)
+        // console.log(`The file ${fileName} does not exist in the bucket ${bucketName}.`);
+      }
+    } catch (error) {
+      console.log('Error checking file existence:', error);
+    }
+  })
+}
+
+
+module.exports = { uploaddata, bucket,checkIfFileExists };
