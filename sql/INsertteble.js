@@ -13,7 +13,7 @@ const insertTablecompany = async (data) => {
         } else {
           V = true;
         }
-        console.log(`Row with the ID  has been inserted.`);
+        // console.log(`Row with the ID  has been inserted.`);
       }
     );
     // db.close();
@@ -52,7 +52,7 @@ const insertTableuserComppany = (data) => {
           if (err) {
             console.error(err.message);
           }
-          console.log(`Row with the ID  has been inserted.`);
+          // console.log(`Row with the ID  has been inserted.`);
         }
       );
     });
@@ -71,7 +71,7 @@ const insertTableLoginActivaty = (data) => {
         if (err) {
           console.error(err.message);
         } else {
-          console.log(`Row with the ID  has been inserted.`);
+          // console.log(`Row with the ID  has been inserted.`);
           return true;
         }
       }
@@ -88,7 +88,7 @@ const insertTableuserComppanySub = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID has been inserted.`);
+        // console.log(`Row with the ID has been inserted.`);
       }
     );
   });
@@ -103,7 +103,7 @@ const insertTablecompanySubProject = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -120,7 +120,7 @@ const insertTablecompanySubProjectStagetemplet = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -134,7 +134,7 @@ const insertTablecompanySubProjectStageSubtemplet = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -166,7 +166,7 @@ const insertTablecompanySubProjectStageNotes = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -180,7 +180,7 @@ const insertTablecompanySubProjectStagesSub = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -194,7 +194,7 @@ const insertTablecompanySubProjectStageSubNotes = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -212,7 +212,7 @@ const insertTablecompanySubProjectexpense = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -228,7 +228,7 @@ const insertTablecompanySubProjectREVENUE = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -244,7 +244,7 @@ const insertTablecompanySubProjectReturned = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -258,7 +258,7 @@ const insertTableSabepdf = (data, typename = "namefileall") => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -274,7 +274,7 @@ const insertTablecompanySubProjectarchivesFolder = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -288,7 +288,7 @@ const insertTablecompanySubProjectarchivesFolderforcreatproject = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -306,7 +306,7 @@ const insertTablecompanySubProjectRequestsForcreatOrder = async (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -357,7 +357,7 @@ const insertTableCommentPostPublic = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -371,7 +371,7 @@ const insertTableLikesPostPublic = (data) => {
         if (err) {
           console.log(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -387,7 +387,7 @@ const insertTableChateStage = (data) => {
         if (err) {
           console.error(err);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -417,7 +417,7 @@ const insertTableChate = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -431,7 +431,7 @@ const insertTableViewsChate = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });

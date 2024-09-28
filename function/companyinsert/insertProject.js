@@ -71,20 +71,28 @@ const projectBrinsh = async (req, res) => {
       LocationProject,
     ]);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-    const dataStages = await SELECTFROMTablecompanysubprojectStageTemplet(
+    let dataStages = await StageTempletXsl(
       TypeOFContract
     );
+    const visity = await StageTempletXsl(
+      'NULL'
+      ); 
+      // console.log(visity);
     let table = [];
     let tablesub = [];
+    dataStages = [visity[0],...dataStages]
     for (let index = 0; index < dataStages.length; index++) {
       const element = dataStages[index];
       table.push({
         ...element,
         ProjectID: idProject["last_id"],
+        StartDate: null,
+        EndDate: null,
+        CloseDate: null
       });
 
       const resultSubTablet =
-        await SELECTFROMTablecompanysubprojectStagesubTeplet(element.StageID);
+        await StageSubTempletXlsx(element.StageID);
       resultSubTablet.forEach((pic) => {
         tablesub.push({
           StageID: pic.StageID,
@@ -112,6 +120,7 @@ const projectBrinsh = async (req, res) => {
       .status(401);
   }
 };
+
 
 // وظيفة انشاء ملفات ثابته للمشروع في قسم الارشيف
 const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
@@ -160,6 +169,50 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
     console.log(error);
   }
 };
+
+const xlsx = require("xlsx");
+
+const StageTempletXsl = async (type) => {
+  try {
+    try {
+      // Read the Excel file
+      const workbook = xlsx.readFile("StagesTempletEXcel.xlsx");
+
+      // Get the first sheet
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+
+ 
+      const datad = xlsx.utils.sheet_to_json(worksheet);
+
+      return datad.filter(item => String(item.Type).includes(type));
+    } catch (error) {
+      console.error(error);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const StageSubTempletXlsx = async (StageID) => {
+  try {
+    // Read the Excel file
+    const workbook = xlsx.readFile("StagesSubTempletEXcel.xlsx");
+
+    // Get the first sheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Get the data from the sheet
+    const data = xlsx.utils.sheet_to_json(worksheet);
+    return data.filter(item => item.StageID === StageID);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 // وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
 const StageTemplet = async (req, res) => {
   try {

@@ -154,16 +154,18 @@ const SELECTTablecompanySubAnotherway = (id) => {
 };
 
 // مشاريع الفرع
-const SELECTTablecompanySubProject = (id, kind = "all") => {
+const SELECTTablecompanySubProject = (id,IDfinlty, kind = "all") => {
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
-        ? `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE IDcompanySub=?`
+        ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE IDcompanySub=? AND (ca.id) > ? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
         : kind === "difference"
         ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=?`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=?`;
+
+        let data = kind === 'all' ?  [id,IDfinlty] :  [id]
     db.serialize(function () {
-      db.all(stringSql, [id], function (err, result) {
+      db.all(stringSql,data, function (err, result) {
         if (err) {
           reject(err);
           console.error(err.message);

@@ -44,6 +44,7 @@ const BringProject = async (req, res) => {
   try {
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = req.query.PhoneNumber;
+    const IDfinlty = req.query.IDfinlty;
     // console.log(PhoneNumber);
     let arrayBrinsh = [];
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
@@ -58,7 +59,7 @@ const BringProject = async (req, res) => {
             element.job === "مدير الفرع" &&
             parseInt(element.idBrinsh) === parseInt(IDcompanySub)
           ) {
-            const result = await SELECTTablecompanySubProject(IDcompanySub);
+            const result = await SELECTTablecompanySubProject(IDcompanySub,IDfinlty);
             arrayBrinsh = await BringTotalbalance(result);
           } else {
             for (let index = 0; index < element.project.length; index++) {
@@ -77,7 +78,7 @@ const BringProject = async (req, res) => {
         }
       }
     } else {
-      const result = await SELECTTablecompanySubProject(IDcompanySub);
+      const result = await SELECTTablecompanySubProject(IDcompanySub,IDfinlty);
       arrayBrinsh = await BringTotalbalance(result);
     }
     // console.log(arrayBrinsh);
@@ -116,7 +117,7 @@ const AccountCostProject = async (id, ConstCompany) => {
   //   "CountDate"
   // );
   
-  const DataProject = await SELECTTablecompanySubProject(id,"difference");
+  const DataProject = await SELECTTablecompanySubProject(id,0,"difference");
   let StartDate = new Date(DataProject[0].Contractsigningdate);
   const date2 = new Date();
   const daysDifference = await differenceInDays(StartDate, date2);

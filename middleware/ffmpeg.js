@@ -24,7 +24,6 @@ const fFmpegFunction = (filename, tempFilePath, timePosition) => {
     }
   };
 
-  const ffmpeg = require('fluent-ffmpeg');
 
 
 // console.log(ffmpegInstaller.path, ffmpegInstaller.version);

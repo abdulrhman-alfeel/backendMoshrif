@@ -45,7 +45,7 @@ const biringDatabrinshCompany = async (req, res) => {
     for (let index = 0; index < arrayBrinsh.length; index++) {
       const element = arrayBrinsh[index];
       // console.log(element, "mkk");
-      const Count = await SELECTTablecompanySubProject(element?.id, "Count");
+      const Count = await SELECTTablecompanySubProject(element?.id,0, "Count");
       // console.log(Count[0]["COUNT(*)"], element);
       if (element !== undefined) {
         ObjectBrinsh = {
