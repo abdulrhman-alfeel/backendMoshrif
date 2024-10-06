@@ -1,17 +1,11 @@
+
+const { DeletTableuserComppanyCorssUpdateActivationtoFalse } = require("../../sql/delete");
 const {
-  insertTableuserComppany,
-  insertTableuserComppanySub,
-} = require("../../sql/INsertteble");
-const {
-  SELECTTableusersCompanyVerification,
-  SELECTTableusersCompany,
   SELECTTableusersCompanyVerificationID,
   SELECTTableLoginActivatActivaty,
 } = require("../../sql/selected/selectuser");
 const {
   UpdateTableuserComppany,
-  DeletTableuserComppanyCorssUpdateActivationtoFalse,
-  UpdateTableLoginActivaty,
   UpdateTableLoginActivatytoken,
 } = require("../../sql/update");
 const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
@@ -58,7 +52,7 @@ const UpdatUserCompanyinBrinsh = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const idBrinsh = req.body.idBrinsh;
     const type = req.body.type;
     const checkGloblenew = req.body.checkGloblenew;
@@ -74,7 +68,6 @@ const UpdatUserCompanyinBrinsh = async (req, res) => {
         checkGloblenew,
         checkGlobleold,
         userSession.userName
-
       );
     } else {
       await UpdatchackAdmininbrinsh(
@@ -101,7 +94,6 @@ const UpdatchackAdmininbrinsh = async (
   checkGlobleold,
   userName
 ) => {
-
   //  المضاف الجديد
   //  عملية الغاء صلاحية مدير فرع من الفرع الذي كان مسؤل عليه حيث
   //  تقوم العملية بالاستعلام عن بيانات المدير السابق وفلترة مصفوفة صلاحيات
@@ -126,10 +118,13 @@ const UpdatchackAdmininbrinsh = async (
         // console.log(chackfromJob,'chakfromjob')
         if (!chackfromJob) {
           job = pic.jobHOM;
-          await AddOrUpdatuser(pic.PhoneNumber,deletevalidity,' الغاء وظيفتك كمدير للفرع',userName)
-
+          await AddOrUpdatuser(
+            pic.PhoneNumber,
+            deletevalidity,
+            " الغاء وظيفتك كمدير للفرع",
+            userName
+          );
         }
-
 
         const operation = await UpdateTableuserComppany([
           pic.IDCompany,
@@ -140,7 +135,6 @@ const UpdatchackAdmininbrinsh = async (
           JSON.stringify(deletevalidity),
           pic.id,
         ]);
-
       }
     });
   }
@@ -173,7 +167,12 @@ const UpdatchackAdmininbrinsh = async (
           JSON.stringify(deletevalidity),
           pic.id,
         ]);
-        await AddOrUpdatuser(pic.PhoneNumber,deletevalidity,'توكيل لك مهمة مدير فرع',userName)
+        await AddOrUpdatuser(
+          pic.PhoneNumber,
+          deletevalidity,
+          "توكيل لك مهمة مدير فرع",
+          userName
+        );
 
         // console.log(deletevalidity, "deletevalidity");
       }
@@ -235,7 +234,12 @@ const Updatchackglobluserinbrinsh = async (
               (item) => item.idBrinsh !== idBrinsh
             );
           }
-          await AddOrUpdatuser(pic.PhoneNumber,deletevalidity,'ازالة احدى صلاحياتك',userName)
+          await AddOrUpdatuser(
+            pic.PhoneNumber,
+            deletevalidity,
+            "ازالة احدى صلاحياتك",
+            userName
+          );
 
           const operation = await UpdateTableuserComppany([
             pic.IDCompany,
@@ -281,8 +285,12 @@ const Updatchackglobluserinbrinsh = async (
         // console.log(arrayBrinsh[0].project, element.Validity,"hhhhhhhhhhhhhhhhhhows");
         validity = arrayBrinsh;
         Booleans = Boolen;
-        await AddOrUpdatuser(pic.PhoneNumber,validity,'اضاف لك صلاحيات جديدة',userName)
-
+        await AddOrUpdatuser(
+          pic.PhoneNumber,
+          validity,
+          "اضاف لك صلاحيات جديدة",
+          userName
+        );
       } else {
         const { arrayBrinsh, Boolen } = await AddUserInBrinsh(
           validity,
@@ -292,7 +300,12 @@ const Updatchackglobluserinbrinsh = async (
 
         validity?.push(arrayBrinsh);
         Booleans = Boolen;
-        await AddOrUpdatuser(pic.PhoneNumber,validity,'اضافتك إلى فرع جديد',userName)
+        await AddOrUpdatuser(
+          pic.PhoneNumber,
+          validity,
+          "اضافتك إلى فرع جديد",
+          userName
+        );
       }
 
       if (Booleans) {
@@ -387,9 +400,13 @@ const DeletUser = async (req, res) => {
   const PhoneNumber = req.body.PhoneNumber;
   try {
     const deletuser = await DeletTableuserComppanyCorssUpdateActivationtoFalse([
-      id,
+      PhoneNumber,
     ]);
-    const deletloginuser = await UpdateTableLoginActivaty([PhoneNumber]);
+    const deletloginuser =
+      await DeletTableuserComppanyCorssUpdateActivationtoFalse(
+        [PhoneNumber],
+        "LoginActivaty"
+      );
     if (deletuser) {
       res
         .send({
@@ -413,10 +430,8 @@ const DeletUser = async (req, res) => {
   }
 };
 
-
-
-const UpdateToken = async (req,res) => {
-  try{
+const UpdateToken = async (req, res) => {
+  try {
     const tokenNew = req.body.tokenNew;
     const tokenOld = req.body.tokenOld;
 
@@ -425,19 +440,26 @@ const UpdateToken = async (req,res) => {
     if (!PhoneNumber) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
-  // console.log(PhoneNumber) ;
-  await UpdateTableLoginActivatytoken(PhoneNumber,tokenNew,tokenOld);
+    }
+    // console.log(PhoneNumber) ;
+    await UpdateTableLoginActivatytoken(PhoneNumber, tokenNew, tokenOld);
 
-  const result = await SELECTTableLoginActivatActivaty(PhoneNumber,'Validity');
-  res.send({success:'تمت العملية بنجاح',data: result.Validity}).status(200)
-
-
-  }catch(error){
+    const result = await SELECTTableLoginActivatActivaty(
+      PhoneNumber,
+      "Validity"
+    );
+    res
+      .send({ success: "تمت العملية بنجاح", data: result.Validity })
+      .status(200);
+  } catch (error) {
     console.log(error);
-  res.send({success:"فشل تنفيذ العملية"}).status(401)
+    res.send({ success: "فشل تنفيذ العملية" }).status(401);
   }
+};
 
-}
-
-module.exports = { userCompanyUpdat, UpdatUserCompanyinBrinsh, DeletUser ,UpdateToken};
+module.exports = {
+  userCompanyUpdat,
+  UpdatUserCompanyinBrinsh,
+  DeletUser,
+  UpdateToken,
+};

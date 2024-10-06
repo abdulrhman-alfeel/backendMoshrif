@@ -11,6 +11,7 @@ const {
   BringPost,
   BringCommentinsert,
   SearchPosts,
+  BringObjectOnefromPost,
 } = require("../function/postpublic/post");
 const { verifyJWT } = require("../middleware/jwt");
 const router = express.Router();
@@ -21,6 +22,7 @@ router.route("/CommentDelete").delete(CommentDelete);
 
 router.route("/Likesinsert").get(Likesinsert);
 router.route("/BringPost").get(BringPost);
+router.route("/BringObjectOnefromPost").get(BringObjectOnefromPost);
 router.route("/BringCommentinsert").get(BringCommentinsert);
 router.route("/SearchPosts").get(SearchPosts);
 

@@ -1,12 +1,4 @@
-const {
-  insertTableChate,
-  insertTableChateStage,
-  insertTableViewsChateStage,
-} = require("../../sql/INsertteble");
-const {
-  SELECTTableChateStageOtherroad,
-  SELECTTableViewChateStage,
-} = require("../../sql/selected/selected");
+
 const { ClassChatOpration, ClassChatOprationView } = require("./ChatJobsClass");
 const time = require("./TIME.JS");
 

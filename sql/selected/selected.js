@@ -1,4 +1,3 @@
-const client = require("../../middleware/redis");
 const db = require("../sqlite");
 // الشركة
 const SELECTTablecompany = (id) => {
@@ -154,7 +153,7 @@ const SELECTTablecompanySubAnotherway = (id) => {
 };
 
 // مشاريع الفرع
-const SELECTTablecompanySubProject = (id,IDfinlty, kind = "all") => {
+const SELECTTablecompanySubProject = (id, IDfinlty, kind = "all") => {
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
@@ -163,9 +162,9 @@ const SELECTTablecompanySubProject = (id,IDfinlty, kind = "all") => {
         ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=?`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=?`;
 
-        let data = kind === 'all' ?  [id,IDfinlty] :  [id]
+    let data = kind === "all" ? [id, IDfinlty] : [id];
     db.serialize(function () {
-      db.all(stringSql,data, function (err, result) {
+      db.all(stringSql, data, function (err, result) {
         if (err) {
           reject(err);
           console.error(err.message);
@@ -1007,6 +1006,32 @@ const SELECTTablePostPublic = (id, Date, PostID) => {
     });
   });
 };
+
+// جلب كائن واحد من المنشورات
+const SELECTTablePostPublicOneObject = (PostID) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+          FROM Post ca
+          LEFT JOIN company EX ON EX.id = ca.CommpanyID
+          LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+          LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+          WHERE (ca.PostID) = ?`,
+        [PostID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            // console.log(result);
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTTablePostPublicSearch = (
   id,
   DateStart,
@@ -1083,11 +1108,15 @@ const SELECTTablePostPublicSearch = (
 //   5
 // );
 //  جلب معرف الفرع ومعرف الشركة
-const SELECTTableIDcompanytoPost = (projectID) => {
+const SELECTTableIDcompanytoPost = (
+  projectID,
+  type = "pr.id",
+  select = "pr.id"
+) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        "SELECT NumberCompany,IDcompanySub FROM companySubprojects INNER JOIN  companySub ON companySub.id = companySubprojects.IDcompanySub WHERE companySubprojects.id =? ",
+        `SELECT su.NumberCompany,pr.IDcompanySub,${select} FROM companySubprojects pr INNER JOIN  companySub su ON su.id = pr.IDcompanySub WHERE ${type} =? `,
         [projectID],
         function (err, result) {
           if (err) {
@@ -1158,9 +1187,7 @@ const SELECTDataPrivatPost = (PostID, type = "Comment", idEdit = null) => {
     });
   });
 };
-const SELECTDataPrivatPostonObject = (
-  PostID,
-) => {
+const SELECTDataPrivatPostonObject = (PostID) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
@@ -1305,13 +1332,15 @@ const SELECTLastTableChateStage = (
   ProjectID,
   StageID,
   count = 1,
-  kind = "all"
+  kind = "all",
+  type = "ChatSTAGE"
 ) => {
+  let Type = type === "ChatSTAGE" ? "StageID" : "Type";
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
         ? `SELECT * FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? ORDER BY rowid DESC, datetime(timeminet) ASC LIMIT ${count} `
-        : `SELECT File FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? `;
+        : `SELECT File FROM ${type}  WHERE ProjectID=? AND  ${Type}=? `;
 
     db.serialize(function () {
       db.all(stringSql, [ProjectID, StageID], function (err, result) {
@@ -1539,6 +1568,42 @@ const SELECTTableViewChate = (chatID) => {
     });
   });
 };
+const SELECTTableNavigation = (id, LastID = 0) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM Navigation WHERE IDCompanySub=? AND id > ? AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
+        [id, LastID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableNavigationObjectOne = (id, type = "max(id) AS id") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT ${type} FROM Navigation WHERE IDCompanySub=? AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
+        [id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 // `SELECT
 //   ca.CustName AS 'اسم العميل',
@@ -1633,5 +1698,8 @@ module.exports = {
   SELECTTablecompanySubProjectfornotification,
   SELECTTablecompanySubProjectfornotificationEdit,
   SELECTDataPrivatPost,
-  SELECTDataPrivatPostonObject
+  SELECTDataPrivatPostonObject,
+  SELECTTableNavigation,
+  SELECTTableNavigationObjectOne,
+  SELECTTablePostPublicOneObject,
 };

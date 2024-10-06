@@ -8,6 +8,7 @@ const {
   SELECTTablecompanySubProjectfornotification,
   SELECTTablecompanySubProjectfornotificationEdit,
   SELECTDataPrivatPost,
+  SELECTDataPrivatPostCansel,
   SELECTCOUNTCOMMENTANDLIKPOST,
   SELECTDataPrivatPostonObject,
 } = require("../../sql/selected/selected");
@@ -16,7 +17,6 @@ const {
   SELECTTableLoginActivatActivaty,
 } = require("../../sql/selected/selectuser");
 const { UpdateTableLoginActivatyValidityORtoken } = require("../../sql/update");
-const { InsertNotifcation } = require("./InsertNotifcation");
 
 const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
   try {
@@ -26,7 +26,7 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
       type === "إنشاء" ? "RE.id" : "ca.id"
     );
 
-    const { token, users, arraynameuser } = await BringtokenuserCustom(
+    const { token, users } = await BringtokenuserCustom(
       IDcompanySub,
       userName,
       "all",
@@ -42,25 +42,11 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
     };
     const notification_type = "Public";
     const navigationId = `${users[0].IDcompany}:${IDcompanySub}:${users[0].NameSub}:${users[0].PhoneNumber}:${users[0].Email}`;
-    let data = {
+    const data = {
       userName: userName,
       type: `companySubprojects ${type}`,
       data: result,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      IDcompanySub,
-      "su.id",
-      "max(pr.id) AS id"
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -91,11 +77,7 @@ const Stageinsert = async (
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      ProjectID,
-      userName,
-      "Stage"
-    );
+    const { token } = await BringtokenuserCustom(ProjectID, userName, "Stage");
 
     const notification = {
       title: `${type} مرحلة ${
@@ -108,25 +90,12 @@ const Stageinsert = async (
     };
     const notification_type = "PageHomeProject";
     const navigationId = `${result.IDcompanySub}:${JSON.stringify(Project)}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: ProjectID,
       type: `StagesCUST ${type}`,
       data: resultObject,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      ProjectID,
-      "pr.id"
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -165,11 +134,7 @@ const StageSubinsert = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      ProjectID,
-      userName,
-      "Stage"
-    );
+    const { token } = await BringtokenuserCustom(ProjectID, userName, "Stage");
     const notification = {
       title: `${type} مرحلة فرعية ${
         type === "إنشاء" ? "جديد" : "في " + result[0].StageName
@@ -183,25 +148,12 @@ const StageSubinsert = async (
     };
     const notification_type = "PageHomeProject";
     const navigationId = `${result.IDcompanySub}:${JSON.stringify(ProjecHome)}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: ProjectID,
       type: `StagesSub ${type}`,
       data: resultObject,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      ProjectID,
-      "pr.id"
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -241,11 +193,7 @@ const StageSubNote = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      ProjectID,
-      userName,
-      "Stage"
-    );
+    const { token } = await BringtokenuserCustom(ProjectID, userName, "Stage");
     const notification = {
       title: `قام  ${userName} ب${type}  ملاحظة `,
       body: note,
@@ -253,24 +201,12 @@ const StageSubNote = async (
     };
     const notification_type = "Phase";
     const navigationId = `${JSON.stringify(ProjecHome)}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: ProjectID,
       type: `StagesSub ${type}`,
       data: resultObject,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -288,11 +224,7 @@ const CloseOROpenStagenotifcation = async (
       StageID
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      ProjectID,
-      userName,
-      "Stage"
-    );
+    const { token } = await BringtokenuserCustom(ProjectID, userName, "Stage");
     const notification = {
       title: `قام  ${userName} ب${type}  المرحلة `,
       body: `قام  ${userName} ب${type}  مرحلة  ${ProjecHome.StageName}`,
@@ -302,23 +234,11 @@ const CloseOROpenStagenotifcation = async (
     const navigationId = `${ProjecHome.IDcompanySub}:${JSON.stringify(
       ProjecHome
     )}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: ProjectID,
       type: `StagesCUST ${type}`,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -349,7 +269,7 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token } = await BringtokenuserCustom(
       result[0].ProjectID,
       userName,
       "Stage"
@@ -361,24 +281,12 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
     };
     const notification_type = "Phase";
     const navigationId = `${JSON.stringify(ProjecHome)}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: result[0].ProjectID,
       type: `StagesSub ${type}`,
       data: resultObject,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      result[0].ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -404,11 +312,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      idProject,
-      userName,
-      "Delay"
-    );
+    const { token } = await BringtokenuserCustom(idProject, userName, "Delay");
     // console.log(result, "kkkkkkkkkkkkk", idProject, StageID);
     const notification = {
       title: `${type} تأخيرات ${type === "إضافة" ? "جديد" : ""}`,
@@ -422,24 +326,12 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     };
     const notification_type = "Delays";
     const navigationId = `${result.ProjectID}:${resultObject.StagHOMID}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: result.ProjectID,
       type: `Delays ${type}`,
       data: resultObject,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      result.ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -463,34 +355,18 @@ const RearrangeStageProject = async (idProject, userName) => {
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      idProject,
-      userName,
-      "Delay"
-    );
+    const { token } = await BringtokenuserCustom(idProject, userName, "Delay");
     const notification = {
       title: `إعادة ترتيب المراحل `,
       body: `  لقد قام  ${userName} بإعادة ترتيب مراحل مشروع "${result.Nameproject}"`,
     };
     const notification_type = "PageHomeProject";
     const navigationId = `${result.IDcompanySub}:${JSON.stringify(resultnew)}`;
-    let data = {
+    const data = {
       userName: userName,
       ProjectID: idProject,
       type: `RearrangeStageProject`,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      idProject
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -541,7 +417,7 @@ const Financeinsertnotification = async (
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token } = await BringtokenuserCustom(
       result.projectID,
       userName,
       "Finance"
@@ -555,7 +431,7 @@ const Financeinsertnotification = async (
     };
     let notification_type = stringSql === "Requests" ? "Requests" : "Finance";
     const navigationId = String(result.projectID);
-    let data = {
+    const data = {
       ProjectID: result.projectID,
       userName: userName,
       kind: kind,
@@ -563,18 +439,6 @@ const Financeinsertnotification = async (
       data: resultObject,
     };
     // console.log(token, notification, notification_type, navigationId, data);
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      result.projectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -601,7 +465,7 @@ const Postsnotification = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await Bringtokenuser(
+    const { token } = await Bringtokenuser(
       result.ProjectID,
       result.userName,
       "PublicationsBransh"
@@ -625,7 +489,7 @@ const Postsnotification = async (
 
     const notification_type = "PublicationsBransh";
     const navigationId = `${result.ProjectID}`;
-    let data = {
+    const data = {
       ProjectID: result.ProjectID,
       userName: userName,
       kind: kind,
@@ -634,18 +498,6 @@ const Postsnotification = async (
       PostID: PostID,
       count: Count["COUNT(userName)"],
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      result.ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -661,7 +513,7 @@ const PostsnotificationCansle = async (
     const result = await SELECTDataPrivatPostonObject(PostID);
     const Count = await SELECTCOUNTCOMMENTANDLIKPOST(PostID, "Likes");
 
-    const { token, arraynameuser } = await Bringtokenuser(
+    const { token } = await Bringtokenuser(
       result.ProjectID,
       userName,
       "PublicationsBransh"
@@ -674,7 +526,7 @@ const PostsnotificationCansle = async (
     };
     const notification_type = "PublicationsBransh";
     const navigationId = `${result.ProjectID}`;
-    let data = {
+    const data = {
       ProjectID: result.ProjectID,
       userName: userName,
       kind: kind,
@@ -683,18 +535,6 @@ const PostsnotificationCansle = async (
       PostID: PostID,
       count: Count["COUNT(userName)"],
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      result.ProjectID
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -713,11 +553,7 @@ const ChateNotfication = async (
 ) => {
   try {
     let nameChate;
-    const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
-      idProject,
-      StageID
-    );
-    if (Number(StageID) || StageID === "A1") {
+    if (Number(StageID)) {
       const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
         idProject,
         StageID
@@ -727,11 +563,7 @@ const ChateNotfication = async (
       nameChate = StageID;
     }
     const Project = await SELECTProjectStartdate(idProject);
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      idProject,
-      userName,
-      "chate"
-    );
+    const { token } = await BringtokenuserCustom(idProject, userName, "chate");
     let title =
       Object.entries(Reply).length <= 0
         ? userName
@@ -739,26 +571,18 @@ const ChateNotfication = async (
     const notification_type = "Chate";
     const navigationId = `${idProject}:${StageID}`;
     let image = null;
-    let typfile = null;
+
     // استخراج الصورة الذي ارسلت إذا وجدت
     if (Object.entries(File).length > 0) {
       if (File.type === "video/mp4") {
         image = String(File.name).replace("mp4", "png");
-        // image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
-        image = `http://192.168.8.220:8080/upload/${image}`;
       } else {
         image = File.name;
-        if (File.type === "image/jpeg") {
-          image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
-        }
       }
-      if (File.type === "video/mp4") {
-        typfile = "ارفق فديو";
-      } else if (File.type === "image/jpeg") {
-        typfile = "ارفق صورة";
-      } else {
-        typfile = "ارفق ملف";
-      }
+    }
+
+    if (image !== null) {
+      image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
     }
 
     //   image: 'https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png',
@@ -768,27 +592,15 @@ const ChateNotfication = async (
       // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
       body:
         ` دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  ` +
-        `< ${String(massgs).length > 0 ? massgs : typfile} >`,
+        `< ${massgs} >`,
       image: image,
     };
-    let data = {
+    const data = {
       ProjectID: idProject,
       userName: userName,
       type: `chate`,
       nameRoom: nameChate,
     };
-    const idmax = await InsertNotifcation(
-      arraynameuser,
-      notification,
-      notification_type,
-      navigationId,
-      data,
-      idProject
-    );
-    data = {
-      ...data,
-      id: idmax
-    }
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -829,18 +641,15 @@ const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
 // bring token all users
 const Bringtokenuser = async (ProjectID, userName, type = "all") => {
   let token = [];
-  let arraynameuser = [];
-
   const users = await SELECTTableusersCompanySub(ProjectID, type);
   await Promise.all(
     users
       .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
         token.push(item.token);
-        arraynameuser.push(item.userName);
       })
   );
-  return { token, users, arraynameuser };
+  return { token, users };
 };
 
 // bring token custom users
@@ -851,7 +660,6 @@ const BringtokenuserCustom = async (
   kind = "sub"
 ) => {
   let token = [];
-  let arraynameuser = [];
   const users = await SELECTTableusersCompanySub(ProjectID, type);
   // console.log(users);
   await Promise.all(
@@ -860,7 +668,6 @@ const BringtokenuserCustom = async (
       .map((item, index) => {
         if (item.job === "Admin") {
           token.push(item.token);
-          arraynameuser.push(item.userName);
         } else {
           const Validity =
             item.Validity !== null ? JSON.parse(item.Validity) : [];
@@ -869,13 +676,11 @@ const BringtokenuserCustom = async (
             if (element.idBrinsh === item.IDcompanySub) {
               if (element.job === "مدير الفرع" || kind !== "sub") {
                 token.push(item.token);
-                arraynameuser.push(item.userName);
               } else {
                 for (let P = 0; P < element.project.length; P++) {
                   const elementProject = element.project[P];
                   if (elementProject.idProject === ProjectID) {
                     token.push(item.token);
-                    arraynameuser.push(item.userName);
                   }
                 }
               }
@@ -885,7 +690,7 @@ const BringtokenuserCustom = async (
       })
   );
   // console.log(token);
-  return { token, users, arraynameuser };
+  return { token, users };
 };
 
 // Projectinsert(1);

@@ -48,8 +48,6 @@ app.use("/api/Chate", require("./routes/chatroute"));
 app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
 
-
-
 // لاستقبال الملفات والصور
 
 // Sample HTML content
@@ -76,11 +74,8 @@ app.post("/api/file", uploads.single("filechate"), async (req, res) => {
       res.end();
     } else {
       // handle the full request
-      try {
-        await uploaddata(req.file);
-      } catch (error) {
-        console.log(error);
-      }
+      await uploaddata(req.file);
+
       const timePosition = "00:00:00.100";
       const filename = String(req.file.filename).replace("mp4", "png");
       const tempFilePathtimp = `upload/${filename}`;
@@ -88,22 +83,22 @@ app.post("/api/file", uploads.single("filechate"), async (req, res) => {
       res
         .send({ success: "Full request", nameFile: req.file.filename })
         .status(200);
-      try {
-        // console.log(filename, req.file);
-        // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
-        if (req.file.mimetype === "video/mp4") {
-          await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
-          setTimeout(async () => {
-            await bucket.upload(tempFilePathtimp);
-          }, 1000);
-          setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
-        }
-      } catch (error) {
-        console.log(error);
+      // console.log(filename, req.file);
+      // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
+      if (req.file.mimetype === "video/mp4") {
+        await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
+        const timeout = setTimeout(async () => {
+          await bucket.upload(tempFilePathtimp);
+        }, 1000);
+
+        // clearTimeout(timeout);
+        setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
       }
-      setTimeout(async () => {
+      
+      const timeoutfile = setTimeout(async () => {
         await fs.unlink(req.file.path, () => {});
       }, 500);
+      clearTimeout(timeoutfile);
     }
   } catch (error) {
     console.log(error);
@@ -116,10 +111,6 @@ CreateTable();
 app.use(limiter);
 
 app.use(errorHandler);
-
-
-
-
 
 app.all("*", (req, res) => {
   if (req.accepts("html")) {
@@ -147,7 +138,6 @@ io.on("connection", (Socket) => {
   //  io.emit("received_message", "data");
   Socket.on("disconnect", (data) => {
     // Socket.disconnect()
-
     // console.log("user disconnected", data.id);
   });
 });

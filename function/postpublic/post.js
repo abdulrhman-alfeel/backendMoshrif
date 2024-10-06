@@ -6,6 +6,7 @@ const {
   SELECTTableLikesPostPublicotherroad,
   SELECTTableCommentPostPublic,
   SELECTTablePostPublicSearch,
+  SELECTTablePostPublicOneObject,
 } = require("../../sql/selected/selected");
 const ffmpeg = require("../../middleware/ffmpeg");
 const fs = require("fs");
@@ -173,7 +174,7 @@ const SearchPosts = async (req, res) => {
         Comment: Comment["COUNT(userName)"],
         Likes: Likes["COUNT(userName)"],
       };
-      arraynew.push(data)
+      arraynew.push(data);
     }
     res.send({ success: "تمت العملية بنجاح", data: arraynew }).status(200);
   } catch (error) {
@@ -182,4 +183,43 @@ const SearchPosts = async (req, res) => {
   }
 };
 
-module.exports = { insertPostURL, BringPost, BringCommentinsert, SearchPosts };
+const BringObjectOnefromPost = async (req, res) => {
+  try {
+    const PostID = req.query.PostID;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const PostOne = await SELECTTablePostPublicOneObject(PostID);
+    const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
+      PostID,
+      "Comment"
+    );
+    const Likeuser = await SELECTTableLikesPostPublicotherroad(
+      PostID,
+      userSession.userName
+    );
+    const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(PostID, "Likes");
+
+    let data = {
+      ...PostOne,
+      Likeuser:
+        Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
+      Comment: Comment["COUNT(userName)"],
+      Likes: Likes["COUNT(userName)"],
+    };
+    res.send({ success: "تمت العملية بنجاح", data: data }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(400);
+  }
+};
+
+module.exports = {
+  insertPostURL,
+  BringPost,
+  BringCommentinsert,
+  SearchPosts,
+  BringObjectOnefromPost,
+};

@@ -52,7 +52,7 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
         function (err, result) {
           if (err) {
             reject(err);
-            console.error(err.message);
+            console.log(err.message);
           } else {
             resolve(result);
           }

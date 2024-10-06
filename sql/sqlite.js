@@ -1,4 +1,6 @@
-const sqlite3 = require('sqlite3').verbose();
+const { bucket } = require("../bucketClooud");
+
+const sqlite3 = require("sqlite3").verbose();
 
 // open the database
 const db = new sqlite3.Database('./mydatabase.db', (err) => {
@@ -8,4 +10,4 @@ const db = new sqlite3.Database('./mydatabase.db', (err) => {
   console.log('Connected to the chinook database.');
 });
 
-module.exports = db
+module.exports = db;

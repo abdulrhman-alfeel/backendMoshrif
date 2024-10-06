@@ -333,7 +333,7 @@ const Switchbetweendeleteorupdatefiles = async (nameOld, name, type) => {
         await file
           .rename(name)
           .then(() => {
-            console.log(`File renamed to ${name}`);
+            // console.log(`File renamed to ${name}`);
           })
           .catch((err) => {
             console.error(`Error renaming file: ${err}`);
@@ -342,7 +342,7 @@ const Switchbetweendeleteorupdatefiles = async (nameOld, name, type) => {
         await file
           .delete()
           .then(() => {
-            console.log(`File ${nameOld} deleted from bucket`);
+            // console.log(`File ${nameOld} deleted from bucket`);
           })
           .catch((err) => {
             console.error(`Error deleting file: ${err}`);

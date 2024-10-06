@@ -19,11 +19,9 @@ const userCompany = async (req, res) => {
     // const image = req.file.filename;
     const job = req.body.job;
     const Validity = req.body.Validity;
-    let number = PhoneNumber;
+    let number = String(PhoneNumber);
     if (number.startsWith(0)) {
-      number = PhoneNumber.slice(1);
-    } else {
-      number = PhoneNumber;
+      number = number.slice(1);
     }
     const verificationFinduser = await SELECTTableusersCompanyVerification(
       number

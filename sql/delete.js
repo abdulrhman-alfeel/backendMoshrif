@@ -14,7 +14,16 @@ const DeleteTablecompanySubProjectphase = (id) => {
 
 const DeleteTablecompanySubProjectCovenant = () => {};
 const DeleteTablecompanySubProjectReturned = () => {};
-const DeleteTablecompanySubProjectexpense = () => {};
+const DeleteTableNotifcation = () => {
+  db.serialize(function () {
+    db.run(
+      `DELETE FROM Navigation  WHERE DateDay < CURRENT_DATE`,
+      function (err) {
+        // console.log(`Row with the ID has been inserted.`);
+      }
+    );
+  });
+};
 
 const DELETETableLoginActivaty = (data) => {
   db.serialize(function () {
@@ -49,6 +58,34 @@ const sqlDropOldTable = (tableName) => {
     });
   });
 };
+const DeletTableuserComppanyCorssUpdateActivationtoFalse = (
+  data,
+  type = "usersCompany"
+) => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          ` DELETE FROM  ${type} WHERE PhoneNumber=?`,
+          data,
+          function (err) {
+            // console.log("updatetableusercompany", data);
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+
 const DeleteTablecompanySubProjectPublic = () => {};
 
 const DeleteTableCommentPostPublic = (data) => {
@@ -85,11 +122,12 @@ module.exports = {
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectCovenant,
   DeleteTablecompanySubProjectReturned,
-  DeleteTablecompanySubProjectexpense,
   DeleteTablecompanySubProjectarchives,
   DeleteTablecompanySubProjectPublic,
   DeleteTablecompanySubProjectChate,
   DeleteTableLikesPostPublic,
   DeleteTableCommentPostPublic,
-  DELETETableLoginActivaty
+  DELETETableLoginActivaty,
+  DeleteTableNotifcation,
+  DeletTableuserComppanyCorssUpdateActivationtoFalse,
 };

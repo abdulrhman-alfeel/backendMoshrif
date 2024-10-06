@@ -94,30 +94,7 @@ const UpdateTableuserComppany = (data) => {
     }
   });
 };
-const DeletTableuserComppanyCorssUpdateActivationtoFalse = (data) => {
-  return new Promise((resolve, reject) => {
-    try {
-      db.serialize(function () {
-        db.run(
-          `UPDATE usersCompany SET Activation="false" WHERE id=?`,
-          data,
-          function (err) {
-            // console.log("updatetableusercompany", data);
-            if (err) {
-              console.log(err.message);
-              reject(err);
-            }
-            resolve(true);
-            console.log(`Row with the ID  has been inserted.`);
-          }
-        );
-      });
-    } catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  });
-};
+
 const UpdateTableuserComppanySub = (data) => {
   db.run(
     `UPDATE usersCompanySub SET IDuser=?, IDcompanySub=?, IDproject=?,job=?,Validity=? WHERE id=?`,
@@ -491,7 +468,6 @@ module.exports = {
   UPDATETableChate,
   UpdateTableLoginActivaty,
   UpdateTableinnuberOfcurrentBranchescompany,
-  DeletTableuserComppanyCorssUpdateActivationtoFalse,
   UpdateProjectStartdateinProject,
   UPDATEStopeProjectStageCUST,
   UPDATETablecompanySubProjectarchivesFolderinChildern,

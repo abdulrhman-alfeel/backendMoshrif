@@ -5,23 +5,27 @@ ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 
 const fFmpegFunction = (filename, tempFilePath, timePosition) => {
+  return new Promise((resolve,reject)=>{
     try {
       ffmpeg(tempFilePath)
         .screenshots({
           timestamps: [timePosition],
           filename: filename,
-          size: "220x140",
+          size: "150x100",
         })
         .on("end", async () => {
+          resolve()
           // Clean up temporary files
         })
         .on("error", (error) => {
           console.log(error);
+          reject()
 
         });
     } catch (error) {
       console.log(error);
     }
+  })
   };
 
 

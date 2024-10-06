@@ -4,6 +4,7 @@ const uploads = require("../middleware/uploads");
 const { BringUserCompany, BringUserCompanyinBrinsh } = require("../function/companyselect/userCompanyselect");
 const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken } = require("../function/companyinsert/UpdatuserCompany");
 const { verifyJWT } = require("../middleware/jwt");
+const { BringDataNotifcation } = require("../function/notifcation/InsertNotifcation");
 const router = express.Router();
 
 router.use(verifyJWT)
@@ -25,6 +26,8 @@ router.route('/BringUserCompany')
 .get(BringUserCompany)
 router.route('/BringUserCompanyBrinsh')
 .get(BringUserCompanyinBrinsh)
+router.route('/BringDataNotifcation')
+.get(BringDataNotifcation)
 
 
 module.exports = router

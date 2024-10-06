@@ -14,7 +14,7 @@ const Loginuser = async (req, res) => {
   const PhoneNumber = req.query.PhoneNumber;
   const token = req.query.token;
   //    bring data from table user origin
-  console.log(PhoneNumber, token);
+  // console.log(PhoneNumber, token);
   const result = await SELECTTableusersCompanyVerification(PhoneNumber);
   // console.log(result);
   await DELETETableLoginActivaty([PhoneNumber]);
@@ -89,6 +89,7 @@ const verificationSend = (number, chack) => {
 };
 
 const LoginVerification = async (req, res) => {
+  try{
   const output = req.query.output;
   const result = await SELECTTableLoginActivaty(output);
   // console.log(result, "user", output);
@@ -97,7 +98,7 @@ const LoginVerification = async (req, res) => {
     const user = {
       IDCompany: result?.IDCompany,
       userName: result?.userName,
-      PhoneNumber: result.PhoneNumber,
+      PhoneNumber: result?.PhoneNumber,
       IDNumber: result?.IDNumber,
       image: result?.image,
       job: result.job,
@@ -121,6 +122,12 @@ const LoginVerification = async (req, res) => {
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
+}catch(error){
+  console.log(error);
+  res
+  .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
+  .status(201);
+}
 };
 
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
@@ -153,7 +160,7 @@ const BringUserCompanyinBrinsh = async (req, res) => {
     const type = req.query.type;
     let CountID = 0;
     const result = await SELECTTableusersCompany(IDCompany);
-    console.log(result);
+    // console.log(result);
 
     const arrayvalidityuser = [];
     for (let index = 0; index < result.length; index++) {

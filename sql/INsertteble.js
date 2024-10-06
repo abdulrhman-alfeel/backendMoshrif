@@ -436,6 +436,24 @@ const insertTableViewsChate = (data) => {
     );
   });
 };
+const insertTableNavigation = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Navigation (IDCompanySub,ProjectID,notification,tokens,data,Date) VALUES (?,?,?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.log(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+
+
+
+
 //
 module.exports = {
   insertTablecompany,
@@ -464,4 +482,5 @@ module.exports = {
   insertTablecompanySubProjectarchivesFolderforcreatproject,
   insertTableSabepdf,
   insertTablecompanySubProjectRequestsForcreatOrder,
+  insertTableNavigation
 };

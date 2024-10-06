@@ -1,4 +1,3 @@
-const client = require("../../middleware/redis");
 const {
   insertTablecompanySubProject,
   insertTablecompanySubProjectStagetemplet,
@@ -52,7 +51,7 @@ const projectBrinsh = async (req, res) => {
   if (!userSession) {
     res.status(401).send("Invalid session");
     console.log("Invalid session");
-}
+  }
   try {
     const IDcompanySub = req.body.IDcompanySub;
     const Nameproject = req.body.Nameproject;
@@ -71,16 +70,12 @@ const projectBrinsh = async (req, res) => {
       LocationProject,
     ]);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-    let dataStages = await StageTempletXsl(
-      TypeOFContract
-    );
-    const visity = await StageTempletXsl(
-      'NULL'
-      ); 
-      // console.log(visity);
+    let dataStages = await StageTempletXsl(TypeOFContract);
+    const visity = await StageTempletXsl("NULL");
+    // console.log(visity);
     let table = [];
     let tablesub = [];
-    dataStages = [visity[0],...dataStages]
+    dataStages = [visity[0], ...dataStages];
     for (let index = 0; index < dataStages.length; index++) {
       const element = dataStages[index];
       table.push({
@@ -88,11 +83,10 @@ const projectBrinsh = async (req, res) => {
         ProjectID: idProject["last_id"],
         StartDate: null,
         EndDate: null,
-        CloseDate: null
+        CloseDate: null,
       });
 
-      const resultSubTablet =
-        await StageSubTempletXlsx(element.StageID);
+      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
       resultSubTablet.forEach((pic) => {
         tablesub.push({
           StageID: pic.StageID,
@@ -110,7 +104,7 @@ const projectBrinsh = async (req, res) => {
         success: true,
       })
       .status(200);
-    await Projectinsert(IDcompanySub,userSession.userName);
+    await Projectinsert(IDcompanySub, userSession.userName);
   } catch (err) {
     console.log(err);
     res
@@ -120,7 +114,6 @@ const projectBrinsh = async (req, res) => {
       .status(401);
   }
 };
-
 
 // وظيفة انشاء ملفات ثابته للمشروع في قسم الارشيف
 const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
@@ -182,10 +175,13 @@ const StageTempletXsl = async (type) => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
- 
       const datad = xlsx.utils.sheet_to_json(worksheet);
 
-      return datad.filter(item => String(item.Type).includes(type));
+      return datad.filter(
+        (item) =>
+          String(item.Type).replace(" ", "").trim() ===
+          String(type).replace(" ", "").trim()
+      );
     } catch (error) {
       console.error(error);
     }
@@ -193,7 +189,6 @@ const StageTempletXsl = async (type) => {
     console.log(error);
   }
 };
-
 const StageSubTempletXlsx = async (StageID) => {
   try {
     // Read the Excel file
@@ -205,13 +200,11 @@ const StageSubTempletXlsx = async (StageID) => {
 
     // Get the data from the sheet
     const data = xlsx.utils.sheet_to_json(worksheet);
-    return data.filter(item => item.StageID === StageID);
-
+    return data.filter((item) => item.StageID === StageID);
   } catch (error) {
     console.error(error);
   }
 };
-
 
 // وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
 const StageTemplet = async (req, res) => {
@@ -348,7 +341,7 @@ const InsertStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const StageName = req.body.StageName;
     const ProjectID = req.body.ProjectID;
     const TypeOFContract = req.body.TypeOFContract;
@@ -387,7 +380,7 @@ const InsertStage = async (req, res) => {
       ]);
 
       res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Stageinsert(ProjectID, 0,userSession.userName);
+      await Stageinsert(ProjectID, 0, userSession.userName);
     } else {
       res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
     }
@@ -405,7 +398,7 @@ const insertStageSub = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const StageID = req.body.StageID;
     const ProjectID = req.body.ProjectID;
     const StageSubName = req.body.StageSubName;
@@ -423,7 +416,7 @@ const insertStageSub = async (req, res) => {
         StageSubName,
       ]);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await StageSubinsert(ProjectID, StageID,userSession.userName);
+      await StageSubinsert(ProjectID, StageID, userSession.userName);
     } else {
       res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
     }
@@ -439,10 +432,10 @@ const NotesStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
-  if(req.file){
-    await uploaddata(req.file);
-  }
+    }
+    if (req.file) {
+      await uploaddata(req.file);
+    }
     const StagHOMID = req.body.StagHOMID;
     const ProjectID = req.body.ProjectID;
     const Type = req.body.Type;
@@ -461,7 +454,7 @@ const NotesStage = async (req, res) => {
     ]);
 
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Delayinsert(ProjectID, StagHOMID,userSession.userName);
+    await Delayinsert(ProjectID, StagHOMID, userSession.userName);
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -474,7 +467,7 @@ const NotesStageSub = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const StageSubID = req.body.StageSubID;
     const Note = req.body.Note;
     const userName = req.body.userName;
@@ -584,7 +577,7 @@ const AddORCanselAchievment = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const StageSubID = req.body.StageSubID;
     const userName = req.body.userName;
     const PhoneNumber = req.body.PhoneNumber;
@@ -649,7 +642,7 @@ const ClassCloaseOROpenStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const StageID = req.body.StageID;
     const ProjectID = req.body.ProjectID;
     const Note = req.body.Note;
@@ -670,13 +663,18 @@ const ClassCloaseOROpenStage = async (req, res) => {
         masseges = result;
       }
     } else {
-      console.log(bringData.Done, "hhhh");
+      // console.log(bringData.Done, "hhhh");
       await UPDATEStopeProjectStageCUST(
         [null, null, "false", Note, RecordedBy, StageID, ProjectID],
         "Opean"
       );
     }
-    await CloseOROpenStagenotifcation(ProjectID,StageID,userSession.userName,bringData.Done === 'false'? "اغلاق":"فتح");
+    await CloseOROpenStagenotifcation(
+      ProjectID,
+      StageID,
+      userSession.userName,
+      bringData.Done === "false" ? "اغلاق" : "فتح"
+    );
     res.send({ success: masseges }).status(200);
   } catch (error) {
     console.log(error);
@@ -725,7 +723,7 @@ const ExpenseInsert = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const projectID = req.body.projectID;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
@@ -758,7 +756,12 @@ const ExpenseInsert = async (req, res) => {
       Taxable,
     ]);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(projectID,'مصروفات','إضافة',userSession.userName);
+    await Financeinsertnotification(
+      projectID,
+      "مصروفات",
+      "إضافة",
+      userSession.userName
+    );
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
@@ -772,7 +775,7 @@ const RevenuesInsert = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const projectID = req.body.projectID;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
@@ -795,8 +798,12 @@ const RevenuesInsert = async (req, res) => {
       arrayImage !== null ? JSON.stringify(arrayImage) : null,
     ]);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(projectID,'عهد','إضافة',userSession.userName);
-
+    await Financeinsertnotification(
+      projectID,
+      "عهد",
+      "إضافة",
+      userSession.userName
+    );
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -812,7 +819,7 @@ const ReturnsInsert = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const projectID = req.body.projectID;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
@@ -834,8 +841,12 @@ const ReturnsInsert = async (req, res) => {
     ]);
 
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(projectID,'مرتجعات','إضافة',userSession.userName);
-
+    await Financeinsertnotification(
+      projectID,
+      "مرتجعات",
+      "إضافة",
+      userSession.userName
+    );
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -1004,7 +1015,7 @@ const InsertDatainTableRequests = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const ProjectID = req.body.ProjectID;
     const Type = req.body.Type;
     const Data = req.body.Data;
@@ -1027,8 +1038,12 @@ const InsertDatainTableRequests = async (req, res) => {
       arrayImage !== null ? JSON.stringify(arrayImage) : null,
     ]);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(ProjectID,'طلب','إضافة',userSession.userName);
-
+    await Financeinsertnotification(
+      ProjectID,
+      "طلب",
+      "إضافة",
+      userSession.userName
+    );
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);

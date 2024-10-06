@@ -50,16 +50,19 @@ const BringProject = async (req, res) => {
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
     if (Datausere.job !== "Admin") {
       let validity =
-      Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
+        Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
       if (validity.length > 0) {
         for (let index = 0; index < validity?.length; index++) {
           const element = validity[index];
-          
+
           if (
             element.job === "مدير الفرع" &&
             parseInt(element.idBrinsh) === parseInt(IDcompanySub)
           ) {
-            const result = await SELECTTablecompanySubProject(IDcompanySub,IDfinlty);
+            const result = await SELECTTablecompanySubProject(
+              IDcompanySub,
+              IDfinlty
+            );
             arrayBrinsh = await BringTotalbalance(result);
           } else {
             for (let index = 0; index < element.project.length; index++) {
@@ -78,7 +81,7 @@ const BringProject = async (req, res) => {
         }
       }
     } else {
-      const result = await SELECTTablecompanySubProject(IDcompanySub,IDfinlty);
+      const result = await SELECTTablecompanySubProject(IDcompanySub, IDfinlty);
       arrayBrinsh = await BringTotalbalance(result);
     }
     // console.log(arrayBrinsh);
@@ -116,8 +119,8 @@ const AccountCostProject = async (id, ConstCompany) => {
   //   id,
   //   "CountDate"
   // );
-  
-  const DataProject = await SELECTTablecompanySubProject(id,0,"difference");
+
+  const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
   let StartDate = new Date(DataProject[0].Contractsigningdate);
   const date2 = new Date();
   const daysDifference = await differenceInDays(StartDate, date2);
@@ -415,6 +418,7 @@ const BringStatmentFinancialforproject = async (req, res) => {
     let namefile;
     let verify = false;
     let chackprojct = false;
+
     const sevepdf = await SELECTTableSavepdf(ProjectID);
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
     // console.log(sevepdf);
@@ -676,11 +680,13 @@ const ExtractDatafromStage = async (idproject, type, idSub) => {
         });
       });
     } else {
+      let kind = idSub === "A1" ? "Chat" : "ChatSTAGE";
       const fileArray = await SELECTLastTableChateStage(
         idproject,
         idSub,
         1,
-        "files"
+        "files",
+        kind
       );
       // console.log(fileArray);
       for (let index = 0; index < fileArray.length; index++) {
@@ -734,6 +740,13 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
         size: 0,
       });
     }
+    arrayfolder.push({
+      id: arrayfolder.length + 1,
+      Data: datasub,
+      type: "Data",
+      kindPage: "BringExpense",
+      size: 0,
+    });
   }
   return arrayfolder;
 };
@@ -741,7 +754,6 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
 //
 const ExtractDatafromReturn = async (idproject, type, idSub) => {
   try {
-    console.log(idproject);
     const dataHome = await SELECTTablecompanySubProjectReturned(idproject);
     let arrayfolder = [];
     if (type === "Home") {
@@ -766,6 +778,13 @@ const ExtractDatafromReturn = async (idproject, type, idSub) => {
           size: 0,
         });
       }
+      arrayfolder.push({
+        id: arrayfolder.length + 1,
+        Data: datasub,
+        type: "Data",
+        kindPage: "Return",
+        size: 0,
+      });
     }
     return arrayfolder;
   } catch (error) {
@@ -796,6 +815,14 @@ const ExtractDatafromRevenue = async (idproject, type, idSub) => {
           size: 0,
         });
       }
+      arrayfolder.push({
+        id: arrayfolder.length + 1,
+        Data: datasub,
+        type: "Data",
+        kindPage: "BringRevenue",
+
+        size: 0,
+      });
     }
     return arrayfolder;
   } catch (error) {
