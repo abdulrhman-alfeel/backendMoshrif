@@ -49,7 +49,7 @@ app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
 
 // لاستقبال الملفات والصور
-
+// bucket.upload("./mydatabase.db");
 // Sample HTML content
 
 app.post("/api/file", uploads.single("filechate"), async (req, res) => {
@@ -94,7 +94,7 @@ app.post("/api/file", uploads.single("filechate"), async (req, res) => {
         // clearTimeout(timeout);
         setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
       }
-      
+
       const timeoutfile = setTimeout(async () => {
         await fs.unlink(req.file.path, () => {});
       }, 500);

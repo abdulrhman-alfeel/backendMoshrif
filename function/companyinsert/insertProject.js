@@ -14,9 +14,7 @@ const {
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubProjectarchivesotherroad,
-  SELECTFROMTablecompanysubprojectStageTemplet,
   SELECTTablecompanySubProjectLast_id,
-  SELECTFROMTablecompanysubprojectStagesubTeplet,
   SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate,
   SELECTTablecompanySubProjectStageCUST,
   SELECTTablecompanySubProjectStagesSub,
@@ -24,7 +22,7 @@ const {
   SELECTTablecompanySubProjectStageCUSTONe,
   SELECTTablecompanySubProjectexpenseObjectOne,
 } = require("../../sql/selected/selected");
-const { uploaddata } = require("../../bucketClooud");
+const { uploaddata, bucket } = require("../../bucketClooud");
 
 const {
   UPDATETablecompanySubProjectStagesSub,
@@ -460,7 +458,7 @@ const NotesStage = async (req, res) => {
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
 };
-// وظيفة تجمع بين اضافة وتعديل ملاحظات فرعية وكذالك اضافة والغاء انجاز
+// وظيفة تجمع بين اضافة وتعديل ملاحظات فرعية
 const NotesStageSub = async (req, res) => {
   try {
     const userSession = req.session.user;
@@ -470,10 +468,9 @@ const NotesStageSub = async (req, res) => {
     }
     const StageSubID = req.body.StageSubID;
     const Note = req.body.Note;
-    const userName = req.body.userName;
-    const PhoneNumber = req.body.PhoneNumber;
+    const userName = userSession.userName;
+    const PhoneNumber = userSession.PhoneNumber;
     const type = req.body.type;
-    // console.log(type);
     let NoteArry;
     let kind;
     const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
@@ -486,11 +483,26 @@ const NotesStageSub = async (req, res) => {
     //   CloseDate: null
     // }
     if (type === "AddNote") {
-      NoteArry = await AddNote(Note, userName, PhoneNumber, bringData);
+      NoteArry = await AddNote(
+        Note,
+        userName,
+        PhoneNumber,
+        bringData,
+        req.files
+      );
       kind = "Note";
     } else if (type === "EditNote") {
       const idNote = req.body.idNote;
-      NoteArry = await EditNote(idNote, Note, userName, PhoneNumber, bringData);
+      const Imageolddelete = req.body.Imageolddelete;
+      NoteArry = await EditNote(
+        idNote,
+        Note,
+        userName,
+        PhoneNumber,
+        bringData,
+        Imageolddelete,
+        req.files
+      );
       kind = "Note";
     } else if (type === "DeletNote") {
       const idNote = req.body.idNote;
@@ -500,13 +512,16 @@ const NotesStageSub = async (req, res) => {
       );
       kind = "Note";
     }
-
-    await UPDATETablecompanySubProjectStagesSub(
-      [JSON.stringify(NoteArry), StageSubID],
-      kind
-    );
+    // console.log(NoteArry, "kkkdddddddddddddddk");
+    if (NoteArry !== undefined) {
+      await UPDATETablecompanySubProjectStagesSub(
+        [JSON.stringify(NoteArry), StageSubID],
+        kind
+      );
+    }
     // console.log(NoteArry);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
+
     await StageSubNote(
       bringData.ProjectID,
       bringData.StagHOMID,
@@ -522,8 +537,19 @@ const NotesStageSub = async (req, res) => {
 };
 
 // وظيفة ادخال ملاحظات المرحلة الفرعية
-const AddNote = (Note, userName, PhoneNumber, bringData) => {
+const AddNote = async (Note, userName, PhoneNumber, bringData, files) => {
   try {
+    let arrayImage = [];
+    if (files && files.length > 0) {
+      for (let index = 0; index < files.length; index++) {
+        const element = files[index];
+        await uploaddata(element);
+        arrayImage.push(element.filename);
+      }
+    } else {
+      arrayImage = null;
+    }
+
     let NoteArry;
     const data = {
       id: Math.floor(1000 + Math.random() * 9000),
@@ -531,6 +557,7 @@ const AddNote = (Note, userName, PhoneNumber, bringData) => {
       userName: userName,
       PhoneNumber: PhoneNumber,
       Date: new Date().toDateString(),
+      File: arrayImage,
     };
 
     if (bringData.Note !== null) {
@@ -545,22 +572,66 @@ const AddNote = (Note, userName, PhoneNumber, bringData) => {
   }
 };
 // وظيفة تعديل ملاحظات المرحلة الفرعية
-const EditNote = (id, Note, userName, PhoneNumber, bringData) => {
+const EditNote = async (
+  id,
+  Note,
+  userName,
+  PhoneNumber,
+  bringData,
+  Imageolddelete,
+  files
+) => {
   try {
-    let NoteArry;
-    const data = {
-      id: id,
-      Note: Note,
-      userName: userName,
-      PhoneNumber: PhoneNumber,
-      Date: new Date().toDateString(),
-    };
-
-    const dataNote = JSON.parse(bringData.Note);
+    const dataNote = JSON.parse(bringData.Note) || [];
     let newDtat = [...dataNote];
-    const findIndex = dataNote.findIndex((item) => item.id === id);
-    if (findIndex > -1) {
-      newDtat[findIndex] = data;
+    // console.log(dataNote);
+    const findNote = newDtat.find((item) => parseInt(item.id) === parseInt(id));
+    if (findNote) {
+      let arrayImage = [...findNote.File];
+
+      if (arrayImage.length > 0 && String(Imageolddelete).length > 0) {
+        const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
+
+        await Promise.all(
+          imageDelete.map(async (pic) => {
+            arrayImage = arrayImage.filter((items) => items !== pic);
+            try {
+              const findimat = await bucket.file(pic).exists();
+              if (findimat[0]) {
+                await bucket.file(pic).delete();
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          })
+        );
+      } 
+        if (files && files.length > 0) {
+          for (let index = 0; index < files.length; index++) {
+            const element = files[index];
+            await uploaddata(element);
+            arrayImage.push(element.filename);
+          }
+        }
+      
+      // console.log(findNote, "arrays", Imageolddelete);
+
+      const data = {
+        id: id,
+        Note: Note,
+        userName: userName,
+        PhoneNumber: PhoneNumber,
+        Date: new Date().toDateString(),
+        File: arrayImage,
+      };
+
+      const findIndex = newDtat.findIndex(
+        (item) => parseInt(item.id) === parseInt(id)
+      );
+
+      if (findIndex > -1) {
+        newDtat[findIndex] = data;
+      }
     }
 
     return newDtat;

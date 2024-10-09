@@ -73,11 +73,11 @@ const SELECTTablecompanySubCount = (id) => {
 };
 
 // فروع الشركة
-const SELECTTablecompanySub = (id) => {
+const SELECTTablecompanySub = (id, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM companySub WHERE NumberCompany=?`,
+        `SELECT ${type} FROM companySub WHERE NumberCompany=?`,
         [id],
         function (err, result) {
           if (err) {
@@ -1039,11 +1039,16 @@ const SELECTTablePostPublicSearch = (
   type,
   nameProject,
   userName,
+  branch,
   PostID
 ) => {
   return new Promise((resolve, reject) => {
     let SearchSub =
-      type === "بحسب المشروع والتاريخ" ? "PR.Nameproject" : "ca.postBy";
+      type === "بحسب المشروع والتاريخ"
+        ? "PR.Nameproject"
+        : type === "بحسب الفرع"
+        ? "RE.NameSub"
+        : "ca.postBy";
     let SqlStringOne =
       type === "بحسب المشروع والمستخدم والتاريخ"
         ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
@@ -1079,6 +1084,8 @@ const SELECTTablePostPublicSearch = (
         ? [id, DateStart, DateEnd, nameProject, userName, PostID]
         : type === "بحسب المشروع والتاريخ"
         ? [id, DateStart, DateEnd, nameProject, PostID]
+        : type === "بحسب الفرع"
+        ? [id, DateStart, DateEnd, branch, PostID]
         : [id, DateStart, DateEnd, userName, PostID];
     db.serialize(function () {
       db.all(

@@ -5,7 +5,6 @@ const {
   SELECTTablecompanySubProjectStageCUST,
   SELECTTablecompanySubProjectStagesSub,
   SELECTTablecompanySubProjectStageNotes,
-  SELECTTablecompanySubProjectStageSubNotes,
   SELECTTablecompanySubProjectexpense,
   SELECTTablecompanySubProjectREVENUE,
   SELECTTablecompanySubProjectReturned,
@@ -13,7 +12,6 @@ const {
   SELECTTablecompanySubProjectarchivesotherroad,
   SELECTTablecompanySubProjectarchives,
   SELECTSUMAmountandBring,
-  SELECTTablecompanySubProjectStageCUSTCount,
   SELECTTablecompanySubProjectStageCUSTSubCount,
   SELECTTablecompanybrinshStagesSubAll,
   SELECTTablecompanySubProjectStageCUSTONe,
@@ -28,7 +26,8 @@ const {
   SELECTProjectStartdate,
   SELECTTablecompanySubProjectLast_id,
 } = require("../../sql/selected/selected");
-
+const fs = require("fs");
+const path = require("path");
 const {
   StatmentAllpdf,
   StatmentExpensePdf,
@@ -39,6 +38,7 @@ const { UPDATETableSavepdf } = require("../../sql/update");
 const {
   SELECTTableusersCompanyonObject,
 } = require("../../sql/selected/selectuser");
+const { DeleteTableSavepdf } = require("../../sql/delete");
 // استيراد بيانات المشروع حسب الفرع
 const BringProject = async (req, res) => {
   try {
@@ -414,6 +414,7 @@ const BringTotalAmountproject = async (req, res) => {
 const BringStatmentFinancialforproject = async (req, res) => {
   try {
     const ProjectID = req.query.ProjectID;
+    // await DeleteTableSavepdf(ProjectID);
     const type = req.query.type;
     let namefile;
     let verify = false;
@@ -421,12 +422,12 @@ const BringStatmentFinancialforproject = async (req, res) => {
 
     const sevepdf = await SELECTTableSavepdf(ProjectID);
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
-    // console.log(sevepdf);
+
     if (sevepdf !== 0 && sevepdf?.Total !== undefined) {
       if (parseInt(sevepdf.Total) === parseInt(Totalproject.RemainingBalance)) {
         namefile = type === "all" ? sevepdf.namefileall : sevepdf.namefileparty;
         if (namefile !== null) {
-          res.send({ success: "تمت العملية بنجاح", url: namefile }).status(200);
+          return res.status(200).send({ success: "تمت العملية بنجاح", url: namefile });
         } else {
           verify = true;
           chackprojct = true;
@@ -438,50 +439,52 @@ const BringStatmentFinancialforproject = async (req, res) => {
     } else {
       verify = true;
     }
+
     const output = Math.floor(1000 + Math.random() * 9000);
     if (verify) {
       try {
-        namefile = type === "all" ? sevepdf.namefileall : sevepdf.namefileparty;
-        const file = bucket.file(namefile);
-        // Delete the file
-        file.delete((err, apiResponse) => {
-          if (err) {
-            console.error("Error deleting file:", err);
-            return;
-          }
+        namefile = type === "all" ? sevepdf?.namefileall : sevepdf?.namefileparty;
+        if (namefile) {
+          const file = bucket.file(namefile);
+          await file.delete();
           console.log(`File ${namefile} deleted successfully.`);
-        });
+        }
       } catch (error) {
         console.log(error);
       }
 
       if (type === "all") {
         namefile = `${output}all.pdf`;
-        await StatmentAllpdf(ProjectID, `./upload/${namefile}`);
       } else {
         namefile = `${output}party.pdf`;
-        await StatmentExpensePdf(ProjectID, `./upload/${namefile}`);
       }
 
-      await bucket.upload(`./upload/${namefile}`);
+      const filePath = path.join(__dirname, "../../upload", namefile);
+      if (type === "all") {
+        await StatmentAllpdf(ProjectID, filePath);
+      } else {
+        await StatmentExpensePdf(ProjectID, filePath);
+      }
+
+      if (fs.existsSync(filePath)) {
+        await bucket.upload(filePath);
+      } else {
+        console.error(`File ${filePath} does not exist for upload.`);
+        return res.status(400).send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+      }
+
       let nametable = type !== "all" ? "namefileparty" : "namefileall";
       if (chackprojct) {
-        await UPDATETableSavepdf(
-          [namefile, Totalproject.RemainingBalance, ProjectID],
-          nametable
-        );
+        await UPDATETableSavepdf([namefile, Totalproject.RemainingBalance, ProjectID], nametable);
       } else {
-        await insertTableSabepdf(
-          [ProjectID, namefile, Totalproject.RemainingBalance],
-          nametable
-        );
+        await insertTableSabepdf([ProjectID, namefile, Totalproject.RemainingBalance], nametable);
       }
 
-      res.send({ success: "تمت العملية بنجاح", url: namefile }).status(200);
+      res.status(200).send({ success: "تمت العملية بنجاح", url: namefile });
     }
   } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(400);
+    console.error("Error in processing:", error);
+    res.status(400).send({ success: "فشل في تنفيذ العملية" });
   }
 };
 

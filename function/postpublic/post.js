@@ -7,6 +7,7 @@ const {
   SELECTTableCommentPostPublic,
   SELECTTablePostPublicSearch,
   SELECTTablePostPublicOneObject,
+  SELECTTablecompanySub,
 } = require("../../sql/selected/selected");
 const ffmpeg = require("../../middleware/ffmpeg");
 const fs = require("fs");
@@ -143,6 +144,7 @@ const SearchPosts = async (req, res) => {
     const type = req.query.type;
     const nameProject = req.query.nameProject;
     const userName = req.query.userName;
+    const branch = req.query.branch;
     const PostID = req.query.PostID;
     const user = req.query.user;
 
@@ -153,6 +155,7 @@ const SearchPosts = async (req, res) => {
       type,
       nameProject,
       userName,
+      branch,
       parseInt(PostID)
     );
     let arraynew = [];
@@ -192,10 +195,7 @@ const BringObjectOnefromPost = async (req, res) => {
       console.log("Invalid session");
     }
     const PostOne = await SELECTTablePostPublicOneObject(PostID);
-    const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
-      PostID,
-      "Comment"
-    );
+    const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(PostID, "Comment");
     const Likeuser = await SELECTTableLikesPostPublicotherroad(
       PostID,
       userSession.userName
@@ -204,8 +204,7 @@ const BringObjectOnefromPost = async (req, res) => {
 
     let data = {
       ...PostOne,
-      Likeuser:
-        Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
+      Likeuser: Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
       Comment: Comment["COUNT(userName)"],
       Likes: Likes["COUNT(userName)"],
     };
@@ -216,10 +215,28 @@ const BringObjectOnefromPost = async (req, res) => {
   }
 };
 
+const BringDatabrachCompany = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const result = await SELECTTablecompanySub(
+      userSession.IDCompany,
+      "id,NameSub AS name"
+    );
+    res.send({ success: "تمت العملية بنجاح", data: result });
+    console.log(userSession.IDCompany);
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports = {
   insertPostURL,
   BringPost,
   BringCommentinsert,
   SearchPosts,
   BringObjectOnefromPost,
+  BringDatabrachCompany,
 };

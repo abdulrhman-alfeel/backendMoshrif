@@ -83,7 +83,7 @@ const BringDataNotifcation = async (req, res) => {
         });
       });
     }
-    console.log(arrayNotifcation,'notfication');
+    // console.log(arrayNotifcation,'notfication');
 
     res
       .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })

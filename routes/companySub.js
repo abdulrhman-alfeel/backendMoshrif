@@ -65,7 +65,7 @@ router.route("/Stage").post(InsertStage);
 router.route("/StageSub").post(insertStageSub);
 router.route("/ClassCloaseOROpenStage").post(ClassCloaseOROpenStage);
 router.route("/NotesStage").post(uploads.single("image"), NotesStage);
-router.route("/NotesStageSub").post(NotesStageSub);
+router.route("/NotesStageSub").post(uploads.any("image"),NotesStageSub);
 router.route("/AddORCanselAchievment").post(AddORCanselAchievment);
 router.route("/ExpenseInsert").post(uploads.any("image"), ExpenseInsert);
 router.route("/RevenuesInsert").post(uploads.any("image"), RevenuesInsert);
@@ -79,7 +79,6 @@ router
   .post(uploads.any("image"), InsertDatainTableRequests);
 
 //  عمليات الطلب
-
 router.route("/BringProject").get(BringProject);
 router.route("/BringProjectindividual").get(BringProjectindividual);
 router.route("/BringStageTemplet").get(BringStageTemplet);

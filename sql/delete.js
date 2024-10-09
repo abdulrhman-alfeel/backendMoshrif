@@ -13,7 +13,13 @@ const DeleteTablecompanySubProjectphase = (id) => {
 };
 
 const DeleteTablecompanySubProjectCovenant = () => {};
-const DeleteTablecompanySubProjectReturned = () => {};
+const DeleteTableSavepdf = (id) => {
+  db.serialize(function () {
+    db.run(`DELETE FROM Savepdf WHERE projectID =?`, [id], function (err) {
+      console.log(`Row with the ID has been inserted.`);
+    });
+  });
+};
 const DeleteTableNotifcation = () => {
   db.serialize(function () {
     db.run(
@@ -121,7 +127,7 @@ module.exports = {
   DeleteTablecompanySubProject,
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectCovenant,
-  DeleteTablecompanySubProjectReturned,
+  DeleteTableSavepdf,
   DeleteTablecompanySubProjectarchives,
   DeleteTablecompanySubProjectPublic,
   DeleteTablecompanySubProjectChate,

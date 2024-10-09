@@ -4,12 +4,26 @@ const HtmlContent = (item, home) => {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+
     <title>Document</title>
   </head>
     <!-- border-collapse: collapse; -->
   
   <Style>
+    @font-face {
+        font-family: 'Tajawal', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+    }
     body{
+          font-family: 'Tajawal', sans-serif;
         width: 95%;
         margin: auto;
         margin-top: 35px;
@@ -138,8 +152,8 @@ const HtmlContent = (item, home) => {
   }
   p{
     margin: 5px;
-    font-family:'Tajawal';
-  }
+    }
+    // font-family:'Tajawal';
   span{
     height: 80%;
     margin: auto;
@@ -153,7 +167,7 @@ const HtmlContent = (item, home) => {
       <div class="header1">
         <p class="text-header-right">التاريخ:${new Date().toLocaleDateString()} </p>
       </div>
-  
+
       <div class="header-medium">
           <h1>${home.NameCompany}</h1>
           <h1 style="font-size: 17px;"> فرع :${home.NameBranch}</h1>
@@ -267,12 +281,27 @@ const HtmlStatmentall = (
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+
   <title>Document</title>
 </head>
   <!-- border-collapse: collapse; -->
 
 <Style>
+    @font-face {
+        font-family: "Tajawal", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+    }
+
   body{
+      font-family: 'Tajawal', sans-serif;
       width: 95%;
       margin: auto;
       margin-top: 35px;

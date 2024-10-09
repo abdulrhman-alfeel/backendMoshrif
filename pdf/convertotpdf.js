@@ -8,12 +8,8 @@ const {
 } = require("../sql/selected/selected");
 const { HtmlContent, HtmlStatmentall } = require("./writHtml");
 
-
-
-
-
 //  كشف حساب كامل للمصروفات
-const StatmentExpensePdf = async (idproject,namefile) => {
+const StatmentExpensePdf = async (idproject, namefile) => {
   const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
   const dataSub = await SELECTTablecompanySubProjectexpense(idproject);
   const dates = dataSub.map((item) => item.ClassificationName);
@@ -37,7 +33,7 @@ const StatmentExpensePdf = async (idproject,namefile) => {
 
 //  كشف حسب التصنيف
 
-const StatmentAllpdf = async (idproject,namefile) => {
+const StatmentAllpdf = async (idproject, namefile) => {
   try {
     const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
     const dataExpense = await SELECTTablecompanySubProjectexpense(idproject);
@@ -53,7 +49,6 @@ const StatmentAllpdf = async (idproject,namefile) => {
       dataHome
     );
     await convertHtmlToPdf(htmlContent, namefile);
-
   } catch (error) {
     console.log(error);
   }
@@ -86,6 +81,8 @@ async function convertHtmlToPdf(htmlContent, outputPath) {
       },
       { timeout: 2000 }
     ); // Wait for up to 10 seconds
+
+
     // Generate the PDF
     await page.pdf({
       path: outputPath, // Path to save the PDF
@@ -102,4 +99,4 @@ async function convertHtmlToPdf(htmlContent, outputPath) {
   }
 }
 
-module.exports = { convertHtmlToPdf, StatmentExpensePdf,StatmentAllpdf };
+module.exports = { convertHtmlToPdf, StatmentExpensePdf, StatmentAllpdf };

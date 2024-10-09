@@ -147,32 +147,31 @@ const UpdateTableLoginActivaty = (data) => {
   });
 };
 // لاغلاق جميع نشاط المستخدم
-const UpdateTableLoginActivatyValidityORtoken = (data,PhoneNumber,type) => {
-  console.log(data,PhoneNumber,type);
+const UpdateTableLoginActivatyValidityORtoken = (data, PhoneNumber, type) => {
+  console.log(data, PhoneNumber, type);
   db.serialize(function () {
     db.run(
       `UPDATE LoginActivaty SET ${type}=?  WHERE PhoneNumber=?`,
-      [data,PhoneNumber],
+      [data, PhoneNumber],
       function (err) {
-        if(err) return console.error(err);
+        if (err) return console.error(err);
         console.log(`Row with the ID has been upadate.`);
       }
     );
   });
 };
-const UpdateTableLoginActivatytoken = (PhoneNumber,tokennew,tokenold) => {
+const UpdateTableLoginActivatytoken = (PhoneNumber, tokennew, tokenold) => {
   db.serialize(function () {
     db.run(
       `UPDATE LoginActivaty SET token=?  WHERE token=? AND PhoneNumber=?`,
-      [tokennew,tokenold,PhoneNumber],
+      [tokennew, tokenold, PhoneNumber],
       function (err) {
-        if(err) return console.error(err);
+        if (err) return console.error(err);
         console.log(`Row with the ID has been upadate.`);
       }
     );
   });
 };
-
 
 // Templet************
 
@@ -270,8 +269,6 @@ const UPDATETablecompanySubProjectStageSubNotes = (data) => {
   );
 };
 
-
-
 // المصروف
 const UPDATETablecompanySubProjectexpense = (data) => {
   db.run(
@@ -314,7 +311,7 @@ const UPDATETablecompanySubProjectReturned = (data) => {
   );
 };
 // حفظ pdf
-const UPDATETableSavepdf = (data,typename) => {
+const UPDATETableSavepdf = (data, typename) => {
   db.run(
     `UPDATE Savepdf SET ${typename}=?, Total=? WHERE  projectID=?`,
     data,
@@ -354,12 +351,11 @@ const UPDATETablecompanySubProjectarchivesFolderinChildern = (data) => {
   );
 };
 
-
 //  *********************************************************
 //  ************************* الطلبيات *********************
 
 const UPDATETableinRequests = (data) => {
-  try{
+  try {
     db.run(
       `UPDATE Requests SET Type=?,Data=?,InsertBy=?,Image=? WHERE RequestsID=?`,
       data,
@@ -370,10 +366,12 @@ const UPDATETableinRequests = (data) => {
         console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
-  }catch(error){console.log(error)}
-}
+  } catch (error) {
+    console.log(error);
+  }
+};
 const UPDATETableinRequestsDone = (data) => {
-  try{
+  try {
     db.run(
       `UPDATE Requests SET Done=?,Implementedby=? WHERE RequestsID=?`,
       data,
@@ -384,10 +382,10 @@ const UPDATETableinRequestsDone = (data) => {
         console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
-  }catch(error){console.log(error)}
-}
-
-
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // المنشورات
 const UPDATETablePostPublic = (data) => {
@@ -475,5 +473,5 @@ module.exports = {
   UPDATETableinRequests,
   UPDATETableinRequestsDone,
   UpdateTableLoginActivatyValidityORtoken,
-  UpdateTableLoginActivatytoken
+  UpdateTableLoginActivatytoken,
 };

@@ -1,4 +1,3 @@
-
 const {
   insertTableChate,
   insertTableChateStage,
@@ -153,7 +152,6 @@ const ClassChackTableChat = async (req, res) => {
           element.Reply = JSON.parse(element.Reply);
           arrayResult.push(element);
         }
-
         // ارسال البيانات
         res.send({ success: true, data: arrayResult }).status(200);
       }
