@@ -2,7 +2,15 @@ const db = require("./sqlite");
 
 const DeleteTablecompany = () => {};
 const DeleteTablecompanySub = () => {};
-const DeleteTablecompanySubProject = () => {};
+const DeleteTableChate = (type, id) => {
+  db.run(`DELETE FROM  ${type} WHERE chatID=?`, [id], function (err) {
+    if (err) {
+      console.error(err.message);
+    }
+    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
+
 const DeleteTablecompanySubProjectphase = (id) => {
   db.run(`DELETE FROM  StagesCUST WHERE ProjectID=?`, [id], function (err) {
     if (err) {
@@ -124,7 +132,7 @@ const DeleteTablecompanySubProjectChate = () => {};
 module.exports = {
   DeleteTablecompany,
   DeleteTablecompanySub,
-  DeleteTablecompanySubProject,
+  DeleteTableChate,
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectCovenant,
   DeleteTableSavepdf,

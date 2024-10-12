@@ -311,9 +311,9 @@ const UPDATETablecompanySubProjectReturned = (data) => {
   );
 };
 // حفظ pdf
-const UPDATETableSavepdf = (data, typename) => {
+const UPDATETableSavepdf = (data, typename, type = "Total") => {
   db.run(
-    `UPDATE Savepdf SET ${typename}=?, Total=? WHERE  projectID=?`,
+    `UPDATE Savepdf SET ${typename}=?, ${type}=?  WHERE  projectID=?`,
     data,
     function (err) {
       if (err) {

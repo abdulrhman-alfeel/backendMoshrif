@@ -484,7 +484,7 @@ const SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDat
     return new Promise((resolve, reject) => {
       db.serialize(function () {
         db.get(
-          `SELECT MAX(StageID) AS StageID ,EndDate,OrderBy FROM StagesCUST WHERE ProjectID=?`,
+          `SELECT MAX(StageID) AS StageID ,MAX(OrderBy) AS OrderBy,EndDate FROM StagesCUST WHERE ProjectID=? AND  StageID != "A1" `,
           [id],
           function (err, result) {
             if (err) {
@@ -1347,7 +1347,7 @@ const SELECTLastTableChateStage = (
     let stringSql =
       kind === "all"
         ? `SELECT * FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? ORDER BY rowid DESC, datetime(timeminet) ASC LIMIT ${count} `
-        : `SELECT File FROM ${type}  WHERE ProjectID=? AND  ${Type}=? `;
+        : `SELECT File,Date FROM ${type}  WHERE ProjectID=? AND  ${Type}=? `;
 
     db.serialize(function () {
       db.all(stringSql, [ProjectID, StageID], function (err, result) {
@@ -1366,8 +1366,8 @@ const SELECTLastTableChateStage = (
 const SELECTLastTableChateID = (ProjectID, type, userName) => {
   return new Promise((resolve, reject) => {
     const stringSql = Number(type)
-      ? `SELECT chatID FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? AND Sender !=? `
-      : `SELECT chatID FROM Chat  WHERE ProjectID=? AND Type =? AND Sender !=? `;
+      ? `SELECT chatID FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? AND trim(Sender) !=trim(?) `
+      : `SELECT chatID FROM Chat  WHERE ProjectID=? AND Type =? AND trim(Sender) !=trim(?) `;
     db.serialize(function () {
       db.all(stringSql, [ProjectID, type, userName], function (err, result) {
         if (err) {
@@ -1386,8 +1386,8 @@ const SELECTLastTableChateID = (ProjectID, type, userName) => {
 const SELECTTableViewChateUser = (chatID, userName, type) => {
   return new Promise((resolve, reject) => {
     const stringSql = Number(type)
-      ? `SELECT * FROM ViewsCHATSTAGE WHERE chatID=? AND userName=?`
-      : `SELECT * FROM Views WHERE chatID=? AND userName=?`;
+      ? `SELECT * FROM ViewsCHATSTAGE WHERE chatID=? AND trim(userName)=trim(?)`
+      : `SELECT * FROM Views WHERE chatID=? AND trim(userName)=trim(?)`;
     db.serialize(function () {
       db.all(stringSql, [chatID, userName], function (err, result) {
         if (err) {
@@ -1612,32 +1612,7 @@ const SELECTTableNavigationObjectOne = (id, type = "max(id) AS id") => {
   });
 };
 
-// `SELECT
-//   ca.CustName AS 'اسم العميل',
-//   ca.ProjectName AS 'اسم المشروع',
-//   ca.Phone,
-//   COALESCE(RE.total_revenue, 0.00) AS 'إجمالي الإيرادات',
-//   COALESCE(EX.landers_count, 0) AS 'إجمالي المصروفات',
-//   COALESCE(RT.total_Returns, 0.00) AS 'إجمالي المرتجعات',
-//   COALESCE((COALESCE(RE.total_revenue, 0.00) - COALESCE(EX.landers_count, 0.00) + COALESCE(RT.total_Returns, 0.00)), 0.00) AS 'الرصيد المتبقي'
-// FROM Custmer ca
-// LEFT JOIN (
-//   SELECT CustId, COALESCE(SUM(Amount), 0.00) AS landers_count
-//   FROM Expense
-//   GROUP BY CustId
-// ) EX ON EX.CustId = ca.CustId
-// LEFT JOIN (
-//   SELECT CustId, COALESCE(SUM(Amount), 0.00) AS total_revenue
-//   FROM Revenue
-//   GROUP BY CustId
-// ) RE ON RE.CustId = ca.CustId
-// LEFT JOIN (
-//   SELECT CustId, COALESCE(SUM(Amount), 0.00) AS total_Returns
-//   FROM Returns
-//   GROUP BY CustId
-// ) RT ON RT.CustId = ca.CustId
-// WHERE ca.Path IS NOT NULL
-// ORDER BY ca.CustId;`
+
 
 module.exports = {
   SELECTTablecompany,

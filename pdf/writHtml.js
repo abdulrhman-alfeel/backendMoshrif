@@ -172,6 +172,8 @@ const HtmlContent = (item, home) => {
           <h1>${home.NameCompany}</h1>
           <h1 style="font-size: 17px;"> فرع :${home.NameBranch}</h1>
           <h1 style="font-size: 17px;"> المشروع: ${home.Nameproject}</h1>
+          <h1 style="font-size: 17px;">كشف حساب حسب التصنيف</h1>
+
         </div>
       <div class="header-left">
         <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo"  style="width: 80px;height: 40px;">
@@ -464,7 +466,6 @@ span{
          <h1>${dataHome.NameCompany}</h1>
           <h1 style="font-size: 17px;"> فرع :${dataHome.NameBranch}</h1>
           <h1 style="font-size: 17px;"> المشروع: ${dataHome.Nameproject}</h1>
-        <h1 style="font-size: 17px;">كشف حساب حسب التصنيف</h1>
       </div>
     <div class="header-left">
       <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo" style="width: 80px;height: 40px;">

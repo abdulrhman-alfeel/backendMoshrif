@@ -37,11 +37,16 @@ const { insertTableSabepdf } = require("../../sql/INsertteble");
 const { UPDATETableSavepdf } = require("../../sql/update");
 const {
   SELECTTableusersCompanyonObject,
+  SELECTTableusersCompany,
 } = require("../../sql/selected/selectuser");
-const { DeleteTableSavepdf } = require("../../sql/delete");
 // استيراد بيانات المشروع حسب الفرع
 const BringProject = async (req, res) => {
   try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = req.query.PhoneNumber;
     const IDfinlty = req.query.IDfinlty;
@@ -63,7 +68,11 @@ const BringProject = async (req, res) => {
               IDcompanySub,
               IDfinlty
             );
-            arrayBrinsh = await BringTotalbalance(result);
+            arrayBrinsh = await BringTotalbalance(
+              IDcompanySub,
+              userSession.IDCompany,
+              result
+            );
           } else {
             for (let index = 0; index < element.project.length; index++) {
               // console.log(validity);
@@ -75,14 +84,22 @@ const BringProject = async (req, res) => {
               arrayBrinsh.push(result);
             }
             if (arrayBrinsh.length > 0) {
-              arrayBrinsh = await BringTotalbalance(arrayBrinsh);
+              arrayBrinsh = await BringTotalbalance(
+                IDcompanySub,
+                userSession.IDCompany,
+                arrayBrinsh
+              );
             }
           }
         }
       }
     } else {
       const result = await SELECTTablecompanySubProject(IDcompanySub, IDfinlty);
-      arrayBrinsh = await BringTotalbalance(result);
+      arrayBrinsh = await BringTotalbalance(
+        IDcompanySub,
+        userSession.IDCompany,
+        result
+      );
     }
     // console.log(arrayBrinsh);
 
@@ -93,7 +110,8 @@ const BringProject = async (req, res) => {
   }
 };
 // console.log(300*4);
-const BringTotalbalance = async (result) => {
+// لانشاء كائن المشروع
+const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
   let arrayReturnProject = [];
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
@@ -103,23 +121,71 @@ const BringTotalbalance = async (result) => {
       element.id,
       element.ConstCompany
     );
+    const countuser = await BringCountUserinProject(
+      IDCompany,
+      IDcompanySub,
+      element.id
+    );
     arrayReturnProject.push({
       ...element,
       DaysUntiltoday: daysDifference,
       TotalcosttothCompany: Total,
       cost: dataProject.RemainingBalance,
       rate: rate,
+      countuser: countuser,
     });
   }
   return arrayReturnProject;
 };
 
-const AccountCostProject = async (id, ConstCompany) => {
-  // const DateStage = await SELECTTablecompanySubProjectStageCUST(
-  //   id,
-  //   "CountDate"
-  // );
+// لمعرفة عدد مستخدمي المشروع
 
+const BringCountUserinProject = (IDCompany, IDcompanySub, idproject) => {
+  return new Promise(async (resolve, reject) => {
+    let arrayvalidityuser = [];
+    const result = await SELECTTableusersCompany(IDCompany);
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      // console.log(element.Validity)
+      const validity = JSON.parse(element.Validity) || [];
+      if (validity.length > 0) {
+        // console.log(type, "mmmmmmmm");
+        const datanew = await BringUserinProject(
+          validity,
+          IDcompanySub,
+          idproject,
+          element
+        );
+        if (Object.entries(datanew).length > 0) {
+          arrayvalidityuser.push(datanew);
+        }
+      }
+    }
+    resolve(arrayvalidityuser.length);
+  });
+};
+const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
+  let arrayUser = {};
+  //      لاخراج  البيانات من داخل حاوية الصلاحيات
+  Validity.forEach((pic) => {
+    //  للتحقق من وجود المستخدم بداخل الفرع
+    if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
+      //  للتحقق من وجود تحديد عدد المشاريع
+      if (pic?.project.length > 0) {
+        const findUserinProject = pic?.project?.find(
+          (items) => parseInt(items.idProject) === parseInt(idProject)
+        );
+        //  للتحقق من وجود ان للمستخدم صلاحية لدخول المشروع
+        if (findUserinProject) {
+          arrayUser = element;
+        }
+      }
+    }
+  });
+  return arrayUser;
+};
+
+const AccountCostProject = async (id, ConstCompany) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
   let StartDate = new Date(DataProject[0].Contractsigningdate);
   const date2 = new Date();
@@ -132,35 +198,12 @@ const AccountCostProject = async (id, ConstCompany) => {
   return { daysDifference, Total };
 };
 
-// console.log(new Date().getDay() === new Date("2024-09-26T13:55:07.394Z").getDay());
-// Function to calculate difference in days
 function differenceInDays(startDate, endDate) {
   const millisecondsPerDay = 1000 * 60 * 60 * 24; // Milliseconds in one day
   const differenceInMilliseconds = endDate - startDate; // Difference in milliseconds
   return Math.floor(differenceInMilliseconds / millisecondsPerDay); // Convert to days
 }
-// convert number to English
-// function convertArabicToEnglishNumber(arabicNumber) {
-//   const arabicToEnglishMap = {
-//     "٠": "0",
-//     "١": "1",
-//     "٢": "2",
-//     "٣": "3",
-//     "٤": "4",
-//     "٥": "5",
-//     "٦": "6",
-//     "٧": "7",
-//     "٨": "8",
-//     "٩": "9",
-//   };
 
-//   return arabicNumber
-//     .split("")
-//     .map((digit) => arabicToEnglishMap[digit] || digit)
-//     .join("");
-// }
-
-// console.log(convertArabicToEnglishNumber("٣٠٠"));
 // استيراد بيانات المشروع حسب صلاحية المستخدم
 const BringProjectindividual = async (req, res) => {
   try {
@@ -424,10 +467,18 @@ const BringStatmentFinancialforproject = async (req, res) => {
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
 
     if (sevepdf !== 0 && sevepdf?.Total !== undefined) {
-      if (parseInt(sevepdf.Total) === parseInt(Totalproject.RemainingBalance)) {
+      if (
+        (parseInt(sevepdf.Total) === parseInt(Totalproject.RemainingBalance) &&
+          type === "all") ||
+        (type !== "all" &&
+          parseInt(sevepdf.TotalExpense) ===
+            parseInt(Totalproject.TotalExpense))
+      ) {
         namefile = type === "all" ? sevepdf.namefileall : sevepdf.namefileparty;
         if (namefile !== null) {
-          return res.status(200).send({ success: "تمت العملية بنجاح", url: namefile });
+          return res
+            .status(200)
+            .send({ success: "تمت العملية بنجاح", url: namefile });
         } else {
           verify = true;
           chackprojct = true;
@@ -439,11 +490,13 @@ const BringStatmentFinancialforproject = async (req, res) => {
     } else {
       verify = true;
     }
-
+    let kindTable;
+    let kindTotal;
     const output = Math.floor(1000 + Math.random() * 9000);
     if (verify) {
       try {
-        namefile = type === "all" ? sevepdf?.namefileall : sevepdf?.namefileparty;
+        namefile =
+          type === "all" ? sevepdf?.namefileall : sevepdf?.namefileparty;
         if (namefile) {
           const file = bucket.file(namefile);
           await file.delete();
@@ -462,22 +515,36 @@ const BringStatmentFinancialforproject = async (req, res) => {
       const filePath = path.join(__dirname, "../../upload", namefile);
       if (type === "all") {
         await StatmentAllpdf(ProjectID, filePath);
+        kindTable = "Total";
+        kindTotal = Totalproject.RemainingBalance;
       } else {
         await StatmentExpensePdf(ProjectID, filePath);
+        kindTable = "TotalExpense";
+        kindTotal = Totalproject.TotalExpense;
       }
 
       if (fs.existsSync(filePath)) {
         await bucket.upload(filePath);
       } else {
         console.error(`File ${filePath} does not exist for upload.`);
-        return res.status(400).send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+        return res
+          .status(400)
+          .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
       }
 
       let nametable = type !== "all" ? "namefileparty" : "namefileall";
       if (chackprojct) {
-        await UPDATETableSavepdf([namefile, Totalproject.RemainingBalance, ProjectID], nametable);
+        await UPDATETableSavepdf(
+          [namefile, kindTotal, ProjectID],
+          nametable,
+          kindTable
+        );
       } else {
-        await insertTableSabepdf([ProjectID, namefile, Totalproject.RemainingBalance], nametable);
+        await insertTableSabepdf(
+          [ProjectID, namefile, kindTotal],
+          nametable,
+          kindTable
+        );
       }
 
       res.status(200).send({ success: "تمت العملية بنجاح", url: namefile });
@@ -610,9 +677,10 @@ const ExtractDatafromFolderchilde = async (children) => {
   return new Promise((resolve, reject) => {
     let array = [];
     try {
-      children?.forEach((pic) => {
+      children?.forEach((pic, index) => {
         array.push({
           id: pic.id,
+          namefile: `${pic.Date}(${index + 1})`,
           name: pic.name,
           type: pic.type,
           size: pic?.size !== undefined ? pic.size : null,
@@ -695,12 +763,15 @@ const ExtractDatafromStage = async (idproject, type, idSub) => {
       for (let index = 0; index < fileArray.length; index++) {
         const element = fileArray[index];
         const Files = JSON.parse(element.File);
-        arrayfolder.push({
-          id: index + 1,
-          name: Files.name,
-          type: Files.type,
-          size: Files.size,
-        });
+        if (Files.name !== undefined && Files.name !== "") {
+          arrayfolder.push({
+            id: index + 1,
+            namefile: `${element.Date}(${index + 1})`,
+            name: Files.name,
+            type: Files.type,
+            size: Files.size,
+          });
+        }
       }
     }
 
@@ -738,6 +809,8 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
       const element = Images[index];
       arrayfolder.push({
         id: index + 1,
+        namefile: `${element.Date}(${index + 1})`,
+
         name: element,
         type: "image/jpeg",
         size: 0,
@@ -776,6 +849,7 @@ const ExtractDatafromReturn = async (idproject, type, idSub) => {
         const element = Images[index];
         arrayfolder.push({
           id: index + 1,
+          namefile: `${element.Date}(${index + 1})`,
           name: element,
           type: "image/jpeg",
           size: 0,
@@ -813,6 +887,8 @@ const ExtractDatafromRevenue = async (idproject, type, idSub) => {
         const element = Images[index];
         arrayfolder.push({
           id: index + 1,
+          namefile: `${element.Date}(${index + 1})`,
+
           name: element,
           type: "image/jpeg",
           size: 0,

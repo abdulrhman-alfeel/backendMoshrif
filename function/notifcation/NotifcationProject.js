@@ -59,8 +59,8 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -125,8 +125,8 @@ const Stageinsert = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -200,8 +200,8 @@ const StageSubinsert = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -269,8 +269,8 @@ const StageSubNote = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -317,8 +317,8 @@ const CloseOROpenStagenotifcation = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -377,8 +377,8 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -438,8 +438,8 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -489,8 +489,8 @@ const RearrangeStageProject = async (idProject, userName) => {
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -573,8 +573,8 @@ const Financeinsertnotification = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -644,8 +644,8 @@ const Postsnotification = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -693,8 +693,8 @@ const PostsnotificationCansle = async (
     );
     data = {
       ...data,
-      id: idmax
-    }
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -713,10 +713,7 @@ const ChateNotfication = async (
 ) => {
   try {
     let nameChate;
-    const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
-      idProject,
-      StageID
-    );
+
     if (Number(StageID) || StageID === "A1") {
       const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
         idProject,
@@ -745,7 +742,7 @@ const ChateNotfication = async (
       if (File.type === "video/mp4") {
         image = String(File.name).replace("mp4", "png");
         // image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
-        image = `http://192.168.8.220:8080/upload/${image}`;
+        image = `http://34.82.226.92:8080/upload/${image}`;
       } else {
         image = File.name;
         if (File.type === "image/jpeg") {
@@ -775,6 +772,7 @@ const ChateNotfication = async (
       ProjectID: idProject,
       userName: userName,
       type: `chate`,
+      kind: "new",
       nameRoom: nameChate,
     };
     const idmax = await InsertNotifcation(
@@ -787,8 +785,71 @@ const ChateNotfication = async (
     );
     data = {
       ...data,
-      id: idmax
+      id: idmax,
+    };
+    await massges(token, notification, notification_type, navigationId, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const ChateNotficationdelete = async (
+  idProject,
+  StageID,
+  massgs,
+  userName = "",
+  chatID
+) => {
+  try {
+    let nameChate;
+
+    if (Number(StageID) || StageID === "A1") {
+      const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+        idProject,
+        StageID
+      );
+      nameChate = Stage.StageName;
+    } else {
+      nameChate = StageID;
     }
+    const Project = await SELECTProjectStartdate(idProject);
+    const { token, arraynameuser } = await BringtokenuserCustom(
+      idProject,
+      userName,
+      "chate"
+    );
+    let title = `لقد قام ${userName} حذف الرسالة `;
+    const notification_type = "Chate";
+    const navigationId = `${idProject}:${StageID}`;
+    let typfile = null;
+
+    const notification = {
+      title: title,
+      // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
+      body:
+        ` دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  ` +
+        `< ${String(massgs).length > 0 ? massgs : typfile} >`,
+    };
+    let data = {
+      ProjectID: idProject,
+      userName: userName,
+      StageID: StageID,
+      type: `chatedelete`,
+      nameRoom: nameChate,
+      chatID: chatID,
+    };
+    const idmax = await InsertNotifcation(
+      arraynameuser,
+      notification,
+      notification_type,
+      navigationId,
+      data,
+      idProject
+    );
+    data = {
+      ...data,
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -853,7 +914,6 @@ const BringtokenuserCustom = async (
   let token = [];
   let arraynameuser = [];
   const users = await SELECTTableusersCompanySub(ProjectID, type);
-  // console.log(users);
   await Promise.all(
     users
       .filter((pic) => pic.userName !== userName)
@@ -904,4 +964,5 @@ module.exports = {
   Postsnotification,
   AddOrUpdatuser,
   PostsnotificationCansle,
+  ChateNotficationdelete,
 };

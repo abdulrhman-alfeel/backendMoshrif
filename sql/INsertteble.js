@@ -249,10 +249,14 @@ const insertTablecompanySubProjectReturned = (data) => {
     );
   });
 };
-const insertTableSabepdf = (data, typename = "namefileall") => {
+const insertTableSabepdf = (
+  data,
+  typename = "namefileall",
+  typeTotal = "Total"
+) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Savepdf (projectID,${typename}, Total) VALUES (?,?, ?)`,
+      `INSERT INTO Savepdf (projectID,${typename}, ${typeTotal}) VALUES (?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -451,9 +455,6 @@ const insertTableNavigation = (data) => {
   });
 };
 
-
-
-
 //
 module.exports = {
   insertTablecompany,
@@ -482,5 +483,5 @@ module.exports = {
   insertTablecompanySubProjectarchivesFolderforcreatproject,
   insertTableSabepdf,
   insertTablecompanySubProjectRequestsForcreatOrder,
-  insertTableNavigation
+  insertTableNavigation,
 };

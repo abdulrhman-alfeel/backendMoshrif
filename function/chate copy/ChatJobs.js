@@ -2,6 +2,7 @@
 const { ClassChatOpration, ClassChatOprationView } = require("./ChatJobsClass");
 const time = require("./TIME.JS");
 
+let arra = [];
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
 

@@ -365,7 +365,7 @@ const InsertStage = async (req, res) => {
       const dataend = new Date(Time.setDate(Time.getDate() + Days));
       EndDate = dataend.toDateString();
       OrderBy = parseInt(result.OrderBy) + 1;
-
+      console.log(result);
       await insertTablecompanySubProjectStageCUST([
         result.StageID + 1,
         ProjectID,
@@ -605,15 +605,15 @@ const EditNote = async (
             }
           })
         );
-      } 
-        if (files && files.length > 0) {
-          for (let index = 0; index < files.length; index++) {
-            const element = files[index];
-            await uploaddata(element);
-            arrayImage.push(element.filename);
-          }
+      }
+      if (files && files.length > 0) {
+        for (let index = 0; index < files.length; index++) {
+          const element = files[index];
+          await uploaddata(element);
+          arrayImage.push(element.filename);
         }
-      
+      }
+
       // console.log(findNote, "arrays", Imageolddelete);
 
       const data = {
@@ -1008,6 +1008,7 @@ const handlerOpreation = async (
       } else {
         value = {
           id: Math.floor(100000 + Math.random() * 900000),
+          Date: new Date().toISOString(),
           name: name,
           type: type,
           size: size,

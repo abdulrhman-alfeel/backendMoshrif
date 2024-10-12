@@ -1,8 +1,10 @@
-
-const { DeletTableuserComppanyCorssUpdateActivationtoFalse } = require("../../sql/delete");
+const {
+  DeletTableuserComppanyCorssUpdateActivationtoFalse,
+} = require("../../sql/delete");
 const {
   SELECTTableusersCompanyVerificationID,
   SELECTTableLoginActivatActivaty,
+  SELECTTableusersCompanyVerification,
 } = require("../../sql/selected/selectuser");
 const {
   UpdateTableuserComppany,
@@ -21,21 +23,36 @@ const userCompanyUpdat = async (req, res) => {
     const job = req.body.job;
     const Validity = req.body.Validity;
     const id = req.body.id;
+    let number = String(PhoneNumber);
 
-    const operation = await UpdateTableuserComppany([
-      IDCompany,
-      userName,
-      IDNumber,
-      PhoneNumber,
-      job,
-      JSON.stringify(Validity),
-      id,
-    ]);
-    res
-      .send({
-        success: "تمت العملية بنجاح",
-      })
-      .status(200);
+    if (number.startsWith(0)) {
+      number = number.slice(1);
+    }
+    const verificationFinduser = await SELECTTableusersCompanyVerification(
+      number
+    );
+    if (verificationFinduser.length <= 0) {
+      const operation = await UpdateTableuserComppany([
+        IDCompany,
+        userName,
+        IDNumber,
+        number,
+        job,
+        JSON.stringify(Validity),
+        id,
+      ]);
+      res
+        .send({
+          success: "تمت العملية بنجاح",
+        })
+        .status(200);
+    } else {
+      res
+        .send({
+          success: "الرقم الذي اضفته لمستخدم موجود",
+        })
+        .status(200);
+    }
   } catch (err) {
     console.log(err);
     res

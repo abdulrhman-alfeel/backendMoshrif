@@ -1,4 +1,3 @@
-const { DeleteTableChate } = require("../../sql/delete");
 const {
   insertTableChate,
   insertTableChateStage,
@@ -19,12 +18,12 @@ const {
   SELECTLastTableChateID,
   SELECTTableViewChateUser,
 } = require("../../sql/selected/selected");
-const {
-  ChateNotfication,
-  ChateNotficationdelete,
-} = require("../notifcation/NotifcationProject");
+const { ChateNotfication } = require("../notifcation/NotifcationProject");
 const { insertPostURL } = require("../postpublic/post");
+const time = require("./TIME.JS");
 
+let arra = [];
+let arrachat = [];
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
 // عملية ارسال واستقبال لشات المراحل
@@ -32,35 +31,30 @@ const ClassChatOpration = async (Socket, io) => {
   try {
     Socket.on("send_message", async (data) => {
       let result;
-      if (data.kind === "new") {
-        // console.log(data);
-        const newData = Datadistribution(data);
-        if (Number(data?.StageID)) {
-          await insertTableChateStage(newData);
-          result = await SELECTTableChateStageOtherroad(data.idSendr);
-          //  ادخال البيانات جدول البوستات
-        } else {
-          await insertTableChate(newData);
-          result = await SELECTTableChateotherroad(data.idSendr);
-        }
-        await insertPostURL(data);
-        // console.log(result)
-        result.File = JSON.parse(result.File);
-        result.Reply = JSON.parse(result.Reply);
-        result.arrived = true;
-        result.kind = "new";
-        await ChateNotfication(
-          data.ProjectID,
-          data?.StageID,
-          data.message,
-          data.Sender,
-          data.Reply,
-          data.File
-        );
+      const newData = Datadistribution(data);
+      // console.log(data);
+      // console.log(data?.StageID,'undfind')
+      if (Number(data?.StageID)) {
+        await insertTableChateStage(newData);
+        result = await SELECTTableChateStageOtherroad(data.idSendr);
+        //  ادخال البيانات جدول البوستات
       } else {
-        result = await DeleteChatfromdatabaseanddatabaseuser(data);
+        await insertTableChate(newData);
+        result = await SELECTTableChateotherroad(data.idSendr);
       }
-
+      await insertPostURL(data);
+      // console.log(result)
+      result.File = JSON.parse(result.File);
+      result.Reply = JSON.parse(result.Reply);
+      result.arrived = true;
+      await ChateNotfication(
+        data.ProjectID,
+        data?.StageID,
+        data.message,
+        data.Sender,
+        data.Reply,
+        data.File
+      );
       io.to(`${data.ProjectID}:${data?.StageID}`)
         .timeout(50)
         .emit("received_message", result);
@@ -107,35 +101,7 @@ const Datadistribution = (data) => {
   }
 };
 
-// عمليات حذف الرساله
-const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
-  try {
-    const chatID = data.chatID;
-    let dataopration = {
-      ProjectID: data.ProjectID,
-      StageID: data.StageID,
-      kind: data.kind,
-      chatID: chatID,
-    };
-    console.log(dataopration);
-    let result;
-    if (Number(data.type)) {
-      await DeleteTableChate("ChatSTAGE", chatID);
-    } else {
-      await DeleteTableChate("Chat", chatID);
-    }
-    await ChateNotficationdelete(
-      data.ProjectID,
-      data?.StageID,
-      data.message,
-      data.Sender,
-      chatID
-    );
-    return dataopration;
-  } catch (error) {
-    console.log(error);
-  }
-};
+let ViewArray = [];
 
 // **************
 

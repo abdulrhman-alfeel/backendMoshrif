@@ -20,11 +20,8 @@ const SELECTTableusersCompany = (id) => {
   });
 };
 
-
-
-
 //  مستخدم الشركة
-const SELECTTableusersCompanyonObject = (PhoneNumber,type="*") => {
+const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
@@ -80,15 +77,30 @@ const SELECTTableusersCompanyVerificationID = (id) => {
   });
 };
 
-
-
 //  التحقق من صلاحيات المستخدم
-const SELECTTableusersCompanySub = (IDcompanySub,type ="all") => {
+const SELECTTableusersCompanySub = (IDcompanySub, type = "all") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
-      db.all(type === 'all' ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`:
-        `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
-        ,[IDcompanySub],
+      db.all(
+        type === "all"
+          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`
+          : ` SELECT 
+        ca.token, 
+        ca.userName, 
+        ca.Validity, 
+        ca.job, 
+        PR.IDcompanySub, 
+        RE.id AS IDcompany
+    FROM 
+        LoginActivaty ca 
+    LEFT JOIN 
+        company RE ON RE.id = ca.IDCompany 
+    LEFT JOIN 
+        companySubprojects PR 
+    WHERE  
+        PR.id =?`,
+        // `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
+        [IDcompanySub],
         function (err, result) {
           if (err) {
             reject(err);
@@ -125,7 +137,7 @@ const SELECTTableLoginActivaty = (codeVerification) => {
   });
 };
 //  التحقق من انتهاء صلاحية دخول المستخدم
-const SELECTTableLoginActivatActivaty = (PhoneNumber,type="*") => {
+const SELECTTableLoginActivatActivaty = (PhoneNumber, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
@@ -151,5 +163,5 @@ module.exports = {
   SELECTTableLoginActivaty,
   SELECTTableLoginActivatActivaty,
   SELECTTableusersCompanyVerificationID,
-  SELECTTableusersCompanyonObject
+  SELECTTableusersCompanyonObject,
 };
