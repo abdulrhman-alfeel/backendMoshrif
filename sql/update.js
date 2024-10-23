@@ -69,13 +69,36 @@ const UpdateTablecompanySub = (data) => {
     }
   });
 };
-
-const UpdateTableuserComppany = (data) => {
+const UpdateTableLinkevaluation = (data) => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
         db.run(
-          `UPDATE usersCompany SET IDCompany=?, userName=?, IDNumber=?,PhoneNumber=?,job=?,Validity=? WHERE id=?`,
+          `UPDATE Linkevaluation SET urlLink=? WHERE IDcompanySub=?`,
+          data,
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+
+const UpdateTableuserComppany = (data,type ='job=?') => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          `UPDATE usersCompany SET IDCompany=?, userName=?, IDNumber=?,PhoneNumber=?,${type},Validity=? WHERE id=?`,
           data,
           function (err) {
             // console.log("updatetableusercompany", data);
@@ -95,18 +118,7 @@ const UpdateTableuserComppany = (data) => {
   });
 };
 
-const UpdateTableuserComppanySub = (data) => {
-  db.run(
-    `UPDATE usersCompanySub SET IDuser=?, IDcompanySub=?, IDproject=?,job=?,Validity=? WHERE id=?`,
-    data,
-    function (err) {
-      if (err) {
-        console.log(err.message);
-      }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
-};
+
 
 const UpdateTablecompanySubProject = (data) => {
   db.run(
@@ -148,7 +160,6 @@ const UpdateTableLoginActivaty = (data) => {
 };
 // لاغلاق جميع نشاط المستخدم
 const UpdateTableLoginActivatyValidityORtoken = (data, PhoneNumber, type) => {
-  console.log(data, PhoneNumber, type);
   db.serialize(function () {
     db.run(
       `UPDATE LoginActivaty SET ${type}=?  WHERE PhoneNumber=?`,
@@ -461,7 +472,7 @@ module.exports = {
   UPDATETablePostPublic,
   UPDATETableCommentPostPublic,
   UpdateTableuserComppany,
-  UpdateTableuserComppanySub,
+  
   UPDATETableChateStage,
   UPDATETableChate,
   UpdateTableLoginActivaty,
@@ -474,4 +485,5 @@ module.exports = {
   UPDATETableinRequestsDone,
   UpdateTableLoginActivatyValidityORtoken,
   UpdateTableLoginActivatytoken,
+  UpdateTableLinkevaluation
 };

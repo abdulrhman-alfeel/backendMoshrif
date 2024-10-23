@@ -5,6 +5,7 @@ const {
   SELECTTableusersCompanyVerificationID,
   SELECTTableLoginActivatActivaty,
   SELECTTableusersCompanyVerification,
+  SELECTTableusersCompanyVerificationIDUpdate,
 } = require("../../sql/selected/selectuser");
 const {
   UpdateTableuserComppany,
@@ -19,6 +20,7 @@ const userCompanyUpdat = async (req, res) => {
     const userName = req.body.userName;
     const IDNumber = req.body.IDNumber;
     const PhoneNumber = req.body.PhoneNumber;
+    const jobdiscrption = req.body.jobdiscrption;
     // const image = req.file.filename;
     const job = req.body.job;
     const Validity = req.body.Validity;
@@ -28,9 +30,9 @@ const userCompanyUpdat = async (req, res) => {
     if (number.startsWith(0)) {
       number = number.slice(1);
     }
-    const verificationFinduser = await SELECTTableusersCompanyVerification(
-      number
-    );
+    const verificationFinduser =
+      await SELECTTableusersCompanyVerificationIDUpdate(number, id);
+    console.log(verificationFinduser);
     if (verificationFinduser.length <= 0) {
       const operation = await UpdateTableuserComppany([
         IDCompany,
@@ -38,9 +40,10 @@ const userCompanyUpdat = async (req, res) => {
         IDNumber,
         number,
         job,
+        jobdiscrption,
         JSON.stringify(Validity),
         id,
-      ]);
+      ],"job=?,jobdiscrption=?");
       res
         .send({
           success: "تمت العملية بنجاح",
@@ -289,7 +292,7 @@ const Updatchackglobluserinbrinsh = async (
     // console.log(element, "elementtttddddd");
     result.forEach(async (pic) => {
       // if (pic?.Validity?.length > 0) {
-      let validity = pic?.Validity.length > 0 ? JSON.parse(pic?.Validity) : [];
+      let validity = pic?.Validity?.length > 0 ? JSON.parse(pic?.Validity) : [];
       // console.log(element.Validity, "validityllll");
       let Booleans = false;
       if (Number(type)) {

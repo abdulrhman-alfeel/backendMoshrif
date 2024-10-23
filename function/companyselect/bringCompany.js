@@ -4,6 +4,7 @@ const {
   SELECTTablecompanySubAnotherway,
   SELECTTablecompanySubProject,
   SELECTTablecompany,
+  SELECTTablecompanySubLinkevaluation,
 } = require("../../sql/selected/selected");
 
 const bringDataCompany = async (req, res) => {
@@ -44,18 +45,20 @@ const biringDatabrinshCompany = async (req, res) => {
     let ObjectData = [];
     for (let index = 0; index < arrayBrinsh.length; index++) {
       const element = arrayBrinsh[index];
-      // console.log(element, "mkk");
-      const Count = await SELECTTablecompanySubProject(element?.id,0, "Count");
-      // console.log(Count[0]["COUNT(*)"], element);
+      const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
+      const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
       if (element !== undefined) {
         ObjectBrinsh = {
           ...element,
           CountProject: Count[0]["COUNT(*)"],
+          Linkevaluation: Boolean(evaluation?.urlLink)
+            ? evaluation?.urlLink
+            : "",
         };
+        
         ObjectData.push(ObjectBrinsh);
       }
     }
-    // console.log(ObjectData, "mmm");
     res
       .send({
         masseg: "succfuly",
@@ -69,9 +72,5 @@ const biringDatabrinshCompany = async (req, res) => {
     console.log(error);
   }
 };
-
-
-
-
 
 module.exports = { biringDatabrinshCompany, bringDataCompany };

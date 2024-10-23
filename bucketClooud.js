@@ -4,7 +4,7 @@ const storage = new Storage({
   keyFilename: "backendMoshrif.json",
 });
 // const bucketName = "demo_backendmoshrif-1";
-const bucketName = "demo_backendmoshrif_bucket-2";
+const bucketName = "demo_backendmoshrif_bucket-1";
 
 const bucket = storage.bucket(bucketName);
 async function uploaddata(file) {

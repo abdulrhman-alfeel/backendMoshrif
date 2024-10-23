@@ -5,3 +5,8 @@
 20241008	13:38:54	5ab4898f-c709-4dd5-9631-9e07052ab6e9	MulterError: Field value too long	POST	/api/brinshCompany/NotesStageSub	undefined
 20241008	13:39:49	4ddb8d3d-7afb-4eb9-ad5a-0cdcccd519a7	MulterError: Field value too long	POST	/api/brinshCompany/NotesStageSub	undefined
 20241008	13:40:50	cb749d3e-0bde-4ebb-b13d-6f80897e5ca7	MulterError: Field value too long	POST	/api/brinshCompany/NotesStageSub	undefined
+20241017	12:36:47	fece447c-7d56-45d7-ba4e-7800f65d8204	MulterError: Unexpected field	POST	/api/brinshCompany/AddfileinFolderinArchivesnew	undefined
+20241017	14:08:23	c59531d7-64de-4481-815c-20b1833dce2c	TypeError: Cannot read properties of undefined (reading 'startsWith')	PUT	/api/brinshCompany/DeletProjectwithDependencies?idProject=7	undefined
+20241017	14:08:41	00590734-84bb-4ffe-bf9d-0d23c27177a5	TypeError: Cannot read properties of undefined (reading 'startsWith')	PUT	/api/brinshCompany/DeletProjectwithDependencies?idProject=7	undefined
+20241017	14:09:29	2fa493a8-9048-4bec-90c2-0f7445e3ce5e	TypeError: Cannot read properties of undefined (reading 'startsWith')	PUT	/api/brinshCompany/DeletProjectwithDependencies?idProject=7	undefined
+20241017	14:10:14	9076763f-d977-46eb-8f3c-6018086759aa	TypeError: Cannot read properties of undefined (reading 'startsWith')	PUT	/api/brinshCompany/DeletProjectwithDependencies?idProject=7	undefined

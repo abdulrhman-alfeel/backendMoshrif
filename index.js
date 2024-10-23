@@ -49,60 +49,48 @@ app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
 
 // لاستقبال الملفات والصور
-// bucket.upload("./mydatabase.db");
-// Sample HTML content
-
-app.post("/api/file", uploads.single("filechate"), async (req, res) => {
+app.get("/UploadDatabase", async (req, res) => {
   try {
-    const range = req.range(10000); // specify the maximum size of the resource
-    if (range) {
-      // handle the range request
-      res.set("Content-Type", "multipart/byteranges; boundary=3d6b6a416f9b5");
-      res.set("Content-Length", 282);
-      res.status(206);
-      res.write("--3d6b6a416f9b5\n");
-      res.write("Content-Type: text/html\n");
-      res.write("Content-Range: bytes 0-50/1270\n\n");
-      res.write(
-        '<!DOCTYPE html>\n<html lang="en-US">\n<head>\n    <title>Example Do'
-      );
-      res.write("--3d6b6a416f9b5\n");
-      res.write("Content-Type: text/html\n");
-      res.write("Content-Range: bytes 100-150/1270\n\n");
-      res.write('eta http-equiv="Content-type" content="text/html; c');
-      res.write("--3d6b6a416f9b5--\n");
-      res.end();
-    } else {
-      // handle the full request
-      await uploaddata(req.file);
-
-      const timePosition = "00:00:00.100";
-      const filename = String(req.file.filename).replace("mp4", "png");
-      const tempFilePathtimp = `upload/${filename}`;
-
-      res
-        .send({ success: "Full request", nameFile: req.file.filename })
-        .status(200);
-      // console.log(filename, req.file);
-      // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
-      if (req.file.mimetype === "video/mp4") {
-        await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
-        const timeout = setTimeout(async () => {
-          await bucket.upload(tempFilePathtimp);
-        }, 1000);
-
-        // clearTimeout(timeout);
-        setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
-      }
-
-      const timeoutfile = setTimeout(async () => {
-        await fs.unlink(req.file.path, () => {});
-      }, 500);
-      clearTimeout(timeoutfile);
-    }
+    await bucket.upload("./mydatabase.db");
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
-    res.send({ success: "فشلة عملية رفع الملف" }).status(404);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+});
+//
+// Sample HTML content
+
+// Consume messages from the queue
+app.post("/api/file", uploads.single("filechate"), async (req, res) => {
+  try {
+    await uploaddata(req.file);
+    // console.log(req.file);
+
+    res
+      .send({ success: "Full request", nameFile: req.file.filename })
+      .status(200);
+    const timePosition = "00:00:00.100";
+    const filename = String(req.file.filename).replace("mp4", "png");
+    const tempFilePathtimp = `upload/${filename}`;
+    // console.log(filename, req.file);
+    // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
+    if (req.file.mimetype === "video/mp4") {
+      await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
+      setTimeout(async () => {
+        await bucket.upload(tempFilePathtimp);
+      }, 1000);
+
+      // clearTimeout(timeout);
+      // setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
+    }
+
+    // setTimeout(async () => {
+    //   await fs.unlink(req.file.path, () => {});
+    // }, 500);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشلة عملية رفع الملف" }).status(500);
   }
 });
 

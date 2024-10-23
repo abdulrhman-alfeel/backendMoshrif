@@ -5,6 +5,7 @@ const {
   SELECTTableIDcompanytoPost,
   SELECTTableNavigation,
   SELECTTableNavigationObjectOne,
+  SelectVerifycompanyexistence,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableLoginActivatActivaty,
@@ -22,10 +23,15 @@ const InsertNotifcation = async (
 ) => {
   try {
     await DeleteTableNotifcation();
-    const result = await SELECTTableIDcompanytoPost(id, type, select);
+    let result;
+    if (type === true) {
+      result = await SelectVerifycompanyexistence(id);
+    } else {
+      result = await SELECTTableIDcompanytoPost(id, type, select);
+    }
     const endData = [
-      result.NumberCompany,
-      result.id,
+      type === true ? result?.id : result?.NumberCompany,
+      type === true ? id : result?.id,
       JSON.stringify(notification),
       token.length > 0 ? JSON.stringify(token) : null,
       JSON.stringify({
@@ -51,9 +57,8 @@ const BringDataNotifcation = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    
     const result = await SELECTTableNavigation(userSession?.IDCompany, LastID);
-    
+
     let arrayNotifcation = [];
     if (result.length > 0) {
       result.forEach(async (pic) => {
@@ -65,20 +70,13 @@ const BringDataNotifcation = async (req, res) => {
             arrayNotifcation.push({
               notification: JSON.parse(pic.notification),
               data: {
-                id:pic.id,
+                id: pic.id,
                 Date: pic.Date,
                 notification_type: dataNotifction?.notification_type,
                 navigationId: dataNotifction?.navigationId,
                 data: JSON.stringify(dataNotifction?.data),
               },
             });
-            // await massges(
-            //   [resultUser.token],
-            //   JSON.parse(pic.notification),
-            //   dataNotifction?.notification_type,
-            //   dataNotifction?.navigationId,
-            //   dataNotifction?.data
-            // );
           }
         });
       });

@@ -1,5 +1,5 @@
 const express = require("express");
-const { userCompany,userCompanySub } = require("../function/companyinsert/insertuserCompany");
+const { userCompany } = require("../function/companyinsert/insertuserCompany");
 const uploads = require("../middleware/uploads");
 const { BringUserCompany, BringUserCompanyinBrinsh } = require("../function/companyselect/userCompanyselect");
 const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken } = require("../function/companyinsert/UpdatuserCompany");
@@ -20,8 +20,7 @@ router.route('/UpdateToken')
 .put(UpdateToken)
 // .post(uploads.single('image'),userCompany)
 
-router.route('/Validity')
-.post(userCompanySub)
+
 router.route('/BringUserCompany')
 .get(BringUserCompany)
 router.route('/BringUserCompanyBrinsh')

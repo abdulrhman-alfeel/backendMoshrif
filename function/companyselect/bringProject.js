@@ -50,7 +50,6 @@ const BringProject = async (req, res) => {
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = req.query.PhoneNumber;
     const IDfinlty = req.query.IDfinlty;
-    // console.log(PhoneNumber);
     let arrayBrinsh = [];
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
     if (Datausere.job !== "Admin") {
@@ -83,6 +82,7 @@ const BringProject = async (req, res) => {
               );
               arrayBrinsh.push(result);
             }
+
             if (arrayBrinsh.length > 0) {
               arrayBrinsh = await BringTotalbalance(
                 IDcompanySub,
@@ -100,6 +100,7 @@ const BringProject = async (req, res) => {
         userSession.IDCompany,
         result
       );
+
     }
     // console.log(arrayBrinsh);
 
@@ -109,35 +110,74 @@ const BringProject = async (req, res) => {
     res.send({ success: false }).status(400);
   }
 };
-// console.log(300*4);
 // لانشاء كائن المشروع
 const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
   let arrayReturnProject = [];
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
-    const dataProject = await SELECTSUMAmountandBring(element.id);
-    const rate = await PercentagecalculationforProject(element.id);
-    const { daysDifference, Total } = await AccountCostProject(
-      element.id,
-      element.ConstCompany
-    );
-    const countuser = await BringCountUserinProject(
-      IDCompany,
-      IDcompanySub,
-      element.id
-    );
-    arrayReturnProject.push({
-      ...element,
-      DaysUntiltoday: daysDifference,
-      TotalcosttothCompany: Total,
-      cost: dataProject.RemainingBalance,
-      rate: rate,
-      countuser: countuser,
-    });
+    const data = await OpreationExtrinProject(element, IDCompany, IDcompanySub);
+    if (data !== undefined) {
+      arrayReturnProject.push(data);
+    }
   }
   return arrayReturnProject;
 };
 
+// عملية استخراج بيانات المشروع ككائان واحد
+const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
+  try {
+    if (element?.id !== undefined) {
+      const dataProject = await SELECTSUMAmountandBring(element.id);
+      const rate = await PercentagecalculationforProject(element.id);
+      const { daysDifference, Total } = await AccountCostProject(
+        element.id,
+        element.ConstCompany
+      );
+      const countuser = await BringCountUserinProject(
+        IDCompany,
+        IDcompanySub,
+        element.id
+      );
+      const data = {
+        ...element,
+        DaysUntiltoday: daysDifference,
+        TotalcosttothCompany: Total,
+        cost: dataProject.RemainingBalance,
+        rate: rate,
+        countuser: countuser,
+      };
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+//  عملية رئيسية لجلب مشروع واحد
+const BringProjectObjectone = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const idProject = req.query.idProject;
+    const result = await SELECTTablecompanySubProjectLast_id(
+      idProject,
+      "party"
+    );
+
+    const data = await OpreationExtrinProject(
+      result,
+      userSession.IDCompany,
+      result?.IDcompanySub
+    );
+
+    res.send({ success: "تم نجاح العملية", data: data }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ success: "فشل تنفيذ العملية" });
+  }
+};
 // لمعرفة عدد مستخدمي المشروع
 
 const BringCountUserinProject = (IDCompany, IDcompanySub, idproject) => {
@@ -465,6 +505,7 @@ const BringStatmentFinancialforproject = async (req, res) => {
 
     const sevepdf = await SELECTTableSavepdf(ProjectID);
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
+    console.log(Totalproject);
 
     if (sevepdf !== 0 && sevepdf?.Total !== undefined) {
       if (
@@ -809,13 +850,13 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
       const element = Images[index];
       arrayfolder.push({
         id: index + 1,
-        namefile: `${element.Date}(${index + 1})`,
-
+        namefile: `${datasub.InvoiceNo}-(${index + 1})`,
         name: element,
         type: "image/jpeg",
         size: 0,
       });
     }
+    console.log(arrayfolder);
     arrayfolder.push({
       id: arrayfolder.length + 1,
       Data: datasub,
@@ -849,7 +890,7 @@ const ExtractDatafromReturn = async (idproject, type, idSub) => {
         const element = Images[index];
         arrayfolder.push({
           id: index + 1,
-          namefile: `${element.Date}(${index + 1})`,
+          namefile: `${datasub.ReturnsId}-(${index + 1})`,
           name: element,
           type: "image/jpeg",
           size: 0,
@@ -887,7 +928,7 @@ const ExtractDatafromRevenue = async (idproject, type, idSub) => {
         const element = Images[index];
         arrayfolder.push({
           id: index + 1,
-          namefile: `${element.Date}(${index + 1})`,
+          namefile: `${datasub.RevenueId}-(${index + 1})`,
 
           name: element,
           type: "image/jpeg",
@@ -1218,4 +1259,5 @@ module.exports = {
   BringDataRequests,
   BringCountRequsts,
   BringReportforProject,
+  BringProjectObjectone,
 };

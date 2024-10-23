@@ -90,7 +90,6 @@ const BringPost = async (req, res) => {
 
     // Format the date as "DD-MM-YY"
     const formattedDate = `${year}-${month}-${day}`;
-    // console.log(id, formattedDate, PostID);
     const result = await SELECTTablePostPublic(id, formattedDate, PostID);
     let arrayPosts = [];
     for (let index = 0; index < result.length; index++) {

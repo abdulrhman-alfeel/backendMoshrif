@@ -58,56 +58,63 @@ const projectBrinsh = async (req, res) => {
     const GuardNumber = req.body.GuardNumber;
     const LocationProject = req.body.LocationProject;
     const Contractsigningdate = new Date();
-    // console.log(IDcompanySub);
-    await insertTablecompanySubProject([
-      IDcompanySub,
-      Nameproject,
-      Note,
-      TypeOFContract,
-      GuardNumber,
-      LocationProject,
-    ]);
-    const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-    let dataStages = await StageTempletXsl(TypeOFContract);
-    const visity = await StageTempletXsl("NULL");
-    // console.log(visity);
-    let table = [];
-    let tablesub = [];
-    dataStages = [visity[0], ...dataStages];
-    for (let index = 0; index < dataStages.length; index++) {
-      const element = dataStages[index];
-      table.push({
-        ...element,
-        ProjectID: idProject["last_id"],
-        StartDate: null,
-        EndDate: null,
-        CloseDate: null,
-      });
-
-      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
-      resultSubTablet.forEach((pic) => {
-        tablesub.push({
-          StageID: pic.StageID,
+    if (Boolean(Nameproject)) {
+      await insertTablecompanySubProject([
+        IDcompanySub,
+        Nameproject,
+        Note,
+        TypeOFContract,
+        GuardNumber,
+        LocationProject,
+      ]);
+      const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
+      let dataStages = await StageTempletXsl(TypeOFContract);
+      const visity = await StageTempletXsl("NULL");
+      // console.log(visity);
+      let table = [];
+      let tablesub = [];
+      dataStages = [visity[0], ...dataStages];
+      for (let index = 0; index < dataStages.length; index++) {
+        const element = dataStages[index];
+        table.push({
+          ...element,
           ProjectID: idProject["last_id"],
-          StageSubName: pic.StageSubName,
+          StartDate: null,
+          EndDate: null,
+          CloseDate: null,
         });
-      });
-    }
-    await Stage(table, Contractsigningdate);
-    await StageSub(tablesub);
-    await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
 
-    res
-      .send({
-        success: true,
-      })
-      .status(200);
-    await Projectinsert(IDcompanySub, userSession.userName);
+        const resultSubTablet = await StageSubTempletXlsx(element.StageID);
+        resultSubTablet.forEach((pic) => {
+          tablesub.push({
+            StageID: pic.StageID,
+            ProjectID: idProject["last_id"],
+            StageSubName: pic.StageSubName,
+          });
+        });
+      }
+      await Stage(table, Contractsigningdate);
+      await StageSub(tablesub);
+      await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
+
+      res
+        .send({
+          success: "تم انشاء مشروع بنجاح",
+        })
+        .status(200);
+      await Projectinsert(IDcompanySub, userSession.userName);
+    } else {
+      res
+        .send({
+          success: "يجب اضافة اسم للمشروع ",
+        })
+        .status(200);
+    }
   } catch (err) {
     console.log(err);
     res
       .send({
-        success: false,
+        success: "فشل تنفيذ العملية",
       })
       .status(401);
   }
@@ -268,7 +275,7 @@ const StageSubTemplet = async (req, res) => {
 };
 
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
-const Stage = async (teble, StartDate) => {
+const Stage = async (teble, StartDate, types = "new") => {
   try {
     // const futureDate = new Date(currentDate);
     // futureDate.setDate(currentDate.getDate() + 5);
@@ -277,11 +284,12 @@ const Stage = async (teble, StartDate) => {
 
     for (let index = 0; index < newData.length; index++) {
       const item = teble[index];
+      let number = types === "new" ? `(${index + 1})` : "";
       await insertTablecompanySubProjectStageCUST([
         item.StageID,
         item.ProjectID,
         item.Type,
-        item.StageName,
+        `${item.StageName} ${number}`,
         item.Days,
         item.StartDate,
         item.EndDate,
@@ -332,6 +340,7 @@ const StageSub = async (teble) => {
   }
 };
 //
+
 // إضافة مرحلة جديدة إلى المشروع
 const InsertStage = async (req, res) => {
   try {
@@ -344,43 +353,46 @@ const InsertStage = async (req, res) => {
     const ProjectID = req.body.ProjectID;
     const TypeOFContract = req.body.TypeOFContract;
     const Days = req.body.Days;
-
-    const findName = await SELECTTablecompanySubProjectStageCUST(
-      ProjectID,
-      StageName
-    );
-    // console.log(findName);
-    if (findName.length <= 0) {
-      const result =
-        await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
-          ProjectID
-        );
-      // console.log(result);
-
-      let StartDate;
-      let EndDate;
-      let OrderBy;
-      Time = new Date(result.EndDate);
-      StartDate = Time.toDateString();
-      const dataend = new Date(Time.setDate(Time.getDate() + Days));
-      EndDate = dataend.toDateString();
-      OrderBy = parseInt(result.OrderBy) + 1;
-      console.log(result);
-      await insertTablecompanySubProjectStageCUST([
-        result.StageID + 1,
+    if (ProjectID > 0 && Boolean(StageName)) {
+      const findName = await SELECTTablecompanySubProjectStageCUST(
         ProjectID,
-        TypeOFContract,
-        StageName,
-        Days,
-        StartDate,
-        EndDate,
-        OrderBy,
-      ]);
+        StageName
+      );
+      // console.log(findName);
+      if (findName.length <= 0) {
+        const result =
+          await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
+            ProjectID
+          );
+        // console.log(result);
 
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Stageinsert(ProjectID, 0, userSession.userName);
+        let StartDate;
+        let EndDate;
+        let OrderBy;
+        Time = new Date(result.EndDate);
+        StartDate = Time.toDateString();
+        const dataend = new Date(Time.setDate(Time.getDate() + Days));
+        EndDate = dataend.toDateString();
+        OrderBy = parseInt(result.OrderBy) + 1;
+        console.log(result);
+        await insertTablecompanySubProjectStageCUST([
+          result.StageID + 1,
+          ProjectID,
+          TypeOFContract,
+          StageName,
+          Days,
+          StartDate,
+          EndDate,
+          OrderBy,
+        ]);
+
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Stageinsert(ProjectID, 0, userSession.userName);
+      } else {
+        res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
+      }
     } else {
-      res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
+      res.send({ success: "يجب ادخال اسم للمرحلة الجديدة" }).status(200);
     }
   } catch (error) {
     console.log(error);
@@ -400,23 +412,26 @@ const insertStageSub = async (req, res) => {
     const StageID = req.body.StageID;
     const ProjectID = req.body.ProjectID;
     const StageSubName = req.body.StageSubName;
-    // console.log(StageID, ProjectID, StageSubName);
-    const VerifyName = await SELECTTablecompanySubProjectStagesSub(
-      ProjectID,
-      StageID,
-      StageSubName
-    );
-    // console.log(VerifyName);
-    if (VerifyName.length <= 0) {
-      await insertTablecompanySubProjectStagesSub([
-        StageID,
+    if (Boolean(StageSubName)) {
+      const VerifyName = await SELECTTablecompanySubProjectStagesSub(
         ProjectID,
-        StageSubName,
-      ]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await StageSubinsert(ProjectID, StageID, userSession.userName);
+        StageID,
+        StageSubName
+      );
+      // console.log(VerifyName);
+      if (VerifyName.length <= 0) {
+        await insertTablecompanySubProjectStagesSub([
+          StageID,
+          ProjectID,
+          StageSubName,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await StageSubinsert(ProjectID, StageID, userSession.userName);
+      } else {
+        res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
+      }
     } else {
-      res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
+      res.send({ success: "يرجى ادخال اسم الخطوة" }).status(200);
     }
   } catch (error) {
     console.log(error);
@@ -441,18 +456,22 @@ const NotesStage = async (req, res) => {
     const RecordedBy = req.body.RecordedBy;
     const countdayDelay = req.body.countdayDelay;
     const ImageAttachment = req.file ? req.file?.filename : null;
-    await insertTablecompanySubProjectStageNotes([
-      StagHOMID,
-      ProjectID,
-      Type,
-      Note,
-      RecordedBy,
-      countdayDelay,
-      ImageAttachment,
-    ]);
+    if (Boolean(Type) && Boolean(Note)) {
+      await insertTablecompanySubProjectStageNotes([
+        StagHOMID,
+        ProjectID,
+        Type,
+        Note,
+        RecordedBy,
+        countdayDelay,
+        ImageAttachment,
+      ]);
 
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Delayinsert(ProjectID, StagHOMID, userSession.userName);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await Delayinsert(ProjectID, StagHOMID, userSession.userName);
+    } else {
+      res.send({ success: "يرجى اكمال البيانات" }).status(200);
+    }
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -473,63 +492,60 @@ const NotesStageSub = async (req, res) => {
     const type = req.body.type;
     let NoteArry;
     let kind;
-    const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
-      StageSubID
-    );
-    // {
-    //   closingoperations: null,
-    //   Note: null,
-    //   Done: 'false',
-    //   CloseDate: null
-    // }
-    if (type === "AddNote") {
-      NoteArry = await AddNote(
-        Note,
-        userName,
-        PhoneNumber,
-        bringData,
-        req.files
+    if (Boolean(Note)) {
+      const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+        StageSubID
       );
-      kind = "Note";
-    } else if (type === "EditNote") {
-      const idNote = req.body.idNote;
-      const Imageolddelete = req.body.Imageolddelete;
-      NoteArry = await EditNote(
-        idNote,
-        Note,
-        userName,
-        PhoneNumber,
-        bringData,
-        Imageolddelete,
-        req.files
-      );
-      kind = "Note";
-    } else if (type === "DeletNote") {
-      const idNote = req.body.idNote;
-      const dataNote = JSON.parse(bringData.Note);
-      NoteArry = dataNote.filter(
-        (item) => parseInt(item.id) !== parseInt(idNote)
-      );
-      kind = "Note";
-    }
-    // console.log(NoteArry, "kkkdddddddddddddddk");
-    if (NoteArry !== undefined) {
-      await UPDATETablecompanySubProjectStagesSub(
-        [JSON.stringify(NoteArry), StageSubID],
-        kind
-      );
-    }
-    // console.log(NoteArry);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
 
-    await StageSubNote(
-      bringData.ProjectID,
-      bringData.StagHOMID,
-      StageSubID,
-      Note,
-      userSession.userName,
-      type === "AddNote" ? "اضاف" : "تعديل"
-    );
+      if (type === "AddNote") {
+        NoteArry = await AddNote(
+          Note,
+          userName,
+          PhoneNumber,
+          bringData,
+          req.files
+        );
+        kind = "Note";
+      } else if (type === "EditNote") {
+        const idNote = req.body.idNote;
+        const Imageolddelete = req.body.Imageolddelete;
+        NoteArry = await EditNote(
+          idNote,
+          Note,
+          userName,
+          PhoneNumber,
+          bringData,
+          Imageolddelete,
+          req.files
+        );
+        kind = "Note";
+      } else if (type === "DeletNote") {
+        const idNote = req.body.idNote;
+        const dataNote = JSON.parse(bringData.Note);
+        NoteArry = dataNote.filter(
+          (item) => parseInt(item.id) !== parseInt(idNote)
+        );
+        kind = "Note";
+      }
+      if (NoteArry !== undefined) {
+        await UPDATETablecompanySubProjectStagesSub(
+          [JSON.stringify(NoteArry), StageSubID],
+          kind
+        );
+      }
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+      await StageSubNote(
+        bringData.ProjectID,
+        bringData.StagHOMID,
+        StageSubID,
+        Note,
+        userSession.userName,
+        type === "AddNote" ? "اضاف" : "تعديل"
+      );
+    } else {
+      res.send({ success: "يجب اكمال البيانات" }).status(200);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
@@ -786,7 +802,6 @@ const CloaseOROpenStage = async (Note, RecordedBy, StageID, ProjectID) => {
     console.log(error);
   }
 };
-
 // ادخال بيانات المصروفات
 const ExpenseInsert = async (req, res) => {
   try {
@@ -800,39 +815,42 @@ const ExpenseInsert = async (req, res) => {
     const Data = req.body.Data;
     const ClassificationName = req.body.ClassificationName;
     const Taxable = 15;
-    const totaldataproject = await SELECTTablecompanySubProjectexpenseObjectOne(
-      projectID,
-      "count"
-    );
-    const InvoiceNo = totaldataproject["COUNT(*)"] + 1;
-    // console.log(projectID);
-    let arrayImage = [];
-    if (req.files && req.files.length > 0) {
-      for (let index = 0; index < req.files.length; index++) {
-        const element = req.files[index];
-        await uploaddata(element);
-        arrayImage.push(element.filename);
+
+    if (Boolean(Amount) && Boolean(Data)) {
+      const totaldataproject =
+        await SELECTTablecompanySubProjectexpenseObjectOne(projectID, "count");
+      const InvoiceNo = totaldataproject["COUNT(*)"] + 1;
+      // console.log(projectID);
+      let arrayImage = [];
+      if (req.files && req.files.length > 0) {
+        for (let index = 0; index < req.files.length; index++) {
+          const element = req.files[index];
+          await uploaddata(element);
+          arrayImage.push(element.filename);
+        }
+      } else {
+        arrayImage = null;
       }
+      // console.log(arrayImage);
+      await insertTablecompanySubProjectexpense([
+        projectID,
+        Amount,
+        Data,
+        ClassificationName,
+        arrayImage !== null ? JSON.stringify(arrayImage) : null,
+        InvoiceNo,
+        Taxable,
+      ]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await Financeinsertnotification(
+        projectID,
+        "مصروفات",
+        "إضافة",
+        userSession.userName
+      );
     } else {
-      arrayImage = null;
+      res.send({ success: "يجب اكمال البيانات" }).status(200);
     }
-    // console.log(arrayImage);
-    await insertTablecompanySubProjectexpense([
-      projectID,
-      Amount,
-      Data,
-      ClassificationName,
-      arrayImage !== null ? JSON.stringify(arrayImage) : null,
-      InvoiceNo,
-      Taxable,
-    ]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(
-      projectID,
-      "مصروفات",
-      "إضافة",
-      userSession.userName
-    );
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
@@ -852,29 +870,33 @@ const RevenuesInsert = async (req, res) => {
     const Data = req.body.Data;
     const Bank = req.body.Bank;
     let arrayImage = [];
-    if (req.files && req.files.length > 0) {
-      for (let index = 0; index < req.files.length; index++) {
-        const element = req.files[index];
-        await uploaddata(element);
-        arrayImage.push(element.filename);
+    if (Boolean(Amount) && Boolean(Data)) {
+      if (req.files && req.files.length > 0) {
+        for (let index = 0; index < req.files.length; index++) {
+          const element = req.files[index];
+          await uploaddata(element);
+          arrayImage.push(element.filename);
+        }
+      } else {
+        arrayImage = null;
       }
+      await insertTablecompanySubProjectREVENUE([
+        projectID,
+        Amount,
+        Data,
+        Bank,
+        arrayImage !== null ? JSON.stringify(arrayImage) : null,
+      ]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await Financeinsertnotification(
+        projectID,
+        "عهد",
+        "إضافة",
+        userSession.userName
+      );
     } else {
-      arrayImage = null;
+      res.send({ success: "يحب اكمال البيانات" }).status(200);
     }
-    await insertTablecompanySubProjectREVENUE([
-      projectID,
-      Amount,
-      Data,
-      Bank,
-      arrayImage !== null ? JSON.stringify(arrayImage) : null,
-    ]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(
-      projectID,
-      "عهد",
-      "إضافة",
-      userSession.userName
-    );
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -884,8 +906,6 @@ const RevenuesInsert = async (req, res) => {
 // ادخال بيانات المرتجع
 const ReturnsInsert = async (req, res) => {
   try {
-    // console.log("hellllllllllllllllllllow");
-    // console.log(req.body);
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
@@ -895,29 +915,33 @@ const ReturnsInsert = async (req, res) => {
     const Amount = req.body.Amount;
     const Data = req.body.Data;
     let arrayImage = [];
-    if (req.files && req.files.length > 0) {
-      for (let index = 0; index < req.files.length; index++) {
-        const element = req.files[index];
-        await uploaddata(element);
-        arrayImage.push(element.filename);
+    if (Boolean(Amount) && Boolean(Data)) {
+      if (req.files && req.files.length > 0) {
+        for (let index = 0; index < req.files.length; index++) {
+          const element = req.files[index];
+          await uploaddata(element);
+          arrayImage.push(element.filename);
+        }
+      } else {
+        arrayImage = null;
       }
-    } else {
-      arrayImage = null;
-    }
-    await insertTablecompanySubProjectReturned([
-      projectID,
-      Amount,
-      Data,
-      arrayImage !== null ? JSON.stringify(arrayImage) : null,
-    ]);
+      await insertTablecompanySubProjectReturned([
+        projectID,
+        Amount,
+        Data,
+        arrayImage !== null ? JSON.stringify(arrayImage) : null,
+      ]);
 
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(
-      projectID,
-      "مرتجعات",
-      "إضافة",
-      userSession.userName
-    );
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await Financeinsertnotification(
+        projectID,
+        "مرتجعات",
+        "إضافة",
+        userSession.userName
+      );
+    } else {
+      res.send({ success: "يجب اكمال البيانات" }).status(200);
+    }
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -934,8 +958,12 @@ const AddFolderArchivesnew = async (req, res) => {
   try {
     const ProjectID = req.body.ProjectID;
     const FolderName = req.body.FolderName;
-    await insertTablecompanySubProjectarchivesFolder([ProjectID, FolderName]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
+    if (Boolean(FolderName)) {
+      await insertTablecompanySubProjectarchivesFolder([ProjectID, FolderName]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+    } else {
+      res.send({ success: "يجب ادخال اسم المجلد" }).status(200);
+    }
   } catch (err) {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية " }).status(400);
@@ -959,28 +987,29 @@ const AddfileinFolderHomeinArchive = async (req, res) => {
       type = req.file?.mimetype;
       size = req.file?.size;
     }
+    if (Boolean(name)) {
+      const children = await SELECTTablecompanySubProjectarchivesotherroad(
+        ArchivesID
+      );
+      let Children =
+        children.children !== null ? JSON.parse(children.children) : [];
 
-    const children = await SELECTTablecompanySubProjectarchivesotherroad(
-      ArchivesID
-    );
-    // console.log(idsub);
-    let Children =
-      children.children !== null ? JSON.parse(children.children) : [];
-    // console.log(Children)
-
-    const childrenNew = await handlerOpreation(
-      name,
-      type,
-      size,
-      Children,
-      idsub,
-      ArchivesID
-    );
-    await UPDATETablecompanySubProjectarchivesFolderinChildern([
-      JSON.stringify(childrenNew),
-      ArchivesID,
-    ]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
+      const childrenNew = await handlerOpreation(
+        name,
+        type,
+        size,
+        Children,
+        idsub,
+        ArchivesID
+      );
+      await UPDATETablecompanySubProjectarchivesFolderinChildern([
+        JSON.stringify(childrenNew),
+        ArchivesID,
+      ]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+    } else {
+      res.send({ success: "يجب ادخال اسم الملف" }).status(200);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
@@ -1055,7 +1084,6 @@ const CreatChild = (updates, children, idsub) => {
       );
       if (folder) {
         folder?.children?.push(updates);
-        // console.log(folder.children, "hhhhhh");
         resolve(children);
       } else {
         const promises = [];
@@ -1093,29 +1121,33 @@ const InsertDatainTableRequests = async (req, res) => {
     const Data = req.body.Data;
     const user = req.body.user;
     let arrayImage = [];
-    if (req.files && req.files.length > 0) {
-      for (let index = 0; index < req.files.length; index++) {
-        const element = req.files[index];
-        await uploaddata(element);
-        arrayImage.push(element.filename);
+    if (Type !== "تصنيف الإضافة" && Boolean(Type) && Boolean(Data)) {
+      if (req.files && req.files.length > 0) {
+        for (let index = 0; index < req.files.length; index++) {
+          const element = req.files[index];
+          await uploaddata(element);
+          arrayImage.push(element.filename);
+        }
+      } else {
+        arrayImage = null;
       }
+      await insertTablecompanySubProjectRequestsForcreatOrder([
+        ProjectID,
+        Type,
+        Data,
+        user,
+        arrayImage !== null ? JSON.stringify(arrayImage) : null,
+      ]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await Financeinsertnotification(
+        ProjectID,
+        "طلب",
+        "إضافة",
+        userSession.userName
+      );
     } else {
-      arrayImage = null;
+      res.send({ success: "يجب ادخال التصنيف" }).status(401);
     }
-    await insertTablecompanySubProjectRequestsForcreatOrder([
-      ProjectID,
-      Type,
-      Data,
-      user,
-      arrayImage !== null ? JSON.stringify(arrayImage) : null,
-    ]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Financeinsertnotification(
-      ProjectID,
-      "طلب",
-      "إضافة",
-      userSession.userName
-    );
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);

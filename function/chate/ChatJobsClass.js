@@ -32,33 +32,62 @@ const ClassChatOpration = async (Socket, io) => {
   try {
     Socket.on("send_message", async (data) => {
       let result;
-      if (data.kind === "new") {
-        // console.log(data);
-        const newData = Datadistribution(data);
-        if (Number(data?.StageID)) {
-          await insertTableChateStage(newData);
-          result = await SELECTTableChateStageOtherroad(data.idSendr);
-          //  ادخال البيانات جدول البوستات
+      const chackdata = Number(data?.StageID)
+        ? await SELECTTableChateStageOtherroad(
+            data.idSendr,
+            data.Sender,
+            "idSendr=? AND Sender=?"
+          )
+        : await SELECTTableChateStageOtherroad(
+            data.idSendr,
+            data.Sender,
+            "idSendr=? AND Sender=?",
+            "Chat"
+          );
+
+      if (!chackdata) {
+        if (data.kind === "new") {
+          const newData = Datadistribution(data);
+          if (Number(data?.StageID)) {
+            await insertTableChateStage(newData);
+            result = await SELECTTableChateStageOtherroad(data.idSendr);
+            //  ادخال البيانات جدول البوستات
+          } else {
+            await insertTableChate(newData);
+            result = await SELECTTableChateotherroad(data.idSendr);
+          }
+          if (result) {
+            if (
+              data?.StageID !== "قرارات" &&
+              data?.StageID !== "استشارات" &&
+              data?.StageID !== "اعتمادات"
+            ) {
+              await insertPostURL(data);
+            }
+            result.File = JSON.parse(result.File);
+            result.Reply = JSON.parse(result.Reply);
+            result.arrived = true;
+            result.kind = "new";
+            await ChateNotfication(
+              data.ProjectID,
+              data?.StageID,
+              data.message,
+              data.Sender,
+              data.Reply,
+              data.File
+            );
+          }
         } else {
-          await insertTableChate(newData);
-          result = await SELECTTableChateotherroad(data.idSendr);
+          result = await DeleteChatfromdatabaseanddatabaseuser(data);
         }
-        await insertPostURL(data);
-        // console.log(result)
-        result.File = JSON.parse(result.File);
-        result.Reply = JSON.parse(result.Reply);
-        result.arrived = true;
-        result.kind = "new";
-        await ChateNotfication(
-          data.ProjectID,
-          data?.StageID,
-          data.message,
-          data.Sender,
-          data.Reply,
-          data.File
-        );
       } else {
-        result = await DeleteChatfromdatabaseanddatabaseuser(data);
+        result = {
+          ...chackdata,
+          File: JSON.parse(chackdata.File),
+          Reply: JSON.parse(chackdata.Reply),
+          arrived: true,
+          kind: "mssageEnd",
+        };
       }
 
       io.to(`${data.ProjectID}:${data?.StageID}`)
@@ -117,8 +146,6 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
       kind: data.kind,
       chatID: chatID,
     };
-    console.log(dataopration);
-    let result;
     if (Number(data.type)) {
       await DeleteTableChate("ChatSTAGE", chatID);
     } else {

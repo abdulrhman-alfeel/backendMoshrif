@@ -1,19 +1,17 @@
-
 const { ClassChatOpration, ClassChatOprationView } = require("./ChatJobsClass");
 const time = require("./TIME.JS");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
-
 // عملية ارسال واستقبال لشات المراحل
 const ChatOpration = async (Socket, io) => {
-  ClassChatOpration(Socket, io)
+  ClassChatOpration(Socket, io);
 };
 // عملية مشاهدة لرسائل شات المراحل
 const ChatOprationView = async (Socket, io) => {
   Socket.on("view_message", async (data) => {
-   const result = await ClassChatOprationView(data);
-});
+  const result = await ClassChatOprationView(data);
+  });
 };
 
 // **************
@@ -21,5 +19,4 @@ const ChatOprationView = async (Socket, io) => {
 module.exports = {
   ChatOpration,
   ChatOprationView,
-
 };

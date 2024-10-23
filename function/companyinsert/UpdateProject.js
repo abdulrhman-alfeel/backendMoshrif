@@ -2,6 +2,7 @@ const { uploaddata, bucket } = require("../../bucketClooud");
 const {
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectarchives,
+  DeleteTablecompanySubProjectall,
 } = require("../../sql/delete");
 const {
   SELECTTablecompanySubProjectStageCUST,
@@ -12,6 +13,7 @@ const {
   SELECTTablecompanySubProjectREVENUEObjectOne,
   SELECTTablecompanySubProjectReturnedObjectOne,
   SELECTDataAndTaketDonefromTableRequests,
+  SELECTTableFinance,
 } = require("../../sql/selected/selected");
 const {
   UpdateTablecompanySubProject,
@@ -41,7 +43,8 @@ const UpdataDataProject = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
+
     const IDcompanySub = req.body.IDcompanySub;
     const Nameproject = req.body.Nameproject;
     const Note = req.body.Note;
@@ -49,6 +52,7 @@ const UpdataDataProject = async (req, res) => {
     const GuardNumber = req.body.GuardNumber;
     const LocationProject = req.body.LocationProject;
     const ProjectID = req.body.ProjectID;
+    console.log(Nameproject, "update");
     await UpdateTablecompanySubProject([
       IDcompanySub,
       Nameproject,
@@ -60,8 +64,67 @@ const UpdataDataProject = async (req, res) => {
     ]);
 
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Projectinsert(ProjectID, userSession.userName);
+    await Projectinsert(ProjectID, userSession.userName, "تعديل");
   } catch (error) {
+    console.log(error);
+  }
+};
+
+//  وظيفة لحذف المشروع كامل مع توابعه
+const DeletProjectwithDependencies = async (req, res) => {
+  try {
+    const id = req.query.idProject;
+    [
+      { name: "StagesCUST", type: "ProjectID" },
+      { name: "StageNotes", type: "ProjectID" },
+      { name: "StagesSub ", type: "projectID" },
+      { name: "Expense ", type: "projectID" },
+      { name: "Revenue ", type: "projectID" },
+      { name: "Returns ", type: "projectID" },
+      { name: "Savepdf ", type: "projectID" },
+      { name: "Archives ", type: "ProjectID" },
+      { name: "Requests ", type: "ProjectID" },
+      { name: "Post ", type: "ProjectID" },
+      { name: "ChatSTAGE ", type: "ProjectID" },
+      { name: "Chat ", type: "ProjectID" },
+      { name: "Navigation ", type: "ProjectID" },
+      { name: "companySubprojects ", type: "id" },
+    ].forEach(async (pic) => {
+      await DeleteTablecompanySubProjectall(pic.name, pic.type, id);
+    });
+    res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشلت عملية حذف الرسالة" }).status(200);
+  }
+};
+
+const DeleteFinance = async (req, res) => {
+  try {
+    const id = req.query.id;
+    const type = req.query.type;
+    let nametype;
+    let typeid;
+    if (type === "مصروفات") {
+      nametype = "Expense";
+      typeid = "Expenseid";
+    } else if (type === "عهد") {
+      nametype = "Revenue";
+      typeid = "RevenueId";
+    } else {
+      nametype = "Returns";
+      typeid = "ReturnsId";
+    }
+    const result = await SELECTTableFinance(id, nametype, typeid);
+    let Images = Boolean(result.Image) ? JSON.parse(result.Image) : [];
+    for (let index = 0; index < Images.length; index++) {
+      const element = Images[index];
+      await Switchbetweendeleteorupdatefiles(element, "", "delete");
+    }
+    await DeleteTablecompanySubProjectall(nametype, typeid, id);
+    res.send({ success: "تم الحذف بنجاح" }).status(200);
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(500);
     console.log(error);
   }
 };
@@ -88,7 +151,7 @@ const RearrangeStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const DataSTage = req.body.DataStage;
     const StartDate = await SELECTProjectStartdate(DataSTage[0].ProjectID);
     let date = StartDate["Contractsigningdate"];
@@ -96,8 +159,8 @@ const RearrangeStage = async (req, res) => {
       date = StartDate["ProjectStartdate"];
     }
     await DeleteTablecompanySubProjectphase(DataSTage[0].ProjectID);
-    await Stage(DataSTage, date);
-    await RearrangeStageProject(DataSTage[0].ProjectID,userSession.userName);
+    await Stage(DataSTage, date, "update");
+    await RearrangeStageProject(DataSTage[0].ProjectID, userSession.userName);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
@@ -111,14 +174,14 @@ const UpdateNotesStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
-  if(req.file){
-    try {
-      await uploaddata(req.file);
-    } catch (error) {
-      console.log(error);
     }
-  }
+    if (req.file) {
+      try {
+        await uploaddata(req.file);
+      } catch (error) {
+        console.log(error);
+      }
+    }
     const StageNoteID = req.body.StageNoteID;
     const Type = req.body.Type;
     const Note = req.body.Note;
@@ -143,6 +206,7 @@ const UpdateNotesStage = async (req, res) => {
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
 };
+
 //  وظيفة تعديل بيانات المرحلة
 const UpdateDataStage = async (req, res) => {
   try {
@@ -150,7 +214,7 @@ const UpdateDataStage = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const ProjectID = req.body.ProjectID;
     const StageID = req.body.StageID;
     const StageName = req.body.StageName;
@@ -170,9 +234,19 @@ const UpdateDataStage = async (req, res) => {
       }
       Dayscont = verify.Days;
     }
+    const ObjectStage = await SELECTTablecompanySubProjectStageCUSTONe(
+      ProjectID,
+      StageID,
+      "all"
+    );
 
+    const regex = /\b\d{2,3}\b/;
+    let indexStage = String(ObjectStage.StageName).match(regex);
+    if (indexStage === null) {
+      indexStage = String(ObjectStage.StageName).match(/\b\d{1,4}\b/);
+    }
     await UPDATETablecompanySubProjectStageCUST([
-      StageName,
+      `${StageName} (${indexStage[0]})`,
       Dayscont,
       StageID,
       ProjectID,
@@ -186,7 +260,7 @@ const UpdateDataStage = async (req, res) => {
       const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
       await DeleteTablecompanySubProjectphase(ProjectID);
       // console.log(table)
-      await Stage(table, date);
+      await Stage(table, date, "update");
     }
 
     res.send({ success: massege }).status(200);
@@ -220,7 +294,6 @@ const ClassUpdataNmaeinArchive = async (
     } else {
       childrenNew = await deletChild(Children, idsub);
     }
-    // console.log("ah", childrenNew);
 
     if (childrenNew !== undefined) {
       await UPDATETablecompanySubProjectarchivesFolderinChildern([
@@ -261,26 +334,34 @@ const updateChild = (name, children, idsub) => {
 const deletChild = (children, idsub) => {
   return new Promise((resolve, reject) => {
     const fileIndex = children.findIndex(
-      (file) => parseInt(file.id) === parseInt(idsub)
+      (file) => file.id === idsub // Assuming ids are strings
     );
+
     if (fileIndex > -1) {
-      const newchildren = children.filter(
-        (file) => parseInt(file.id) !== parseInt(idsub)
-      );
-      resolve(newchildren);
+      // File found, filter it out
+      const updatedChildren = children.filter((file) => file.id !== idsub);
+      resolve(updatedChildren);
     } else {
-      const promises = [];
-      children.forEach((child) => {
+      // File not found, check children recursively
+      const promises = children.map((child) => {
         if (child.children) {
-          promises.push(deletChild(child.children, idsub));
+          return deletChild(child.children, idsub).then((updatedChildren) => {
+            // Update child with new children if any were deleted
+            if (updatedChildren.length !== child.children.length) {
+              child.children = updatedChildren;
+            }
+            return child; // Return updated child
+          });
         }
+        return Promise.resolve(child); // Return child as is if no children
       });
+
       Promise.all(promises)
         .then((results) => {
-          resolve(children);
+          resolve(results); // Return all updated children
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(`Error in processing children: ${error}`);
         });
     }
   });
@@ -305,8 +386,8 @@ const UpdateNameFolderOrfileinArchive = async (req, res) => {
       const nameOld = req.body.nameOld;
       // console.log(nameOld);
       // Get a reference to the file
-      await Switchbetweendeleteorupdatefiles(nameOld, name, kidopreation);
       await ClassUpdataNmaeinArchive(ArchivesID, name, idsub, kidopreation);
+      await Switchbetweendeleteorupdatefiles(nameOld, name, kidopreation);
       // console.log("okkkk");
       res.send({ success: "تمت العملية بنجاح" }).status(200);
     }
@@ -373,7 +454,7 @@ const ExpenseUpdate = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const Expenseid = req.body.Expenseid;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
@@ -393,7 +474,7 @@ const ExpenseUpdate = async (req, res) => {
       // console.log(Imageoldindatabese, Imageolddelete, "arrays");
 
       // Delete old images from the database and bucket storage
-      const imagesToDelete = Imageolddelete ? [Imageolddelete] : [];
+      const imagesToDelete = Imageolddelete ? Imageolddelete.split(",") : [];
       await Promise.all(
         imagesToDelete.map(async (pic) => {
           arrayImage = arrayImage.filter((item) => item !== pic); // Remove the image from arrayImage
@@ -448,7 +529,7 @@ const RevenuesUpdate = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const RevenueId = req.body.RevenueId;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
@@ -466,7 +547,7 @@ const RevenuesUpdate = async (req, res) => {
     // console.log(req.files, Imageoldindatabese, "kkkkkkk");
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
       // console.log(Imageolddelete, "arrays");
-      const imageDelete = Imageolddelete ? [Imageolddelete] : [];
+      const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
       await Promise.all(
         imageDelete.map(async (pic) => {
           arrayImage = arrayImage.filter((item) => item !== pic);
@@ -520,11 +601,12 @@ const ReturnsUpdate = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const ReturnsId = req.body.ReturnsId;
     const Amount = req.body.Amount;
     const Data = req.body.Data;
     const Imageolddelete = req.body.Imageolddelete;
+    console.log(Imageolddelete);
     const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(
       ReturnsId
     );
@@ -536,7 +618,7 @@ const ReturnsUpdate = async (req, res) => {
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
       // console.log(Imageolddelete, "arrays");
 
-      const ImageDelete = Imageolddelete ? [Imageolddelete] : [];
+      const ImageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
       await Promise.all(
         ImageDelete.map(async (pic) => {
           arrayImage = arrayImage.filter((item) => item !== pic);
@@ -591,7 +673,7 @@ const UPDATEdataRequests = async (req, res) => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
-  }
+    }
     const Type = req.body.Type;
     const Data = req.body.Data;
     const RequestsID = req.body.RequestsID;
@@ -606,7 +688,7 @@ const UPDATEdataRequests = async (req, res) => {
       elementUpdate.Image !== null ? JSON.parse(elementUpdate.Image) : [];
     let arrayImage = [...Imageoldindatabese];
     if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
-      const imageDelete = Imageolddelete ? [Imageolddelete] : [];
+      const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
       await Promise.all(
         imageDelete.map(async (pic) => {
           arrayImage = arrayImage.filter((item) => item !== pic);
@@ -682,4 +764,6 @@ module.exports = {
   ReturnsUpdate,
   UPDATEdataRequests,
   UPDATEImplementRquestsORCansle,
+  DeletProjectwithDependencies,
+  DeleteFinance,
 };

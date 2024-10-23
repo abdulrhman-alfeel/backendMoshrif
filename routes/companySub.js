@@ -37,6 +37,7 @@ const {
   BringDataRequests,
   BringCountRequsts,
   BringReportforProject,
+  BringProjectObjectone,
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -50,6 +51,8 @@ const {
   ReturnsUpdate,
   UPDATEdataRequests,
   UPDATEImplementRquestsORCansle,
+  DeletProjectwithDependencies,
+  DeleteFinance,
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
 
@@ -81,6 +84,7 @@ router
 //  عمليات الطلب
 router.route("/BringProject").get(BringProject);
 router.route("/BringProjectindividual").get(BringProjectindividual);
+router.route("/BringProjectObjectone").get(BringProjectObjectone);
 router.route("/BringStageTemplet").get(BringStageTemplet);
 router.route("/BringStageSubTemplet").get(BringStageSubTemplet);
 router.route("/BringStage").get(BringStage);
@@ -88,10 +92,10 @@ router.route("/BringStageOneObject").get(BringStageOneObject);
 router.route("/BringStagesub").get(BringStagesub);
 router.route("/BringStageNotes").get(BringStageNotes);
 router.route("/BringExpense").get(BringExpense),
-  router.route("/BringRevenue").get(BringRevenue),
-  router.route("/BringReturned").get(BringReturned);
+router.route("/BringRevenue").get(BringRevenue),
+router.route("/BringReturned").get(BringReturned);
 router.route("/BringArchives").get(BringArchives),
-  router.route("/BringArchivesFolderdata").get(BringArchivesFolderdata);
+router.route("/BringArchivesFolderdata").get(BringArchivesFolderdata);
 router.route("/BringTotalAmountproject").get(BringTotalAmountproject);
 router
   .route("/BringStatmentFinancialforproject")
@@ -106,6 +110,9 @@ router.route("/projectUpdat").put(UpdataDataProject);
 router.route("/RearrangeStage").put(RearrangeStage);
 router.route("/UpdateStartdate").put(UpdateStartdate);
 router.route("/UpdateDataStage").put(UpdateDataStage);
+// حذف المشروع
+router.route("/DeletProjectwithDependencies").get(DeletProjectwithDependencies);
+router.route("/DeleteFinance").get(DeleteFinance);
 router
   .route("/UpdateNameFolderOrfileinArchive")
   .put(UpdateNameFolderOrfileinArchive);

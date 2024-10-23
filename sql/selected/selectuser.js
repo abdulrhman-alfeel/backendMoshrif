@@ -58,6 +58,25 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
     });
   });
 };
+const SELECTTableusersCompanyVerificationIDUpdate = (PhoneNumber, id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.all(
+        `SELECT * FROM usersCompany WHERE PhoneNumber=? AND id !=?`,
+        [PhoneNumber, id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTTableusersCompanyVerificationID = (id) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
@@ -78,18 +97,37 @@ const SELECTTableusersCompanyVerificationID = (id) => {
 };
 
 //  التحقق من صلاحيات المستخدم
-const SELECTTableusersCompanySub = (IDcompanySub, type = "all") => {
+const SELECTTableusersCompanySub = (
+  IDcompanySub,
+  type = "all",
+  wheretype = "PR.id =?"
+) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        type === "all"
+        type === "all" && wheretype !== "RE.CommercialRegistrationNumber=?"
           ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`
+          : wheretype === "RE.CommercialRegistrationNumber=?"
+          ? ` SELECT 
+        ca.token, 
+        ca.userName, 
+        ca.Validity, 
+        ca.job, 
+        ca.jobdiscrption,
+        RE.id AS IDcompany
+    FROM 
+        LoginActivaty ca 
+    LEFT JOIN 
+        company RE ON RE.id = ca.IDCompany 
+  
+    WHERE  
+      ${wheretype}  `
           : ` SELECT 
         ca.token, 
         ca.userName, 
         ca.Validity, 
         ca.job, 
-        PR.IDcompanySub, 
+        ca.jobdiscrption,
         RE.id AS IDcompany
     FROM 
         LoginActivaty ca 
@@ -98,7 +136,7 @@ const SELECTTableusersCompanySub = (IDcompanySub, type = "all") => {
     LEFT JOIN 
         companySubprojects PR 
     WHERE  
-        PR.id =?`,
+      ${wheretype}  `,
         // `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
         [IDcompanySub],
         function (err, result) {
@@ -120,7 +158,8 @@ const SELECTTableLoginActivaty = (codeVerification) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT * FROM LoginActivaty WHERE codeVerification=${codeVerification} `,
+        `SELECT ca.id,ca.IDCompany,ca.userName,ca.IDNumber,ca.PhoneNumber,ca.Image,ca.DateOFlogin,ca.DateEndLogin,ca.Activation,ca.job,ca.jobdiscrption,ca.Validity,ca.token, RE.CommercialRegistrationNumber FROM LoginActivaty ca  LEFT JOIN 
+        company RE ON RE.id = ca.IDCompany  WHERE codeVerification=${codeVerification} `,
         [],
         function (err, result) {
           // console.log(result);
@@ -164,4 +203,5 @@ module.exports = {
   SELECTTableLoginActivatActivaty,
   SELECTTableusersCompanyVerificationID,
   SELECTTableusersCompanyonObject,
+  SELECTTableusersCompanyVerificationIDUpdate,
 };

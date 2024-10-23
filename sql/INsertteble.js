@@ -41,12 +41,32 @@ const insertTablecompanySub = async (data) => {
     });
   });
 };
+const insertTableLinkevaluation = async (data) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO Linkevaluation (IDcompanySub, urlLink) VALUES (?, ?)`,
+        data,
+        function (err) {
+          if (err) {
+            resolve(false);
+            console.log(err.message);
+          } else {
+            resolve(true);
+          }
+          // console.log(`Row with the ID has been inserted.`);
+        }
+      );
+      // db.close();
+    });
+  });
+};
 const insertTableuserComppany = (data) => {
   console.log(data, "databese");
   try {
     db.serialize(function () {
       db.run(
-        `INSERT INTO usersCompany (IDCompany,userName,IDNumber,PhoneNumber,job,jobHOM,Validity) VALUES (?,?,?,?,?,?,?)`,
+        `INSERT INTO usersCompany (IDCompany,userName,IDNumber,PhoneNumber,job,jobdiscrption,jobHOM,Validity) VALUES (?,?,?,?,?,?,?,?)`,
         data,
         function (err) {
           if (err) {
@@ -62,10 +82,19 @@ const insertTableuserComppany = (data) => {
     return false;
   }
 };
+
+
+
+
+
+
+
+
+
 const insertTableLoginActivaty = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,Validity,codeVerification,token) VALUES (?, ?, ?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,jobdiscrption,Validity,codeVerification,token) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -74,21 +103,6 @@ const insertTableLoginActivaty = (data) => {
           // console.log(`Row with the ID  has been inserted.`);
           return true;
         }
-      }
-    );
-  });
-};
-
-const insertTableuserComppanySub = (data) => {
-  db.serialize(function () {
-    db.run(
-      `INSERT INTO usersCompanySub (IDuser,IDcompanySub,IDproject,job,Validity) VALUES (?, ?, ?,?,?)`,
-      data,
-      function (err) {
-        if (err) {
-          console.error(err.message);
-        }
-        // console.log(`Row with the ID has been inserted.`);
       }
     );
   });
@@ -473,7 +487,6 @@ module.exports = {
   insertTablePostPublic,
   insertTableCommentPostPublic,
   insertTableuserComppany,
-  insertTableuserComppanySub,
   insertTableLoginActivaty,
   insertTableChateStage,
   insertTableViewsChateStage,
@@ -484,4 +497,5 @@ module.exports = {
   insertTableSabepdf,
   insertTablecompanySubProjectRequestsForcreatOrder,
   insertTableNavigation,
+  insertTableLinkevaluation
 };

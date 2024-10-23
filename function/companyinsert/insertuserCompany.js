@@ -16,6 +16,7 @@ const userCompany = async (req, res) => {
     const userName = req.body.userName;
     const IDNumber = req.body.IDNumber;
     const PhoneNumber = req.body.PhoneNumber;
+    const jobdiscrption = req.body.jobdiscrption;
     // const image = req.file.filename;
     const job = req.body.job;
     const Validity = req.body.Validity;
@@ -28,12 +29,13 @@ const userCompany = async (req, res) => {
     );
     console.log(verificationFinduser);
     if (verificationFinduser.length <= 0) {
-      const operation = await insertTableuserComppany([
+      await insertTableuserComppany([
         IDCompany,
         userName,
         IDNumber,
         number,
         job,
+        jobdiscrption,
         job,
         JSON.stringify(Validity),
       ]);
@@ -112,7 +114,7 @@ const UpdatDtatuser = async (check, resultSend, type, IDCompany) => {
       job: type,
       project: [],
     });
-    const operation = await UpdateTableuserComppany([
+    await UpdateTableuserComppany([
       findUser?.IDCompany,
       findUser.userName,
       findUser.IDNumber,
@@ -124,84 +126,6 @@ const UpdatDtatuser = async (check, resultSend, type, IDCompany) => {
   }
 };
 
-const userCompanySub = async (req, res) => {
-  try {
-    const IDuser = req.body.IDuser;
-    const IDcompanySub = req.body.IDcompanySub;
-    const IDproject = req.body.IDproject;
-    const job = req.body.job;
-    const Validity = req.body.Validity;
-    await insertTableuserComppanySub([
-      IDuser,
-      IDcompanySub,
-      IDproject,
-      job,
-      Validity,
-    ]);
-    res.send({ success: true }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(200);
-  }
-  //  مدير الشركة
-  // مدير الفرع
-
-  /*
- مدير شركة 
- جميع الصلاحيات 
- مدير فرع 
- مالك المشروع
- مدير المشاريع 
- الاستشاري 
- مهندس موقع 
- موظف 
- مدخل بيانات 
- مسئول طلبات ثقيله 
- مسئول طلبات خفيفة
- مندوب توصيل 
- مقاول 
- زائر 
 
 
-
- اضافة مستخدمين للشركة
-فتح فروع 
-تعيين مدراء فروع 
-تعديل فرع 
-8 حذف فرع 
-
-
-اضافة مشاريع جديدة 
-حذف مشاريع
-تعيين مستخدمين للمشاريع 
-اضافة مراحل رئيسية 
-تعديل على مراحل رئيسية 
-حذف مراحل رئيسية 8
-اضافة مراحل فرعية 
-تعديل على مراحل فرعية 
-حذف مراحل فرعية 
-اقفال مراحل رئيسية 
-الغاء قفل مراحل رئيسية 
-اقفال مراحل فرعية 
-الغا قفل مراحل فرعيه
-اضافة تاخيرات
-حذف تاخير 
-اضافة طلبات 
-حذف طلبات 
-تعديل طلبات 
-استعراض طلبات
-دردشة مالية 
-دردشة طلبات 
-دردشة مراحل 
-
-
- 
-
-
-
-
-
-*/
-};
-
-module.exports = { userCompany, userCompanySub, CheckAdmin, CheckGlobal };
+module.exports = { userCompany, CheckAdmin, CheckGlobal };

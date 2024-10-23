@@ -41,7 +41,7 @@ const SelectVerifycompanyexistence = (CommercialRegistrationNumber) => {
         function (err, result) {
           if (err) {
             reject(err);
-            console.error(err.message);
+            console.log(err.message);
           } else {
             resolve(result);
           }
@@ -112,7 +112,7 @@ const SELECTTablecompanySubID = (NameSub, NumberCompany) => {
   });
 };
 
-//  استعداء الاسم الفرع
+//  استدعاء اسم الفرع
 
 const SELECTTableUsernameBrinsh = (id) => {
   return new Promise((resolve, reject) => {
@@ -151,13 +151,31 @@ const SELECTTablecompanySubAnotherway = (id) => {
     });
   });
 };
+const SELECTTablecompanySubLinkevaluation = (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT * FROM Linkevaluation WHERE IDcompanySub=?`,
+        [id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 // مشاريع الفرع
 const SELECTTablecompanySubProject = (id, IDfinlty, kind = "all") => {
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
-        ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE IDcompanySub=? AND (ca.id) > ? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
+        ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany , Li.urlLink AS Linkevaluation FROM companySubprojects ca  LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.IDcompanySub=? AND (ca.id) > ? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
         : kind === "difference"
         ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=?`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=?`;
@@ -185,8 +203,8 @@ const SELECTTablecompanySubProjectLast_id = (
       kind === "all"
         ? `SELECT MAX(id) AS last_id FROM companySubprojects WHERE IDcompanySub=?`
         : kind === "max"
-        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ${type}=?`
-        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?`;
+        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ${type}=?`
+        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?`;
     db.serialize(function () {
       db.get(stringSql, [id], function (err, result) {
         if (err) {
@@ -239,6 +257,7 @@ const SELECTProjectStartdate = (id, kind = "all") => {
     });
   });
 };
+
 // حساب رصيد المشروع
 const SELECTSUMAmountandBring = (id) => {
   return new Promise((resolve, reject) => {
@@ -247,7 +266,7 @@ const SELECTSUMAmountandBring = (id) => {
         `SELECT 
         ca.Nameproject AS 'Nameproject', 
         COALESCE(RE.total_revenue, 0.00) AS 'TotalRevenue', 
-        COALESCE(EX.landers_count, 0) AS 'TotalExpense', 
+        COALESCE(EX.landers_count, 0.00) AS 'TotalExpense', 
         COALESCE(RT.total_Returns, 0.00) AS 'TotalReturns', 
         COALESCE((COALESCE(RE.total_revenue, 0.00) - COALESCE(EX.landers_count, 0.00) + COALESCE(RT.total_Returns, 0.00)), 0.00) AS 'RemainingBalance'
         FROM companySubprojects ca
@@ -280,6 +299,7 @@ const SELECTSUMAmountandBring = (id) => {
     });
   });
 };
+
 // طلب بيانات الشركة والفرع والمشروع
 const SELECTdataprojectandbrinshandcompany = (id) => {
   return new Promise((resolve, reject) => {
@@ -844,6 +864,24 @@ const SELECTTablecompanySubProjectReturnedObjectOne = (idproject) => {
     });
   });
 };
+const SELECTTableFinance = (id, type = "Returns", typeid = "ReturnsId") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT * FROM ${type} WHERE ${typeid}=?`,
+        [id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 // معرفة بيانات عن اخر عملية حفظ كشف pdf
 const SELECTTableSavepdf = (idproject) => {
   return new Promise((resolve, reject) => {
@@ -983,6 +1021,7 @@ const SELECTDataAndTaketDonefromTableRequests = async (
 //  جلب المنشورات للصفحة العامة
 const SELECTTablePostPublic = (id, Date, PostID) => {
   return new Promise((resolve, reject) => {
+    let plus = parseInt(PostID) === 0 ? ">" : "<";
     db.serialize(function () {
       db.all(
         `SELECT * FROM (SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
@@ -991,14 +1030,16 @@ const SELECTTablePostPublic = (id, Date, PostID) => {
           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
           WHERE ca.CommpanyID = ?
-           AND Date(Date)=? AND (ca.PostID) > ?
-          ORDER BY ca.PostID ASC LIMIT 10 ) AS subquery ORDER BY PostID ASC,datetime(Date) ASC`,
+           AND Date(ca.Date)=? AND (ca.PostID) ${plus} ?
+          ORDER BY ca.PostID ASC  ) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`,
+
         [id, Date, PostID],
         function (err, result) {
           if (err) {
             reject(err);
             console.error(err.message);
           } else {
+            // console.log(result);
             resolve(result);
           }
         }
@@ -1043,6 +1084,8 @@ const SELECTTablePostPublicSearch = (
   PostID
 ) => {
   return new Promise((resolve, reject) => {
+    let plus = parseInt(PostID) === 0 ? ">" : "<";
+
     let SearchSub =
       type === "بحسب المشروع والتاريخ"
         ? "PR.Nameproject"
@@ -1057,8 +1100,8 @@ const SELECTTablePostPublicSearch = (
           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
           WHERE ca.CommpanyID = ?
-           AND Date(Date) BETWEEN ? AND ?  AND trim(PR.Nameproject) = trim(?) AND trim(ca.postBy) = trim(?) AND (ca.PostID) > ?
-          ORDER BY ca.PostID ASC LIMIT 10 `
+           AND Date(Date) BETWEEN ? AND ?  AND trim(PR.Nameproject) = trim(?) AND trim(ca.postBy) = trim(?) AND (ca.PostID) ${plus} ?
+          ORDER BY ca.PostID ASC  `
         : type === "بحسب التاريخ"
         ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
           FROM Post ca
@@ -1066,8 +1109,8 @@ const SELECTTablePostPublicSearch = (
           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
           WHERE ca.CommpanyID = ?
-           AND Date(Date) BETWEEN ? AND ?   AND (ca.PostID) > ?
-          ORDER BY ca.PostID ASC LIMIT 10 `
+           AND Date(Date) BETWEEN ? AND ?   AND (ca.PostID) ${plus} ?
+          ORDER BY ca.PostID ASC  `
         : `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
           FROM Post ca
           LEFT JOIN company EX ON EX.id = ca.CommpanyID
@@ -1075,7 +1118,7 @@ const SELECTTablePostPublicSearch = (
           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
           WHERE ca.CommpanyID = ?
            AND Date(Date) BETWEEN ? AND ?  AND trim(${SearchSub}) = trim(?) AND (ca.PostID) > ?
-          ORDER BY ca.PostID ASC LIMIT 10 `;
+          ORDER BY ca.PostID ASC  `;
 
     let data =
       type === "بحسب التاريخ"
@@ -1089,7 +1132,7 @@ const SELECTTablePostPublicSearch = (
         : [id, DateStart, DateEnd, userName, PostID];
     db.serialize(function () {
       db.all(
-        `SELECT * FROM (${SqlStringOne}) AS subquery ORDER BY PostID ASC,datetime(Date) ASC`,
+        `SELECT * FROM (${SqlStringOne}) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`,
         data,
         function (err, result) {
           if (err) {
@@ -1442,16 +1485,23 @@ const SELECTLastTableChateTypeDontEmpty = (ProjectID, StageID, id) => {
   });
 };
 
-const SELECTTableChateStageOtherroad = (idSendr) => {
+const SELECTTableChateStageOtherroad = (
+  idSendr,
+  userName = "",
+  type = "idSendr=?",
+  table = "ChatSTAGE"
+) => {
   return new Promise((resolve, reject) => {
+    let data = type === "idSendr=?" ? [idSendr] : [idSendr, userName];
     db.serialize(function () {
       db.get(
-        `SELECT * FROM ChatSTAGE WHERE idSendr=?`,
-        [idSendr],
+        `SELECT * FROM ${table} WHERE ${type}`,
+        data,
         function (err, result) {
           if (err) {
             reject(err);
             console.log(err.message);
+            resolve(false);
           } else {
             resolve(result);
           }
@@ -1612,8 +1662,6 @@ const SELECTTableNavigationObjectOne = (id, type = "max(id) AS id") => {
   });
 };
 
-
-
 module.exports = {
   SELECTTablecompany,
   SELECTTablecompanyName,
@@ -1684,4 +1732,6 @@ module.exports = {
   SELECTTableNavigation,
   SELECTTableNavigationObjectOne,
   SELECTTablePostPublicOneObject,
+  SELECTTableFinance,
+  SELECTTablecompanySubLinkevaluation,
 };

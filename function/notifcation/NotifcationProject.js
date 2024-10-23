@@ -417,7 +417,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       }  في مرحلة  " ${result.StageName}" من مشروع "${result.Nameproject}"`,
       image:
         resultObject.ImageAttachment !== null
-          ? `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${resultObject.ImageAttachment}`
+          ? `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${resultObject.ImageAttachment}`
           : null,
     };
     const notification_type = "Delays";
@@ -544,7 +544,9 @@ const Financeinsertnotification = async (
     const { token, arraynameuser } = await BringtokenuserCustom(
       result.projectID,
       userName,
-      "Finance"
+      "Finance",
+      'sub',
+
     );
     // console.log(token, result.projectID);
     const notification = {
@@ -714,21 +716,47 @@ const ChateNotfication = async (
   try {
     let nameChate;
 
-    if (Number(StageID) || StageID === "A1") {
-      const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+    let arrayuser;
+    let tokenuser;
+    let bodymassge;
+    let insertnavigation = "pr.id";
+    if (
+      StageID !== "قرارات" &&
+      StageID !== "استشارات" &&
+      StageID !== "اعتمادات"
+    ) {
+      if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
+        const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+          idProject,
+          StageID
+        );
+        nameChate = Stage.StageName;
+      } else {
+        nameChate = StageID;
+      }
+      const Project = await SELECTProjectStartdate(idProject);
+      const { token, arraynameuser } = await BringtokenuserCustom(
         idProject,
-        StageID
+        userName,
+        "chate"
       );
-      nameChate = Stage.StageName;
+      arrayuser = arraynameuser;
+      tokenuser = token;
+      bodymassge = `دردشة مشروع ${Project?.Nameproject} قسم ${nameChate}`;
     } else {
+      const { token, arraynameuser } = await Bringtokenuser(
+        idProject,
+        userName,
+        StageID,
+        "RE.CommercialRegistrationNumber=?"
+      );
+      arrayuser = arraynameuser;
+      tokenuser = token;
       nameChate = StageID;
+      bodymassge = `دردشة ${nameChate}`;
+      insertnavigation = true;
     }
-    const Project = await SELECTProjectStartdate(idProject);
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      idProject,
-      userName,
-      "chate"
-    );
+
     let title =
       Object.entries(Reply).length <= 0
         ? userName
@@ -741,12 +769,11 @@ const ChateNotfication = async (
     if (Object.entries(File).length > 0) {
       if (File.type === "video/mp4") {
         image = String(File.name).replace("mp4", "png");
-        // image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
-        image = `http://34.82.226.92:8080/upload/${image}`;
+        image = `https://34.168.80.7:8080/upload/${image}`;
       } else {
         image = File.name;
         if (File.type === "image/jpeg") {
-          image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-2/${image}`;
+          image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${image}`;
         }
       }
       if (File.type === "video/mp4") {
@@ -757,15 +784,12 @@ const ChateNotfication = async (
         typfile = "ارفق ملف";
       }
     }
-
-    //   image: 'https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png',
+    // console.log(tokenuser,arrayuser);
 
     const notification = {
       title: title,
       // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
-      body:
-        ` دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  ` +
-        `< ${String(massgs).length > 0 ? massgs : typfile} >`,
+      body: bodymassge + `< ${String(massgs).length > 0 ? massgs : typfile} >`,
       image: image,
     };
     let data = {
@@ -776,18 +800,25 @@ const ChateNotfication = async (
       nameRoom: nameChate,
     };
     const idmax = await InsertNotifcation(
-      arraynameuser,
+      arrayuser,
       notification,
       notification_type,
       navigationId,
       data,
-      idProject
+      idProject,
+      insertnavigation
     );
     data = {
       ...data,
       id: idmax,
     };
-    await massges(token, notification, notification_type, navigationId, data);
+    await massges(
+      tokenuser,
+      notification,
+      notification_type,
+      navigationId,
+      data
+    );
   } catch (error) {
     console.log(error);
   }
@@ -803,21 +834,47 @@ const ChateNotficationdelete = async (
   try {
     let nameChate;
 
-    if (Number(StageID) || StageID === "A1") {
-      const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+    let arrayuser;
+    let tokenuser;
+    let bodymassge;
+    let insertnavigation = "pr.id";
+
+    if (
+      StageID !== "قرارات" &&
+      StageID !== "استشارات" &&
+      StageID !== "اعتمادات"
+    ) {
+      if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
+        const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+          idProject,
+          StageID
+        );
+        nameChate = Stage.StageName;
+      } else {
+        nameChate = StageID;
+      }
+      const Project = await SELECTProjectStartdate(idProject);
+      const { token, arraynameuser } = await BringtokenuserCustom(
         idProject,
-        StageID
+        userName,
+        "chate"
       );
-      nameChate = Stage.StageName;
+      arrayuser = arraynameuser;
+      tokenuser = token;
+      bodymassge = `دردشة مشروع ${Project?.Nameproject} قسم ${nameChate}`;
     } else {
+      const { token, arraynameuser } = await Bringtokenuser(
+        idProject,
+        userName,
+        StageID,
+        "RE.CommercialRegistrationNumber=?"
+      );
+      arrayuser = arraynameuser;
+      tokenuser = token;
       nameChate = StageID;
+      bodymassge = `دردشة ${nameChate}`;
+      insertnavigation = true;
     }
-    const Project = await SELECTProjectStartdate(idProject);
-    const { token, arraynameuser } = await BringtokenuserCustom(
-      idProject,
-      userName,
-      "chate"
-    );
     let title = `لقد قام ${userName} حذف الرسالة `;
     const notification_type = "Chate";
     const navigationId = `${idProject}:${StageID}`;
@@ -825,10 +882,7 @@ const ChateNotficationdelete = async (
 
     const notification = {
       title: title,
-      // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
-      body:
-        ` دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  ` +
-        `< ${String(massgs).length > 0 ? massgs : typfile} >`,
+      body: bodymassge + `< ${String(massgs).length > 0 ? massgs : typfile} >`,
     };
     let data = {
       ProjectID: idProject,
@@ -839,18 +893,25 @@ const ChateNotficationdelete = async (
       chatID: chatID,
     };
     const idmax = await InsertNotifcation(
-      arraynameuser,
+      arrayuser,
       notification,
       notification_type,
       navigationId,
       data,
-      idProject
+      idProject,
+      insertnavigation
     );
     data = {
       ...data,
       id: idmax,
     };
-    await massges(token, notification, notification_type, navigationId, data);
+    await massges(
+      tokenuser,
+      notification,
+      notification_type,
+      navigationId,
+      data
+    );
   } catch (error) {
     console.log(error);
   }
@@ -888,17 +949,29 @@ const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
 };
 
 // bring token all users
-const Bringtokenuser = async (ProjectID, userName, type = "all") => {
+const Bringtokenuser = async (
+  ProjectID,
+  userName,
+  type = "all",
+  wheretype = "PR.id =?"
+) => {
   let token = [];
   let arraynameuser = [];
 
-  const users = await SELECTTableusersCompanySub(ProjectID, type);
+  const users = await SELECTTableusersCompanySub(ProjectID, type, wheretype);
   await Promise.all(
     users
       .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
-        token.push(item.token);
-        arraynameuser.push(item.userName);
+        if (wheretype === "PR.id =?") {
+          token.push(item.token);
+          arraynameuser.push(item.userName);
+        } else {
+          if (item.jobdiscrption === "موظف") {
+            token.push(item.token);
+            arraynameuser.push(item.userName);
+          }
+        }
       })
   );
   return { token, users, arraynameuser };
@@ -909,7 +982,7 @@ const BringtokenuserCustom = async (
   ProjectID,
   userName,
   type = "all",
-  kind = "sub"
+  kind = "sub",
 ) => {
   let token = [];
   let arraynameuser = [];
@@ -931,11 +1004,22 @@ const BringtokenuserCustom = async (
                 token.push(item.token);
                 arraynameuser.push(item.userName);
               } else {
-                for (let P = 0; P < element.project.length; P++) {
-                  const elementProject = element.project[P];
+                for (let P = 0; P < element?.project?.length; P++) {
+                  const elementProject = element?.project[P];
                   if (elementProject.idProject === ProjectID) {
-                    token.push(item.token);
-                    arraynameuser.push(item.userName);
+                    if (type === 'Finance') {
+                      const findValidityProject =
+                        elementProject?.ValidityProject?.find(
+                          (V) => V === "إشعارات المالية"
+                        );
+                      if (findValidityProject) {
+                        token.push(item.token);
+                        arraynameuser.push(item.userName);
+                      }
+                    } else {
+                      token.push(item.token);
+                      arraynameuser.push(item.userName);
+                    }
                   }
                 }
               }

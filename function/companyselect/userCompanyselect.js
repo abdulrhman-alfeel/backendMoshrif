@@ -25,7 +25,7 @@ const Loginuser = async (req, res) => {
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
     // const output = 1234;
-    verificationSend(PhoneNumber, output);
+    // verificationSend(PhoneNumber, output);
 
     // const currentDate = new Date();
     // const futureDate = new Date(currentDate + 5 * 24 * 60 * 60 * 1000);
@@ -41,6 +41,7 @@ const Loginuser = async (req, res) => {
       new Date().toDateString(),
       futureDate.toDateString(),
       result[0]?.job,
+      result[0]?.jobdiscrption,
       result[0]?.Validity,
       output,
       token,
@@ -97,11 +98,13 @@ const LoginVerification = async (req, res) => {
     // create accessToken from data users
     const user = {
       IDCompany: result?.IDCompany,
+      CommercialRegistrationNumber:result.CommercialRegistrationNumber,
       userName: result?.userName,
       PhoneNumber: result?.PhoneNumber,
       IDNumber: result?.IDNumber,
       image: result?.image,
       job: result.job,
+      jobdiscrption:result.jobdiscrption,
       token: result.token,
       DateOFlogin: result.DateOFlogin,
       DateEndLogin: result.DateEndLogin,
