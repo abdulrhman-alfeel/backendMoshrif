@@ -723,7 +723,7 @@ const ChateNotfication = async (
     if (
       StageID !== "قرارات" &&
       StageID !== "استشارات" &&
-      StageID !== "اعتمادات"
+      StageID !== "اعتمادات" && StageID !== "تحضير"
     ) {
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
         const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
@@ -769,7 +769,7 @@ const ChateNotfication = async (
     if (Object.entries(File).length > 0) {
       if (File.type === "video/mp4") {
         image = String(File.name).replace("mp4", "png");
-        image = `https://34.168.80.7:8080/upload/${image}`;
+        image = `http://34.168.80.7:8080/upload/${image}`;
       } else {
         image = File.name;
         if (File.type === "image/jpeg") {

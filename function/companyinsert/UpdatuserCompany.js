@@ -32,7 +32,6 @@ const userCompanyUpdat = async (req, res) => {
     }
     const verificationFinduser =
       await SELECTTableusersCompanyVerificationIDUpdate(number, id);
-    console.log(verificationFinduser);
     if (verificationFinduser.length <= 0) {
       const operation = await UpdateTableuserComppany([
         IDCompany,

@@ -2,7 +2,6 @@ const {
   insertTableuserComppany,
   insertTableuserComppanySub,
 } = require("../../sql/INsertteble");
-const { SELECTTablecompanySub } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyVerification,
   SELECTTableusersCompany,
@@ -27,7 +26,6 @@ const userCompany = async (req, res) => {
     const verificationFinduser = await SELECTTableusersCompanyVerification(
       number
     );
-    console.log(verificationFinduser);
     if (verificationFinduser.length <= 0) {
       await insertTableuserComppany([
         IDCompany,

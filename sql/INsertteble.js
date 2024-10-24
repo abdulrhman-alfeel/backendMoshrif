@@ -62,7 +62,6 @@ const insertTableLinkevaluation = async (data) => {
   });
 };
 const insertTableuserComppany = (data) => {
-  console.log(data, "databese");
   try {
     db.serialize(function () {
       db.run(

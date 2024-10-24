@@ -60,7 +60,7 @@ const ClassChatOpration = async (Socket, io) => {
             if (
               data?.StageID !== "قرارات" &&
               data?.StageID !== "استشارات" &&
-              data?.StageID !== "اعتمادات"
+              data?.StageID !== "اعتمادات" && data?.StageID !== "تحضير"
             ) {
               await insertPostURL(data);
             }
