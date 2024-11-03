@@ -38,6 +38,7 @@ const {
   BringCountRequsts,
   BringReportforProject,
   BringProjectObjectone,
+  BringDataprojectClosed,
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -53,6 +54,10 @@ const {
   UPDATEImplementRquestsORCansle,
   DeletProjectwithDependencies,
   DeleteFinance,
+  CloseOROpenProject,
+  DeleteStageHome,
+  DeleteStageSub,
+  UpdateDataStageSub,
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
 
@@ -83,6 +88,8 @@ router
 
 //  عمليات الطلب
 router.route("/BringProject").get(BringProject);
+router.route("/BringDataprojectClosed").get(BringDataprojectClosed);
+router.route("/CloseOROpenProject").get(CloseOROpenProject);
 router.route("/BringProjectindividual").get(BringProjectindividual);
 router.route("/BringProjectObjectone").get(BringProjectObjectone);
 router.route("/BringStageTemplet").get(BringStageTemplet);
@@ -110,9 +117,17 @@ router.route("/projectUpdat").put(UpdataDataProject);
 router.route("/RearrangeStage").put(RearrangeStage);
 router.route("/UpdateStartdate").put(UpdateStartdate);
 router.route("/UpdateDataStage").put(UpdateDataStage);
+router.route("/UpdateDataStageSub").put(UpdateDataStageSub);
 // حذف المشروع
 router.route("/DeletProjectwithDependencies").get(DeletProjectwithDependencies);
+// حذف عمليات المالية 
 router.route("/DeleteFinance").get(DeleteFinance);
+
+//  حذف المراحل الرئيسية 
+router.route('/DeleteStageHome').get(DeleteStageHome)
+// حذف المراحل الفرعية 
+router.route('/DeleteStageSub').get(DeleteStageSub)
+
 router
   .route("/UpdateNameFolderOrfileinArchive")
   .put(UpdateNameFolderOrfileinArchive);

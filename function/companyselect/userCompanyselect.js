@@ -25,7 +25,7 @@ const Loginuser = async (req, res) => {
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
     // const output = 1234;
-    verificationSend(PhoneNumber, output);
+    // verificationSend(PhoneNumber, output);
 
     // const currentDate = new Date();
     // const futureDate = new Date(currentDate + 5 * 24 * 60 * 60 * 1000);

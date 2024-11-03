@@ -110,7 +110,7 @@ const insertTableLoginActivaty = (data) => {
 const insertTablecompanySubProject = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject) VALUES (?,?,?,?,?,?)`,
+      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding) VALUES (?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {

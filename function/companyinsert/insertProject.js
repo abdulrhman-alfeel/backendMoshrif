@@ -57,6 +57,7 @@ const projectBrinsh = async (req, res) => {
     const TypeOFContract = req.body.TypeOFContract;
     const GuardNumber = req.body.GuardNumber;
     const LocationProject = req.body.LocationProject;
+    const numberBuilding = req.body.numberBuilding;
     const Contractsigningdate = new Date();
     if (Boolean(Nameproject)) {
       await insertTablecompanySubProject([
@@ -66,6 +67,7 @@ const projectBrinsh = async (req, res) => {
         TypeOFContract,
         GuardNumber,
         LocationProject,
+        numberBuilding,
       ]);
       const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
       let dataStages = await StageTempletXsl(TypeOFContract);
@@ -76,8 +78,11 @@ const projectBrinsh = async (req, res) => {
       dataStages = [visity[0], ...dataStages];
       for (let index = 0; index < dataStages.length; index++) {
         const element = dataStages[index];
+        let Days = await AccountDays(numberBuilding, element.Days);
+
         table.push({
           ...element,
+          Days: Math.round(Days),
           ProjectID: idProject["last_id"],
           StartDate: null,
           EndDate: null,
@@ -117,6 +122,37 @@ const projectBrinsh = async (req, res) => {
         success: "فشل تنفيذ العملية",
       })
       .status(401);
+  }
+};
+
+// حساب الايام للمراحل المشروع
+const AccountDays = (numberBuilding, Days) => {
+  try {
+    let s;
+    numberBuilding === 1
+      ? (s = 1)
+      : numberBuilding === 2
+      ? (s = 1.5)
+      : numberBuilding === 3
+      ? (s = 2)
+      : numberBuilding === 4
+      ? (s = 2.5)
+      : numberBuilding === 5
+      ? (s = 3)
+      : numberBuilding === 6
+      ? (s = 3.5)
+      : numberBuilding === 7
+      ? (s = 4)
+      : numberBuilding === 8
+      ? (s = 4.5)
+      : numberBuilding === 9
+      ? (s = 5)
+      : (s = 5.5);
+
+    const count = Days * s;
+    return Math.round(count);
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -170,7 +206,7 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
 
 const xlsx = require("xlsx");
 
-const StageTempletXsl = async (type) => {
+const StageTempletXsl = async (type, kind = "all") => {
   try {
     try {
       // Read the Excel file
@@ -181,12 +217,15 @@ const StageTempletXsl = async (type) => {
       const worksheet = workbook.Sheets[sheetName];
 
       const datad = xlsx.utils.sheet_to_json(worksheet);
-
-      return datad.filter(
-        (item) =>
-          String(item.Type).replace(" ", "").trim() ===
-          String(type).replace(" ", "").trim()
-      );
+      if (kind === "all") {
+        return datad.filter(
+          (item) =>
+            String(item.Type).replace(" ", "").trim() ===
+            String(type).replace(" ", "").trim()
+        );
+      } else {
+        return datad.find((item) => item.StageID === type);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -194,6 +233,7 @@ const StageTempletXsl = async (type) => {
     console.log(error);
   }
 };
+
 const StageSubTempletXlsx = async (StageID) => {
   try {
     // Read the Excel file
@@ -277,9 +317,13 @@ const StageSubTemplet = async (req, res) => {
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
 const Stage = async (teble, StartDate, types = "new") => {
   try {
+    // let count = 2;
+    // let Days = 5;
+
     // const futureDate = new Date(currentDate);
     // futureDate.setDate(currentDate.getDate() + 5);
     // console.log(newData,'helllow');
+
     const newData = await ChangeDate(teble, StartDate);
 
     for (let index = 0; index < newData.length; index++) {
@@ -1175,4 +1219,6 @@ module.exports = {
   AddORCanselAchievment,
   ClassCloaseOROpenStage,
   InsertDatainTableRequests,
+  StageTempletXsl,
+  AccountDays,
 };

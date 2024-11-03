@@ -1,9 +1,9 @@
 const db = require("../sqlite");
 // الشركة
-const SELECTTablecompany = (id) => {
+const SELECTTablecompany = (id,type="*") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
-      db.get(`SELECT * FROM company WHERE id=?`, [id], function (err, result) {
+      db.get(`SELECT ${type} FROM company WHERE id=?`, [id], function (err, result) {
         if (err) {
           reject(err);
           console.error(err.message);
@@ -14,6 +14,8 @@ const SELECTTablecompany = (id) => {
     });
   });
 };
+
+
 const SELECTTablecompanyName = (id) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
@@ -171,16 +173,16 @@ const SELECTTablecompanySubLinkevaluation = (id) => {
 };
 
 // مشاريع الفرع
-const SELECTTablecompanySubProject = (id, IDfinlty, kind = "all") => {
+const SELECTTablecompanySubProject = (id, IDfinlty, kind = "all",Disabled="true") => {
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
-        ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany , Li.urlLink AS Linkevaluation FROM companySubprojects ca  LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.IDcompanySub=? AND (ca.id) > ? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
+        ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,EX.Cost AS ConstCompany , Li.urlLink AS Linkevaluation,ca.Disabled FROM companySubprojects ca  LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.IDcompanySub=?  AND (ca.id) > ? AND (ca.Disabled) =? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
         : kind === "difference"
-        ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=?`
-        : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=?`;
+        ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=? AND Disabled =?`
+        : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=? AND Disabled =?`;
 
-    let data = kind === "all" ? [id, IDfinlty] : [id];
+    let data = kind === "all" ? [id, IDfinlty,Disabled] : [id,Disabled];
     db.serialize(function () {
       db.all(stringSql, data, function (err, result) {
         if (err) {
@@ -201,10 +203,10 @@ const SELECTTablecompanySubProjectLast_id = (
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
-        ? `SELECT MAX(id) AS last_id FROM companySubprojects WHERE IDcompanySub=?`
+        ? `SELECT MAX(id) AS last_id,numberBuilding FROM companySubprojects WHERE  Disabled ='true' AND IDcompanySub=?`
         : kind === "max"
-        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ${type}=?`
-        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?`;
+        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ${type}=?`
+        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
     db.serialize(function () {
       db.get(stringSql, [id], function (err, result) {
         if (err) {
@@ -242,7 +244,7 @@ const SELECTProjectStartdate = (id, kind = "all") => {
     db.serialize(function () {
       db.get(
         kind === "all"
-          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,id FROM companySubprojects WHERE id=? `
+          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,numberBuilding,id FROM companySubprojects WHERE id=? `
           : "SELECT ca.id,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?",
         [id],
         function (err, result) {

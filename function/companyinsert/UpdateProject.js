@@ -3,6 +3,8 @@ const {
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectarchives,
   DeleteTablecompanySubProjectall,
+  DeleteTablecompanyStageSub,
+  DeleteTablecompanyStageHome,
 } = require("../../sql/delete");
 const {
   SELECTTablecompanySubProjectStageCUST,
@@ -14,6 +16,7 @@ const {
   SELECTTablecompanySubProjectReturnedObjectOne,
   SELECTDataAndTaketDonefromTableRequests,
   SELECTTableFinance,
+  SELECTTablecompanySubProjectLast_id,
 } = require("../../sql/selected/selected");
 const {
   UpdateTablecompanySubProject,
@@ -27,6 +30,8 @@ const {
   UPDATETablecompanySubProjectReturned,
   UPDATETableinRequests,
   UPDATETableinRequestsDone,
+  UpdateProjectClosorOpen,
+  UPDATETablecompanySubProjectStagesSub,
 } = require("../../sql/update");
 const {
   Projectinsert,
@@ -35,7 +40,7 @@ const {
   RearrangeStageProject,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const { Stage } = require("./insertProject");
+const { Stage, StageTempletXsl, AccountDays } = require("./insertProject");
 // وظيفة تقوم بتعديل بيانات الشمروع
 const UpdataDataProject = async (req, res) => {
   try {
@@ -51,8 +56,11 @@ const UpdataDataProject = async (req, res) => {
     const TypeOFContract = req.body.TypeOFContract;
     const GuardNumber = req.body.GuardNumber;
     const LocationProject = req.body.LocationProject;
+    const numberBuilding = req.body.numberBuilding;
+
     const ProjectID = req.body.ProjectID;
-    console.log(Nameproject, "update");
+    const StartDate = await SELECTProjectStartdate(ProjectID);
+
     await UpdateTablecompanySubProject([
       IDcompanySub,
       Nameproject,
@@ -60,16 +68,71 @@ const UpdataDataProject = async (req, res) => {
       TypeOFContract,
       GuardNumber,
       LocationProject,
+      numberBuilding,
       ProjectID,
     ]);
-
+    if (StartDate?.numberBuilding !== numberBuilding) {
+      await RearrangeStageID(ProjectID, StartDate, numberBuilding);
+    }
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await Projectinsert(ProjectID, userSession.userName, "تعديل");
+    console.log(ProjectID, "update");
+
+    await Projectinsert(IDcompanySub, userSession.userName, "تعديل");
   } catch (error) {
     console.log(error);
   }
 };
 
+const CloseOROpenProject = async (req, res) => {
+  try {
+    const idProject = req.query.idProject;
+    const project = await SELECTTablecompanySubProjectLast_id(
+      idProject,
+      "party"
+    );
+    let Disabled = "true";
+    if (project?.Disabled === "true") {
+      Disabled = "false";
+    }
+    await UpdateProjectClosorOpen([Disabled, idProject]);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(401);
+  }
+};
+
+// وظيفة تقوم باعادة ترتيب المراحل وايامها
+const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
+  try {
+    const DataSTage = await SELECTTablecompanySubProjectStageCUST(ProjectID);
+
+    let tables = [];
+    for (let index = 0; index < DataSTage.length; index++) {
+      const element = DataSTage[index];
+
+      const dataSimble = await StageTempletXsl(element.StageID, "update");
+      let Days = await AccountDays(numberBuilding, dataSimble.Days);
+
+      tables.push({
+        ...element,
+        Days: Math.round(Days),
+      });
+    }
+    let date = StartDate["Contractsigningdate"];
+    if (StartDate["ProjectStartdate"] !== null) {
+      date = StartDate["ProjectStartdate"];
+    }
+
+    await DeleteTablecompanySubProjectphase(ProjectID);
+    await Stage(tables, date, "update");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// const count = 14 + 14 / 3;
+// console.log(count);
 //  وظيفة لحذف المشروع كامل مع توابعه
 const DeletProjectwithDependencies = async (req, res) => {
   try {
@@ -137,7 +200,7 @@ const UpdateStartdate = async (req, res) => {
     await UpdateProjectStartdateinProject([ProjectStartdate, ProjectID]);
     dataItem = await SELECTTablecompanySubProjectStageCUST(ProjectID);
     await DeleteTablecompanySubProjectphase(ProjectID);
-    await Stage(dataItem, ProjectStartdate);
+    await Stage(dataItem, ProjectStartdate, "update");
     res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
@@ -207,7 +270,7 @@ const UpdateNotesStage = async (req, res) => {
   }
 };
 
-//  وظيفة تعديل بيانات المرحلة
+//  وظيفة تعديل بيانات المرحلة الرئيسية
 const UpdateDataStage = async (req, res) => {
   try {
     const userSession = req.session.user;
@@ -269,6 +332,72 @@ const UpdateDataStage = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.send({ success: "خطاء في تنفيذ العملية" }).status(401);
+  }
+};
+
+// وظيفة حذف المرحلة الرئيسية
+const DeleteStageHome = async (req, res) => {
+  try {
+    const ProjectID = req.query.ProjectID;
+    const StageID = req.query.StageID;
+    await DeleteTablecompanyStageHome(ProjectID, StageID);
+    await DeleteTablecompanyStageSub(ProjectID, StageID);
+    const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
+    let arraytable = [];
+    table
+      .filter(
+        (item) => item.ProjectID !== ProjectID && item.StageID !== StageID
+      )
+      .forEach((pic) => {
+        let split = pic?.StageName?.split("(");
+        let b = split[0].trim();
+        arraytable.push({
+          ...pic,
+          StageName: b,
+        });
+      });
+    if (arraytable.length > 0) {
+      await DeleteTablecompanySubProjectphase(ProjectID);
+      const StartDate = await SELECTProjectStartdate(ProjectID);
+      let date = StartDate["Contractsigningdate"];
+      if (StartDate["ProjectStartdate"] !== null) {
+        date = StartDate["ProjectStartdate"];
+      }
+      await Stage(arraytable, date);
+    }
+    // console.log(idProject, StageID);
+
+    res.send({ success: "نجح تنيفذ العملية" }).status(200);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// وظيفة تعديل المرحلة الفرعية
+const UpdateDataStageSub = async (req, res) => {
+  try {
+    const StageSubName = req.body.StageSubName;
+    const StageSubID = req.body.StageSubID;
+    await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
+    res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+};
+// وظيفة حذف المرحلة الفرعية
+const DeleteStageSub = async (req, res) => {
+  try {
+    const StageSubID = req.query.StageSubID;
+    await DeleteTablecompanySubProjectall(
+      "StagesSub",
+      "StageSubID",
+      StageSubID
+    );
+    res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(501);
   }
 };
 
@@ -766,4 +895,8 @@ module.exports = {
   UPDATEImplementRquestsORCansle,
   DeletProjectwithDependencies,
   DeleteFinance,
+  CloseOROpenProject,
+  DeleteStageHome,
+  DeleteStageSub,
+  UpdateDataStageSub,
 };

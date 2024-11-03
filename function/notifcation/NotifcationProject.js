@@ -46,6 +46,11 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
       userName: userName,
       type: `companySubprojects ${type}`,
       data: result,
+      NameSub: users[0].NameSub,
+      IDcompany: users[0].IDcompany,
+      IDcompanySub: IDcompanySub,
+      PhoneNumber: users[0].PhoneNumber,
+      Email: users[0].Email,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -113,6 +118,8 @@ const Stageinsert = async (
       ProjectID: ProjectID,
       type: `StagesCUST ${type}`,
       data: resultObject,
+      IDcompanySub: result.IDcompanySub,
+      Project: Project,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -427,6 +434,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       ProjectID: result.ProjectID,
       type: `Delays ${type}`,
       data: resultObject,
+      StageID: resultObject.StagHOMID,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -545,8 +553,7 @@ const Financeinsertnotification = async (
       result.projectID,
       userName,
       "Finance",
-      'sub',
-
+      "sub"
     );
     // console.log(token, result.projectID);
     const notification = {
@@ -723,7 +730,8 @@ const ChateNotfication = async (
     if (
       StageID !== "قرارات" &&
       StageID !== "استشارات" &&
-      StageID !== "اعتمادات" && StageID !== "تحضير"
+      StageID !== "اعتمادات" &&
+      StageID !== "تحضير"
     ) {
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
         const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
@@ -798,6 +806,7 @@ const ChateNotfication = async (
       type: `chate`,
       kind: "new",
       nameRoom: nameChate,
+      StageID: StageID,
     };
     const idmax = await InsertNotifcation(
       arrayuser,
@@ -982,7 +991,7 @@ const BringtokenuserCustom = async (
   ProjectID,
   userName,
   type = "all",
-  kind = "sub",
+  kind = "sub"
 ) => {
   let token = [];
   let arraynameuser = [];
@@ -1007,7 +1016,7 @@ const BringtokenuserCustom = async (
                 for (let P = 0; P < element?.project?.length; P++) {
                   const elementProject = element?.project[P];
                   if (elementProject.idProject === ProjectID) {
-                    if (type === 'Finance') {
+                    if (type === "Finance") {
                       const findValidityProject =
                         elementProject?.ValidityProject?.find(
                           (V) => V === "إشعارات المالية"

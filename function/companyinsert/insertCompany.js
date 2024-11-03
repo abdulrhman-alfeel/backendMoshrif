@@ -9,6 +9,7 @@ const {
   SelectVerifycompanyexistence,
   SELECTTablecompanyName,
   SELECTTablecompanySubLinkevaluation,
+  SELECTTablecompany,
 } = require("../../sql/selected/selected");
 const db = require("../../sql/sqlite");
 const {
@@ -75,57 +76,66 @@ const inseertCompanybrinsh = async (req, res) => {
     const PhoneNumber = req.body.PhoneNumber;
     const check = req.body.check;
     const checkGloble = req.body.checkGloble;
-    const chackfromCompany = await SELECTTablecompanyName(NumberCompany);
-    if (chackfromCompany !== undefined) {
-      const checkVerifction = await SELECTTablecompanySubID(
-        NameSub,
-        NumberCompany
-      );
-      if (checkVerifction !== undefined) {
-        res
-          .send({
-            success: "الفرع موجود مسبقاً",
-          })
-          .status(400);
-      } else {
-        const operation = await insertTablecompanySub([
-          NumberCompany,
-          NameSub,
-          BranchAddress,
-          Email,
-          PhoneNumber,
-        ]);
 
-        const IDcompanySub = await SELECTTablecompanySubID(
+    if (Boolean(NameSub) && Boolean(BranchAddress)) {
+      const chackfromCompany = await SELECTTablecompanyName(NumberCompany);
+      if (chackfromCompany !== undefined) {
+        const checkVerifction = await SELECTTablecompanySubID(
           NameSub,
           NumberCompany
         );
-        // console.log(check,checkGloble)
-        if (check > 0) {
-          await CheckAdmin(check, IDcompanySub.id, NumberCompany);
-        }
-        const Globaluser =
-          checkGloble !== undefined ? Object.entries(checkGloble) : [];
-        if (Globaluser.length > 0) {
-          await CheckGlobal(checkGloble, IDcompanySub.id, NumberCompany);
-        }
+        if (checkVerifction !== undefined) {
+          res
+            .send({
+              success: "الفرع موجود مسبقاً",
+            })
+            .status(400);
+        } else {
+          const operation = await insertTablecompanySub([
+            NumberCompany,
+            NameSub,
+            BranchAddress,
+            Email,
+            PhoneNumber,
+          ]);
 
+          const IDcompanySub = await SELECTTablecompanySubID(
+            NameSub,
+            NumberCompany
+          );
+          // console.log(check,checkGloble)
+          if (check > 0) {
+            await CheckAdmin(check, IDcompanySub.id, NumberCompany);
+          }
+          const Globaluser =
+            checkGloble !== undefined ? Object.entries(checkGloble) : [];
+          if (Globaluser.length > 0) {
+            await CheckGlobal(checkGloble, IDcompanySub.id, NumberCompany);
+          }
+
+          res
+            .send({
+              success: "تمت العملية بنجاح",
+              IDcompanySub: IDcompanySub.id,
+            })
+            .status(200);
+          const countBransh = await SELECTTablecompanySubCount(NumberCompany);
+          await UpdateTableinnuberOfcurrentBranchescompany([
+            countBransh[0]["COUNT(*)"],
+            NumberCompany,
+          ]);
+        }
+      } else {
         res
           .send({
-            success: "تمت العملية بنجاح",
-            IDcompanySub: IDcompanySub.id,
+            success: "يرجى انشاء حساب شركة قبل البدء بالفروع",
           })
           .status(200);
-        const countBransh = await SELECTTablecompanySubCount(NumberCompany);
-        await UpdateTableinnuberOfcurrentBranchescompany([
-          countBransh[0]["COUNT(*)"],
-          NumberCompany,
-        ]);
       }
     } else {
       res
         .send({
-          success: "يرجى انشاء حساب شركة قبل البدء بالفروع",
+          success: "يرجى ادخال البيانات اولاً",
         })
         .status(200);
     }
@@ -150,12 +160,37 @@ const InsertLinkevaluation = async (req, res) => {
     } else {
       await insertTableLinkevaluation([IDcompanySub, Linkevaluation]);
     }
-    res.send({success:'تمت العملية بنجاح'}).status(200);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
-    res.send({success:'فشل تنفيذ العملية'}).status(500);
-
+    res.send({ success: "فشل تنفيذ العملية" }).status(500);
   }
 };
 
-module.exports = { insertDataCompany, inseertCompanybrinsh,InsertLinkevaluation };
+const OpenOrCloseopreationStopfinance = async (req, res) => {
+  try {
+    const id = req.query.idCompany;
+    let DisabledFinance;
+    const data = await SELECTTablecompany(id);
+    if (data.DisabledFinance === "true") {
+      DisabledFinance = "false";
+    } else {
+      DisabledFinance = "true";
+    }
+    await UpdateTableinnuberOfcurrentBranchescompany(
+      [DisabledFinance, id],
+      "DisabledFinance"
+    );
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(400);
+  }
+};
+
+module.exports = {
+  insertDataCompany,
+  inseertCompanybrinsh,
+  InsertLinkevaluation,
+  OpenOrCloseopreationStopfinance,
+};

@@ -3,6 +3,7 @@ const {
   insertDataCompany,
   inseertCompanybrinsh,
   InsertLinkevaluation,
+  OpenOrCloseopreationStopfinance,
 } = require("../function/companyinsert/insertCompany");
 const {biringDatabrinshCompany, bringDataCompany} = require('../function/companyselect/bringCompany');
 const { UpdateCompanybrinsh, UpdateDataCompany } = require("../function/companyinsert/UpdateCompany");
@@ -11,6 +12,7 @@ const router = express.Router();
 
 router.route("/").post(insertDataCompany);
 router.route("/").get(bringDataCompany);
+router.route("/OpenOrCloseopreationStopfinance").get(OpenOrCloseopreationStopfinance);
 router.route("/").put(UpdateDataCompany);
 
 router.route("/brinshName").get(BringNameCompany);

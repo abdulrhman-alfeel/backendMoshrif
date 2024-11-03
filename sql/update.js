@@ -23,12 +23,12 @@ const UpdateTablecompany = (data) => {
     }
   });
 };
-const UpdateTableinnuberOfcurrentBranchescompany = (data) => {
+const UpdateTableinnuberOfcurrentBranchescompany = (data,type="NumberOFcurrentBranches") => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
         db.run(
-          `UPDATE company SET NumberOFcurrentBranches=? WHERE id=?`,
+          `UPDATE company SET ${type}=? WHERE id=?`,
           data,
           function (err) {
             if (err) {
@@ -122,7 +122,7 @@ const UpdateTableuserComppany = (data,type ='job=?') => {
 
 const UpdateTablecompanySubProject = (data) => {
   db.run(
-    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=? WHERE id=?`,
+    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=?,numberBuilding=? WHERE id=?`,
     data,
     function (err) {
       if (err) {
@@ -133,9 +133,20 @@ const UpdateTablecompanySubProject = (data) => {
   );
 };
 const UpdateProjectStartdateinProject = (data) => {
-  console.log(data, "sql");
   db.run(
     `UPDATE companySubprojects SET ProjectStartdate=? WHERE id=?`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been inserted.`);
+    }
+  );
+};
+const UpdateProjectClosorOpen = (data) => {
+  db.run(
+    `UPDATE companySubprojects SET Disabled=? WHERE id=?`,
     data,
     function (err) {
       if (err) {
@@ -256,7 +267,7 @@ const UPDATETablecompanySubProjectStageNotes = (data) => {
 const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name") => {
   let stringSql =
     kind === "Name"
-      ? `UPDATE StagesSub SET StageSubName=? WHERE StagHOMID=? AND ProjectID=?`
+      ? `UPDATE StagesSub SET StageSubName=? WHERE StageSubID=?`
       : kind === "Note"
       ? `UPDATE StagesSub SET Note=? WHERE StageSubID=?`
       : `UPDATE StagesSub SET closingoperations=?,CloseDate=?, Done=?  WHERE StageSubID=?`;
@@ -485,5 +496,6 @@ module.exports = {
   UPDATETableinRequestsDone,
   UpdateTableLoginActivatyValidityORtoken,
   UpdateTableLoginActivatytoken,
-  UpdateTableLinkevaluation
+  UpdateTableLinkevaluation,
+  UpdateProjectClosorOpen
 };

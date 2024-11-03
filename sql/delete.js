@@ -19,6 +19,22 @@ const DeleteTablecompanySubProjectphase = (id) => {
     // console.log(`Row with the ID ${this.lastID} has been inserted.`);
   });
 };
+const DeleteTablecompanyStageHome = (idProject,StageID) => {
+  db.run(`DELETE FROM  StagesCUST WHERE StageID=? AND ProjectID=?`, [StageID,idProject], function (err) {
+    if (err) {
+      console.error(err.message);
+    }
+    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
+const DeleteTablecompanyStageSub = (idProject,StageID) => {
+  db.run(`DELETE FROM  StagesSub WHERE StagHOMID=? AND ProjectID=?`, [StageID,idProject], function (err) {
+    if (err) {
+      console.error(err.message);
+    }
+    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
 
 const DeleteTablecompanySubProjectall= (table,type="projectID",id) => {
   db.serialize(function () {
@@ -150,4 +166,6 @@ module.exports = {
   DELETETableLoginActivaty,
   DeleteTableNotifcation,
   DeletTableuserComppanyCorssUpdateActivationtoFalse,
+  DeleteTablecompanyStageHome,
+  DeleteTablecompanyStageSub
 };

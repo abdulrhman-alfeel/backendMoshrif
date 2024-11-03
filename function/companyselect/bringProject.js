@@ -25,6 +25,7 @@ const {
   SELECTDataAndTaketDonefromTableRequests,
   SELECTProjectStartdate,
   SELECTTablecompanySubProjectLast_id,
+  SELECTTablecompany,
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -39,6 +40,7 @@ const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
 } = require("../../sql/selected/selectuser");
+const { query } = require("express");
 // استيراد بيانات المشروع حسب الفرع
 const BringProject = async (req, res) => {
   try {
@@ -67,6 +69,7 @@ const BringProject = async (req, res) => {
               IDcompanySub,
               IDfinlty
             );
+            console.log(result);
             arrayBrinsh = await BringTotalbalance(
               IDcompanySub,
               userSession.IDCompany,
@@ -100,7 +103,6 @@ const BringProject = async (req, res) => {
         userSession.IDCompany,
         result
       );
-
     }
     // console.log(arrayBrinsh);
 
@@ -113,14 +115,38 @@ const BringProject = async (req, res) => {
 // لانشاء كائن المشروع
 const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
   let arrayReturnProject = [];
+  const datacompany = await SELECTTablecompany(IDCompany, "DisabledFinance");
+
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
     const data = await OpreationExtrinProject(element, IDCompany, IDcompanySub);
     if (data !== undefined) {
-      arrayReturnProject.push(data);
+      arrayReturnProject.push({
+        ...data,
+        DisabledFinance: datacompany?.DisabledFinance,
+      });
     }
   }
   return arrayReturnProject;
+};
+
+const BringDataprojectClosed = async (req, res) => {
+  try {
+    const IDCompanySub = req.query.IDCompanySub;
+    const IDfinlty = req.query.IDfinlty;
+    const result = await SELECTTablecompanySubProject(
+      IDCompanySub,
+      IDfinlty,
+      "all",
+      "false"
+    );
+
+    res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(401);
+
+    console.log(error);
+  }
 };
 
 // عملية استخراج بيانات المشروع ككائان واحد
@@ -1260,4 +1286,5 @@ module.exports = {
   BringCountRequsts,
   BringReportforProject,
   BringProjectObjectone,
+  BringDataprojectClosed,
 };
