@@ -333,7 +333,6 @@ const insertTablecompanySubProjectRequestsForcreatOrder = async (data) => {
 // المنشورات
 
 const insertTablePostPublic = (data) => {
-  console.log(data);
   db.serialize(function () {
     db.run(
       `INSERT INTO Post (postBy,url,Type,Data,timeminet,StageID,ProjectID,brunshCommpanyID,CommpanyID) VALUES (?,?,?,?,?,?,?,?,?)`,
@@ -467,6 +466,20 @@ const insertTableNavigation = (data) => {
     );
   });
 };
+const insertTableProjectdataforchat = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Projectdataforchat (ProjectID,Nameproject,PhoneNumber) VALUES (?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.log(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
 
 //
 module.exports = {
@@ -496,5 +509,6 @@ module.exports = {
   insertTableSabepdf,
   insertTablecompanySubProjectRequestsForcreatOrder,
   insertTableNavigation,
-  insertTableLinkevaluation
+  insertTableLinkevaluation,
+  insertTableProjectdataforchat
 };

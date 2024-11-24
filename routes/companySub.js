@@ -39,6 +39,7 @@ const {
   BringReportforProject,
   BringProjectObjectone,
   BringDataprojectClosed,
+  FilterProject,
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -90,6 +91,7 @@ router
 router.route("/BringProject").get(BringProject);
 router.route("/BringDataprojectClosed").get(BringDataprojectClosed);
 router.route("/CloseOROpenProject").get(CloseOROpenProject);
+router.route("/FilterProject").get(FilterProject);
 router.route("/BringProjectindividual").get(BringProjectindividual);
 router.route("/BringProjectObjectone").get(BringProjectObjectone);
 router.route("/BringStageTemplet").get(BringStageTemplet);

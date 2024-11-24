@@ -154,15 +154,14 @@ const SELECTTableusersCompanySub = (
 
 // التحقق من كود الدخول
 
-const SELECTTableLoginActivaty = (codeVerification) => {
+const SELECTTableLoginActivaty = (codeVerification,PhoneNumber) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
         `SELECT ca.id,ca.IDCompany,ca.userName,ca.IDNumber,ca.PhoneNumber,ca.Image,ca.DateOFlogin,ca.DateEndLogin,ca.Activation,ca.job,ca.jobdiscrption,ca.Validity,ca.token, RE.CommercialRegistrationNumber FROM LoginActivaty ca  LEFT JOIN 
-        company RE ON RE.id = ca.IDCompany  WHERE codeVerification=${codeVerification} `,
+        company RE ON RE.id = ca.IDCompany  WHERE ca.codeVerification=${codeVerification} AND ca.PhoneNumber=${PhoneNumber}`,
         [],
         function (err, result) {
-          // console.log(result);
           if (err) {
             reject(err);
             console.error(err.message);
@@ -194,8 +193,27 @@ const SELECTTableLoginActivatActivaty = (PhoneNumber, type = "*") => {
     });
   });
 };
+const SELECTTableLoginActivatActivatyall = (type = "*") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.all(
+        `SELECT ${type} FROM LoginActivaty   `,
+        [],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 module.exports = {
+  SELECTTableLoginActivatActivatyall,
   SELECTTableusersCompany,
   SELECTTableusersCompanySub,
   SELECTTableusersCompanyVerification,

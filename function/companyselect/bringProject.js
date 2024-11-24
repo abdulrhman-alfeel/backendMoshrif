@@ -26,6 +26,7 @@ const {
   SELECTProjectStartdate,
   SELECTTablecompanySubProjectLast_id,
   SELECTTablecompany,
+  SELECTTablecompanySubProjectFilter,
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -40,7 +41,6 @@ const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
 } = require("../../sql/selected/selectuser");
-const { query } = require("express");
 // استيراد بيانات المشروع حسب الفرع
 const BringProject = async (req, res) => {
   try {
@@ -77,13 +77,14 @@ const BringProject = async (req, res) => {
             );
           } else {
             for (let index = 0; index < element.project.length; index++) {
-              // console.log(validity);
               const elementProject = element.project[index];
-              const result = await SELECTTablecompanySubProjectLast_id(
-                elementProject.idProject,
-                "party"
-              );
-              arrayBrinsh.push(result);
+              if (parseInt(element.idBrinsh) === parseInt(IDcompanySub)) {
+                const result = await SELECTTablecompanySubProjectLast_id(
+                  elementProject.idProject,
+                  "party"
+                );
+                arrayBrinsh.push(result);
+              }
             }
 
             if (arrayBrinsh.length > 0) {
@@ -93,6 +94,11 @@ const BringProject = async (req, res) => {
                 arrayBrinsh
               );
             }
+            arrayBrinsh = arrayBrinsh.find(
+              (pic) => parseInt(pic.id) === parseInt(IDfinlty)
+            )
+              ? []
+              : arrayBrinsh;
           }
         }
       }
@@ -104,12 +110,79 @@ const BringProject = async (req, res) => {
         result
       );
     }
-    // console.log(arrayBrinsh);
-
     res.send({ success: true, data: arrayBrinsh }).status(200);
   } catch (err) {
     console.log(err);
     res.send({ success: false }).status(400);
+  }
+};
+
+//  فلتر المشاريع
+//  SELECT * FROM posts WHERE Saction LIKE '%"+search+"%'
+
+const FilterProject = async (req, res) => {
+  try {
+    const search = req.query.search;
+    const IDcompanySub = req.query.IDCompanySub;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const Datausere = await SELECTTableusersCompanyonObject(
+      userSession.PhoneNumber
+    );
+    const result = await SELECTTablecompanySubProjectFilter(
+      search,
+      IDcompanySub
+    );
+    arrayBrinsh = await BringTotalbalance(
+      IDcompanySub,
+      userSession.IDCompany,
+      result
+    );
+    let findproject = false;
+    if (Datausere.job !== "Admin") {
+      let validity =
+        Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
+      if (validity.length > 0) {
+        for (let index = 0; index < validity?.length; index++) {
+          const element = validity[index];
+          findproject = true;
+          if (
+            element.job === "مدير الفرع" &&
+            parseInt(element.idBrinsh) === parseInt(IDcompanySub)
+          ) {
+            findproject = true;
+          } else {
+            for (let index = 0; index < element.project.length; index++) {
+              const elementProject = element.project[index];
+              const find =
+                result.length > 0
+                  ? result.find((pic) => pic.id === elementProject.idProject)
+                  : false;
+              if (find) {
+                findproject = true;
+              }
+            }
+          }
+        }
+      }
+    } else {
+      findproject = true;
+    }
+    const massage =
+      arrayBrinsh.length <= 0
+        ? "لاتوجد بيانات في اطار صلاحياتك بهذا الاسم "
+        : "تمت العملية بنجاح";
+    if (findproject) {
+      res.send({ success: massage, data: arrayBrinsh }).status(200);
+    } else {
+      res.send({ success: massage, data: [] }).status(200);
+    }
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية", data: [] }).status(501);
+    console.log(error);
   }
 };
 // لانشاء كائن المشروع
@@ -230,6 +303,7 @@ const BringCountUserinProject = (IDCompany, IDcompanySub, idproject) => {
     resolve(arrayvalidityuser.length);
   });
 };
+// استخراج المستخدمين الموجودين داخل المشروع
 const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   let arrayUser = {};
   //      لاخراج  البيانات من داخل حاوية الصلاحيات
@@ -250,7 +324,7 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   });
   return arrayUser;
 };
-
+// حساب تكاليف المشروع حسب الايام
 const AccountCostProject = async (id, ConstCompany) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
   let StartDate = new Date(DataProject[0].Contractsigningdate);
@@ -263,7 +337,7 @@ const AccountCostProject = async (id, ConstCompany) => {
   }
   return { daysDifference, Total };
 };
-
+// حساب فارق الايام
 function differenceInDays(startDate, endDate) {
   const millisecondsPerDay = 1000 * 60 * 60 * 24; // Milliseconds in one day
   const differenceInMilliseconds = endDate - startDate; // Difference in milliseconds
@@ -376,8 +450,18 @@ const BringStagesub = async (req, res) => {
       ProjectID,
       StageID
     );
+    let resultProject = await SELECTTablecompanySubProjectStageCUSTONe(
+      ProjectID,
+      StageID
+    );
+    const rate = await PercentagecalculationforSTage(StageID, ProjectID);
 
-    res.send({ success: true, data: result }).status(200);
+    // result?.push(rate);
+    resultProject = {
+      ...resultProject,
+      rate: rate,
+    };
+    res.send({ success: true, data: result,resultProject:resultProject }).status(200);
   } catch (err) {
     console.log(err);
     res.send({ success: false }).status(400);
@@ -531,7 +615,6 @@ const BringStatmentFinancialforproject = async (req, res) => {
 
     const sevepdf = await SELECTTableSavepdf(ProjectID);
     const Totalproject = await SELECTSUMAmountandBring(ProjectID);
-    console.log(Totalproject);
 
     if (sevepdf !== 0 && sevepdf?.Total !== undefined) {
       if (
@@ -712,14 +795,13 @@ const BringArchivesFolderdata = async (req, res) => {
     res.send({ success: false }).status(400);
   }
 };
-
+// طلب ملفات الفرعية في الارشيف
 const BringchildeArchives = async (children, idSub) => {
   return new Promise(async (resolve, reject) => {
     try {
       const folder = children?.find(
         (folder) => parseInt(folder.id) === parseInt(idSub)
       );
-      // console.log(folder, "hhhhhhhkkkkkkkkkkkkkkkkkk", idSub);
 
       if (folder) {
         resolve(folder.children);
@@ -739,7 +821,7 @@ const BringchildeArchives = async (children, idSub) => {
     }
   });
 };
-
+// استخراج الملفات والصورة من المجلد الفرعي
 const ExtractDatafromFolderchilde = async (children) => {
   return new Promise((resolve, reject) => {
     let array = [];
@@ -882,7 +964,6 @@ const ExtractDatafromExpense = async (idproject, type, idSub) => {
         size: 0,
       });
     }
-    console.log(arrayfolder);
     arrayfolder.push({
       id: arrayfolder.length + 1,
       Data: datasub,
@@ -1287,4 +1368,5 @@ module.exports = {
   BringReportforProject,
   BringProjectObjectone,
   BringDataprojectClosed,
+  FilterProject,
 };

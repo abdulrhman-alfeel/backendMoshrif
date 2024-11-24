@@ -28,7 +28,6 @@ const biringDatabrinshCompany = async (req, res) => {
     const validity = req.body.Validity;
     const company = await SELECTTablecompanyName(IDCompany);
     let arrayBrinsh = [];
-    // console.log(validity)
     if (job !== "Admin") {
       for (let index = 0; index < validity?.length; index++) {
         const element = validity[index];
@@ -59,6 +58,7 @@ const biringDatabrinshCompany = async (req, res) => {
         ObjectData.push(ObjectBrinsh);
       }
     }
+
     res
       .send({
         masseg: "succfuly",

@@ -10,14 +10,13 @@ const {
   SELECTTableViewChateStage,
   SELECTTableChateotherroad,
   SELECTTableViewChate,
-  SELECTLengthTableChateStage,
   SELECTLastTableChateStage,
-  SELECTLengthTableChate,
   SELECTLastTableChate,
   SELECTLastTableChateStageDontEmpty,
   SELECTLastTableChateTypeDontEmpty,
   SELECTLastTableChateID,
   SELECTTableViewChateUser,
+  SELECTLastmassgeuserinchat,
 } = require("../../sql/selected/selected");
 const {
   ChateNotfication,
@@ -60,7 +59,8 @@ const ClassChatOpration = async (Socket, io) => {
             if (
               data?.StageID !== "قرارات" &&
               data?.StageID !== "استشارات" &&
-              data?.StageID !== "اعتمادات" && data?.StageID !== "تحضير"
+              data?.StageID !== "اعتمادات" &&
+              data?.StageID !== "تحضير"
             ) {
               await insertPostURL(data);
             }
@@ -165,60 +165,65 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
 };
 
 // **************
-
+// جلب الرسائل الناقصة
 const ClassChackTableChat = async (req, res) => {
   try {
     const ProjectID = req.query.ProjectID;
     const StageID = req.query.StageID;
     const lengthChat = req.query.lengthChat;
-    const chatID = req.query.chatID;
+    // const chatID = req.query.chatID;
+    const userSession = req.session.user;
 
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
     let arrayResult = [];
     //  جلب طول البيانات
-    const count = Number(StageID)
-      ? await SELECTLengthTableChateStage(ProjectID, StageID)
-      : await SELECTLengthTableChate(ProjectID, StageID);
-
-    if (count > lengthChat) {
-      const number = count - lengthChat;
-      if (number > 0) {
-        let Total = number > 80 ? 80 : number;
-        // console.log(Total)
-        // جلب البيانات
-        let result;
-        if (lengthChat > 0) {
-          result = Number(StageID)
-            ? await SELECTLastTableChateStageDontEmpty(
-                ProjectID,
-                StageID,
-                chatID
-              )
-            : await SELECTLastTableChateTypeDontEmpty(
-                ProjectID,
-                StageID,
-                chatID
-              );
-          // console.log(count,lengthChat,number,result,'kkklklllllllllllllllll')
-        } else {
-          result = Number(StageID)
-            ? await SELECTLastTableChateStage(ProjectID, StageID, Total)
-            : await SELECTLastTableChate(ProjectID, StageID, Total);
-          // console.log(result)
-        }
-
-        // فرز البيانات
-        for (let index = 0; index < result.length; index++) {
-          const element = result[index];
-          element.File = JSON.parse(element.File);
-          element.Reply = JSON.parse(element.Reply);
-          arrayResult.push(element);
-        }
-        // ارسال البيانات
-        res.send({ success: true, data: arrayResult }).status(200);
-      }
+    const Listchat = Number(StageID)
+      ? await SELECTLastmassgeuserinchat(
+          ProjectID,
+          StageID,
+          userSession.userName
+        )
+      : await SELECTLastmassgeuserinchat(
+          ProjectID,
+          StageID,
+          userSession.userName,
+          "Chat"
+        );
+    console.log(Listchat, "massage new ");
+    // جلب البيانات
+    let result;
+    if (Listchat.last_id !== null && lengthChat  > 0) {
+      result = Number(StageID)
+        ? await SELECTLastTableChateStageDontEmpty(
+            ProjectID,
+            StageID,
+            Listchat?.last_id
+          )
+        : await SELECTLastTableChateTypeDontEmpty(
+            ProjectID,
+            StageID,
+            Listchat?.last_id
+          );
     } else {
-      res.send({ success: false, data: [] }).status(201);
+      result = Number(StageID)
+        ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
+        : await SELECTLastTableChate(ProjectID, StageID, 80);
+      // console.log(result)
     }
+    // فرز البيانات
+    if (result?.length > 0 && result !== undefined) {
+      for (let index = 0; index < result.length; index++) {
+        const element = result[index];
+        element.File = JSON.parse(element.File);
+        element.Reply = JSON.parse(element.Reply);
+        arrayResult.push(element);
+      }
+    }
+    // ارسال البيانات
+    res.send({ success: true, data: arrayResult }).status(200);
   } catch (err) {
     console.log(err);
     res.send({ success: false }).status(400);
@@ -275,7 +280,7 @@ const ClassreceiveMessageViews = async (req, res) => {
     const element = result[index];
     const data = await SELECTTableViewChateUser(element.chatID, userName, type);
 
-    if (data.length === 0) {
+    if (data?.length === 0) {
       const viewSend = {
         ProjectID: ProjectID,
         chatID: element.chatID,

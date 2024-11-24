@@ -148,6 +148,20 @@ const DeleteTableLikesPostPublic = (data) => {
     );
   });
 };
+const DeleteTableProjectdataforchat = (data) => {
+  db.serialize(function () {
+    db.run(
+      `Delete FROM Projectdataforchat WHERE PhoneNumber=?`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+      }
+    );
+  });
+};
 
 const DeleteTablecompanySubProjectChate = () => {};
 
@@ -167,5 +181,6 @@ module.exports = {
   DeleteTableNotifcation,
   DeletTableuserComppanyCorssUpdateActivationtoFalse,
   DeleteTablecompanyStageHome,
-  DeleteTablecompanyStageSub
+  DeleteTablecompanyStageSub,
+  DeleteTableProjectdataforchat
 };

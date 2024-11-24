@@ -176,7 +176,7 @@ const HtmlContent = (item, home) => {
 
         </div>
       <div class="header-left">
-        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo"  style="width: 80px;height: 40px;">
+        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo"  style="width: 80px;height: 40px;">
         <h1>منصة مشرف</h1>
       </div>
     
@@ -468,7 +468,7 @@ span{
           <h1 style="font-size: 17px;"> المشروع: ${dataHome.Nameproject}</h1>
       </div>
     <div class="header-left">
-      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
       <h1>منصة مشرف</h1>
     </div>
   

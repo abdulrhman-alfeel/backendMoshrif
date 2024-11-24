@@ -464,6 +464,18 @@ const UPDATETableChate = (data) => {
       console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
     }
   );
+}
+const UPDATETableProjectdataforchat = (data) => {
+  db.run(
+    `UPDATE Projectdataforchat SET Disabled="true" WHERE ProjectID=?`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      // console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
 };
 
 module.exports = {
@@ -483,7 +495,6 @@ module.exports = {
   UPDATETablePostPublic,
   UPDATETableCommentPostPublic,
   UpdateTableuserComppany,
-  
   UPDATETableChateStage,
   UPDATETableChate,
   UpdateTableLoginActivaty,
@@ -497,5 +508,6 @@ module.exports = {
   UpdateTableLoginActivatyValidityORtoken,
   UpdateTableLoginActivatytoken,
   UpdateTableLinkevaluation,
-  UpdateProjectClosorOpen
+  UpdateProjectClosorOpen,
+  UPDATETableProjectdataforchat
 };

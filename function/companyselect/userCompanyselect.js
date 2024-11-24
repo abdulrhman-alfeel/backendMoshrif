@@ -1,14 +1,14 @@
 const { createTokens } = require("../../middleware/jwt");
 const { DELETETableLoginActivaty } = require("../../sql/delete");
 const { insertTableLoginActivaty } = require("../../sql/INsertteble");
-const { SELECTTableUsernameBrinsh } = require("../../sql/selected/selected");
+const { SELECTTableUsernameBrinsh, SELECTTablecompany } = require("../../sql/selected/selected");
 
 const {
   SELECTTableusersCompanyVerification,
   SELECTTableusersCompany,
   SELECTTableLoginActivaty,
+  SELECTTableLoginActivatActivatyall,
 } = require("../../sql/selected/selectuser");
-const { UpdateTableLoginActivaty } = require("../../sql/update");
 
 const Loginuser = async (req, res) => {
   const PhoneNumber = req.query.PhoneNumber;
@@ -25,8 +25,8 @@ const Loginuser = async (req, res) => {
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
     // const output = 1234;
-    // verificationSend(PhoneNumber, output);
-
+    verificationSend(PhoneNumber, output);
+    console.log(output);
     // const currentDate = new Date();
     // const futureDate = new Date(currentDate + 5 * 24 * 60 * 60 * 1000);
     const currentDate = new Date();
@@ -92,9 +92,10 @@ const verificationSend = (number, chack) => {
 const LoginVerification = async (req, res) => {
   try{
   const output = req.query.output;
-  const result = await SELECTTableLoginActivaty(output);
+  const PhoneNumber = req.query.PhoneNumber;
+  const result = await SELECTTableLoginActivaty(output,parseInt(PhoneNumber));
   // console.log(result, "user", output);
-  if (result !== null) {
+  if (result !== undefined) {
     // create accessToken from data users
     const user = {
       IDCompany: result?.IDCompany,
@@ -109,7 +110,10 @@ const LoginVerification = async (req, res) => {
       DateOFlogin: result.DateOFlogin,
       DateEndLogin: result.DateEndLogin,
     };
+    const data = await SELECTTablecompany(result?.IDCompany);
+
     const accessToken = createTokens(user);
+    // console.log(accessToken);
     // bring data usres according to validity
     // const ObjectData = await verificationfromValidity(result);
     res
@@ -118,6 +122,7 @@ const LoginVerification = async (req, res) => {
         accessToken: accessToken,
         Validity: JSON.parse(result.Validity),
         data: user,
+        DisabledFinance: data.DisabledFinance
       })
       .status(200);
   } else {
@@ -236,6 +241,10 @@ const BringUserCompanyinBrinsh = async (req, res) => {
   }
 };
 
+
+
+
+
 // استيراد المستخدمين حسب المشروع
 
 // const Validity = [
@@ -273,7 +282,16 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   });
   return arrayUser;
 };
+
+
+
+
+const BringAllLoginActvity = async(req,res)=>{
+ const resultall = await SELECTTableLoginActivatActivatyall() ;
+ res.send({success:'تمت العملية بنجاح',data:resultall}).status(200)
+}
 module.exports = {
+  BringAllLoginActvity,
   Loginuser,
   LoginVerification,
   BringUserCompany,

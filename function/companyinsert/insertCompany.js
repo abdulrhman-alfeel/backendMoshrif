@@ -181,7 +181,7 @@ const OpenOrCloseopreationStopfinance = async (req, res) => {
       [DisabledFinance, id],
       "DisabledFinance"
     );
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
+    res.send({ success: "تمت العملية بنجاح",DisabledFinance:DisabledFinance }).status(200);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
