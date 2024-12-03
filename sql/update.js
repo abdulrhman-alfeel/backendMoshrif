@@ -477,6 +477,23 @@ const UPDATETableProjectdataforchat = (data) => {
     }
   );
 };
+// Approvingperson=?,ApprovalDate=?,OrderStatus=?
+const UPDATETableFinancialCustody = (type,id) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `UPDATE FinancialCustody  SET ${type} WHERE id =${id}`,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 module.exports = {
   UpdateTablecompany,
@@ -509,5 +526,6 @@ module.exports = {
   UpdateTableLoginActivatytoken,
   UpdateTableLinkevaluation,
   UpdateProjectClosorOpen,
-  UPDATETableProjectdataforchat
+  UPDATETableProjectdataforchat,
+  UPDATETableFinancialCustody
 };

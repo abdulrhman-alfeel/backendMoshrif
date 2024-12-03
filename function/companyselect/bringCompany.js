@@ -5,7 +5,11 @@ const {
   SELECTTablecompanySubProject,
   SELECTTablecompany,
   SELECTTablecompanySubLinkevaluation,
+  SELECTTableFinancialCustody,
 } = require("../../sql/selected/selected");
+const {
+  SELECTTableusersCompanyonObject,
+} = require("../../sql/selected/selectuser");
 
 const bringDataCompany = async (req, res) => {
   try {
@@ -24,8 +28,17 @@ const biringDatabrinshCompany = async (req, res) => {
   // console.log(req.body)
   try {
     const IDCompany = req.body.IDCompany;
-    const job = req.body.job;
-    const validity = req.body.Validity;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const job = userSession.job;
+
+    const Datausere = await SELECTTableusersCompanyonObject(
+      userSession.PhoneNumber
+    );
+    const validity = Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];;
     const company = await SELECTTablecompanyName(IDCompany);
     let arrayBrinsh = [];
     if (job !== "Admin") {
@@ -54,7 +67,7 @@ const biringDatabrinshCompany = async (req, res) => {
             ? evaluation?.urlLink
             : "",
         };
-        
+
         ObjectData.push(ObjectBrinsh);
       }
     }
@@ -73,4 +86,83 @@ const biringDatabrinshCompany = async (req, res) => {
   }
 };
 
-module.exports = { biringDatabrinshCompany, bringDataCompany };
+//  طلبات بيانات العهد
+
+const BringDataFinancialCustody = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const resultUser = await SELECTTableusersCompanyonObject(
+      userSession.PhoneNumber
+    );
+    let kindOpreation =
+      resultUser.job === "Admin" || resultUser.job === "مالية"
+        ? "all"
+        : "Brinsh";
+    let Bringaway;
+    const IDCompany = userSession.IDCompany;
+    const kindRequest = req.query.kindRequest;
+    const LastID = req.query.LastID;
+
+    const IDCompanySub = req.query.IDCompanySub;
+    const Validityuser =
+      resultUser.job !== "Admin"
+        ? await KnowuserpermissioninCovenant(
+            JSON.parse(resultUser.Validity),
+            IDCompanySub,
+            userSession.PhoneNumber
+          )
+        : "";
+    switch (kindRequest) {
+      case "معلقة":
+        Bringaway =
+          kindOpreation === "all"
+            ? `OrderStatus='false' AND RejectionStatus='false' AND fi.id > ${LastID} `
+            : `${Validityuser} AND OrderStatus='false' AND RejectionStatus='false' AND fi.id > ${LastID}`;
+        break;
+      case "مغلقة":
+        Bringaway =
+          kindOpreation === "all"
+            ? `OrderStatus='true' AND fi.id > ${LastID}`
+            : `${Validityuser} AND OrderStatus='true' AND RejectionStatus='false' AND fi.id > ${LastID}`;
+        break;
+      case "مرفوضة":
+        Bringaway =
+          kindOpreation === "all"
+            ? `RejectionStatus='true' AND fi.id > ${LastID}`
+            : `${Validityuser} AND RejectionStatus='true' AND fi.id > ${LastID}`;
+        break;
+    }
+    const result = await SELECTTableFinancialCustody(IDCompany, Bringaway);
+    res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(500);
+  }
+};
+
+const KnowuserpermissioninCovenant = (Validity, IDCompanySub, userName) => {
+  try {
+    // console.log(Validity);
+    const findBrinsh = Validity.find(
+      (items) =>
+        items.idBrinsh === IDCompanySub && items.Acceptingcovenant === true
+    );
+    if (findBrinsh) {
+      return `IDCompanySub=${IDCompanySub}`;
+    } else {
+      return `IDCompanySub=${IDCompanySub} AND Requestby=${userName}`;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = {
+  biringDatabrinshCompany,
+  bringDataCompany,
+  BringDataFinancialCustody,
+};

@@ -110,8 +110,9 @@ const LoginVerification = async (req, res) => {
       DateOFlogin: result.DateOFlogin,
       DateEndLogin: result.DateEndLogin,
     };
-    const data = await SELECTTablecompany(result?.IDCompany);
 
+    
+    const data = await SELECTTablecompany(result?.IDCompany);
     const accessToken = createTokens(user);
     // console.log(accessToken);
     // bring data usres according to validity

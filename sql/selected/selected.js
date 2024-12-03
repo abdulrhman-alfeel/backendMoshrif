@@ -206,7 +206,7 @@ const SELECTTablecompanySubProject = (
     let data =
       kind === "all"
         ? [id, IDfinlty, Disabled]
-        : kind === "forchat" 
+        : kind === "forchat"
         ? [id]
         : [id, Disabled];
     db.serialize(function () {
@@ -266,12 +266,14 @@ const SELECTTablecompanySubProjectindividual = (id, IDcompanySub) => {
     });
   });
 };
-// فلتر المشاريع 
-const SELECTTablecompanySubProjectFilter= (search, IDcompanySub) => {
+// فلتر المشاريع
+const SELECTTablecompanySubProjectFilter = (search, IDcompanySub) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        "SELECT * FROM companySubprojects WHERE Nameproject LIKE '%"+search+"%' AND IDcompanySub=?",
+        "SELECT * FROM companySubprojects WHERE Nameproject LIKE '%" +
+          search +
+          "%' AND IDcompanySub=?",
         [IDcompanySub],
         function (err, result) {
           if (err) {
@@ -1499,7 +1501,6 @@ const SELECTTableViewChateUser = (chatID, userName, type) => {
 };
 const SELECTLastTableChateStageDontEmpty = (ProjectID, StageID, id) => {
   return new Promise((resolve, reject) => {
-
     db.serialize(function () {
       db.all(
         `SELECT * FROM ChatSTAGE  WHERE ProjectID=? AND StageID =? AND  chatID > ? `,
@@ -1519,7 +1520,6 @@ const SELECTLastTableChateStageDontEmpty = (ProjectID, StageID, id) => {
 };
 const SELECTLastTableChateTypeDontEmpty = (ProjectID, StageID, id) => {
   return new Promise((resolve, reject) => {
-
     db.serialize(function () {
       db.all(
         `SELECT * FROM Chat  WHERE ProjectID=? AND Type =? AND  chatID > ? `,
@@ -1529,7 +1529,6 @@ const SELECTLastTableChateTypeDontEmpty = (ProjectID, StageID, id) => {
             reject(err);
             console.error(err.message);
           } else {
-
             resolve(result.reverse());
             // console.log(result)
           }
@@ -1566,13 +1565,18 @@ const SELECTTableChateStageOtherroad = (
 };
 
 //  معرفة اخر رسائل المستخدم في الدردشة
-const SELECTLastmassgeuserinchat = (ProjectID, StageID,userName,type='ChatSTAGE') => {
+const SELECTLastmassgeuserinchat = (
+  ProjectID,
+  StageID,
+  userName,
+  type = "ChatSTAGE"
+) => {
   return new Promise((resolve, reject) => {
-    let kind = type === 'ChatSTAGE' ? 'StageID' : 'Type';
+    let kind = type === "ChatSTAGE" ? "StageID" : "Type";
     db.serialize(function () {
       db.get(
         `SELECT MAX(chatID) AS  last_id FROM ${type} WHERE ProjectID=? AND ${kind} =? AND Sender=? AND DATE != CURRENT_DATE `,
-        [ProjectID, StageID,userName],
+        [ProjectID, StageID, userName],
         function (err, result) {
           if (err) {
             // reject(err);
@@ -1755,7 +1759,43 @@ const SELECTTableProjectdataforchat = (PhoneNumber, id) => {
   });
 };
 
-
+//  طلب اخر رقم في جدول العهد
+const SELECTTableMaxFinancialCustody = async (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT Max(idOrder) AS  last_id FROM FinancialCustody WHERE IDCompanySub=? `,
+        [id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableFinancialCustody = async (id, type = "") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT fi.id,fi.idOrder,fi.IDCompany,fi.IDCompanySub,fi.Requestby,fi.Amount,fi.Statement,fi.Date,fi.Approvingperson,fi.ApprovalDate,fi.OrderStatus,fi.RejectionStatus,fi.Reasonforrejection,fi.Dateofrejection,RE.NameSub,us.userName FROM FinancialCustody fi LEFT JOIN companySub RE ON RE.id = fi.IDcompanySub LEFT JOIN usersCompany us ON us.PhoneNumber = fi.Requestby WHERE fi.IDCompany=? AND ${type}  ORDER BY fi.id ASC LIMIT 10`,
+        [id],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 module.exports = {
   SELECTTablecompany,
@@ -1831,5 +1871,7 @@ module.exports = {
   SELECTTablecompanySubLinkevaluation,
   SELECTTableProjectdataforchat,
   SELECTLastmassgeuserinchat,
-  SELECTTablecompanySubProjectFilter
+  SELECTTablecompanySubProjectFilter,
+  SELECTTableMaxFinancialCustody,
+  SELECTTableFinancialCustody,
 };

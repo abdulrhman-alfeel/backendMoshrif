@@ -2,6 +2,7 @@ const {
   insertTablecompany,
   insertTablecompanySub,
   insertTableLinkevaluation,
+  insertTableFinancialCustody,
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubID,
@@ -10,14 +11,16 @@ const {
   SELECTTablecompanyName,
   SELECTTablecompanySubLinkevaluation,
   SELECTTablecompany,
+  SELECTTableMaxFinancialCustody,
 } = require("../../sql/selected/selected");
-const db = require("../../sql/sqlite");
 const {
   UpdateTableinnuberOfcurrentBranchescompany,
   UpdateTableLinkevaluation,
 } = require("../../sql/update");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
+
+// اضافة شركة جديدة
 const insertDataCompany = async (req, res) => {
   try {
     const CommercialRegistrationNumber = req.body.CommercialRegistrationNumber;
@@ -67,6 +70,7 @@ const insertDataCompany = async (req, res) => {
   }
 };
 
+//  اضافة فرع جديد
 const inseertCompanybrinsh = async (req, res) => {
   try {
     const NumberCompany = req.body.NumberCompany;
@@ -91,7 +95,7 @@ const inseertCompanybrinsh = async (req, res) => {
             })
             .status(400);
         } else {
-          const operation = await insertTablecompanySub([
+          await insertTablecompanySub([
             NumberCompany,
             NameSub,
             BranchAddress,
@@ -149,6 +153,7 @@ const inseertCompanybrinsh = async (req, res) => {
   }
 };
 
+// اضافة رابط تقييم الجودة
 const InsertLinkevaluation = async (req, res) => {
   try {
     const IDcompanySub = req.body.IDcompanySub;
@@ -167,6 +172,7 @@ const InsertLinkevaluation = async (req, res) => {
   }
 };
 
+// اغلاق عمليات المالية يدوياً
 const OpenOrCloseopreationStopfinance = async (req, res) => {
   try {
     const id = req.query.idCompany;
@@ -188,9 +194,43 @@ const OpenOrCloseopreationStopfinance = async (req, res) => {
   }
 };
 
+
+
+//  طلبات العهد
+const insertRequestFinancialCustody = async (req,res) => {
+  try{
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    
+    const IDCompanySub = req.body.IDCompanySub;
+    const Requestby = userSession.PhoneNumber;
+    const IDCompany = userSession.IDCompany;
+    const Amount = req.body.Amount;
+    const Statement = req.body.Statement;
+    console.log(userSession.PhoneNumber , Amount,Statement);
+    if ( IDCompanySub > 0 && String(Statement).length > 0){
+      const maxOrder = await SELECTTableMaxFinancialCustody(IDCompanySub);
+      console.log(maxOrder?.last_id);
+      const idOrder = maxOrder?.last_id === null ? 1 : maxOrder.last_id + 1;
+      console.log(idOrder);
+      await insertTableFinancialCustody([idOrder,IDCompany,IDCompanySub,Requestby,String(Amount) > 0 ? Amount : 0 ,Statement]);
+      res.send({success:'تمت العملية بنجاح'}).status(200)
+    }else{
+      res.send({success:'فشل تنفيذ العملية'}).status(201)
+    }
+  }catch(error){
+    console.log(error);
+    res.send({success:'فشل تنفيذ العملية'}).status(501)
+
+  }
+}
 module.exports = {
   insertDataCompany,
   inseertCompanybrinsh,
   InsertLinkevaluation,
   OpenOrCloseopreationStopfinance,
+  insertRequestFinancialCustody
 };

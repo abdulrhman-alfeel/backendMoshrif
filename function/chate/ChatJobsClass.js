@@ -55,6 +55,7 @@ const ClassChatOpration = async (Socket, io) => {
             await insertTableChate(newData);
             result = await SELECTTableChateotherroad(data.idSendr);
           }
+
           if (result) {
             if (
               data?.StageID !== "قرارات" &&

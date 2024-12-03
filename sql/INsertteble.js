@@ -82,14 +82,6 @@ const insertTableuserComppany = (data) => {
   }
 };
 
-
-
-
-
-
-
-
-
 const insertTableLoginActivaty = (data) => {
   db.serialize(function () {
     db.run(
@@ -481,6 +473,26 @@ const insertTableProjectdataforchat = (data) => {
   });
 };
 
+//  عمليات طلبات العهد
+
+const insertTableFinancialCustody = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO FinancialCustody (idOrder,IDCompany,IDCompanySub,Requestby,Amount,Statement) VALUES (?,?,?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //
 module.exports = {
   insertTablecompany,
@@ -510,5 +522,6 @@ module.exports = {
   insertTablecompanySubProjectRequestsForcreatOrder,
   insertTableNavigation,
   insertTableLinkevaluation,
-  insertTableProjectdataforchat
+  insertTableProjectdataforchat,
+  insertTableFinancialCustody
 };

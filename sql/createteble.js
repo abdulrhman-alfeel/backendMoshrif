@@ -1,13 +1,5 @@
 const db = require("./sqlite");
-// const sqlite3 = require('sqlite3').verbose();
 
-// // open the database
-// const dbd = new sqlite3.Database('./StageTemplet.db', (err) => {
-//   if (err) {
-//     console.error(err.message);
-//   }
-//   console.log('Connected to the chinook database.');
-// });
 // ALTER TABLE companySubprojects ADD COLUMN numberBuilding INTEGER NULL;
 // ALTER TABLE companySubprojects ADD COLUMN Disabled INTEGER NULL DEFAULT 'true';
 //  ALTER TABLE company ADD COLUMN DisabledFinance TEXT NULL DEFAULT 'true'
@@ -120,7 +112,10 @@ const CreateTable = () => {
   db.run(
     `CREATE TABLE IF NOT EXISTS Projectdataforchat(id INTEGER PRIMARY KEY AUTOINCREMENT,ProjectID INTEGER NULL,Nameproject TEXT NULL,PhoneNumber TEXT NULL ,Disabled TEXT NULL DEFAULT 'false',  Date DATE DEFAULT CURRENT_DATE)`
   );
-
+  db.run(
+    `CREATE TABLE IF NOT EXISTS FinancialCustody (id INTEGER PRIMARY KEY AUTOINCREMENT , idOrder INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, IDCompanySub INTEGER NOT NULL , Requestby TEXT NOT NULL , Amount DECIMAL NOT NULL ,Statement TEXT NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP,Approvingperson TEXT NULL 
+    ,ApprovalDate DATE NULL,OrderStatus TEXT NULL DEFAULT 'false',RejectionStatus TEXT NULL DEFAULT 'false', Reasonforrejection TEXT NULL  , Dateofrejection DATE NULL)`
+  )
 };
 
 

@@ -19,24 +19,32 @@ const DeleteTablecompanySubProjectphase = (id) => {
     // console.log(`Row with the ID ${this.lastID} has been inserted.`);
   });
 };
-const DeleteTablecompanyStageHome = (idProject,StageID) => {
-  db.run(`DELETE FROM  StagesCUST WHERE StageID=? AND ProjectID=?`, [StageID,idProject], function (err) {
-    if (err) {
-      console.error(err.message);
+const DeleteTablecompanyStageHome = (idProject, StageID) => {
+  db.run(
+    `DELETE FROM  StagesCUST WHERE StageID=? AND ProjectID=?`,
+    [StageID, idProject],
+    function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      // console.log(`Row with the ID ${this.lastID} has been inserted.`);
     }
-    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
-  });
+  );
 };
-const DeleteTablecompanyStageSub = (idProject,StageID) => {
-  db.run(`DELETE FROM  StagesSub WHERE StagHOMID=? AND ProjectID=?`, [StageID,idProject], function (err) {
-    if (err) {
-      console.error(err.message);
+const DeleteTablecompanyStageSub = (idProject, StageID) => {
+  db.run(
+    `DELETE FROM  StagesSub WHERE StagHOMID=? AND ProjectID=?`,
+    [StageID, idProject],
+    function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      // console.log(`Row with the ID ${this.lastID} has been inserted.`);
     }
-    // console.log(`Row with the ID ${this.lastID} has been inserted.`);
-  });
+  );
 };
 
-const DeleteTablecompanySubProjectall= (table,type="projectID",id) => {
+const DeleteTablecompanySubProjectall = (table, type = "projectID", id) => {
   db.serialize(function () {
     db.run(`DELETE FROM ${table} WHERE  ${type}=?`, [id], function (err) {
       console.log(`Row with the ID has been inserted.`);
@@ -73,7 +81,6 @@ const DELETETableLoginActivaty = (data) => {
   });
 };
 const DeleteTablecompanySubProjectarchives = (id) => {
-  console.log(id);
   db.run(`DELETE FROM Archives WHERE ArchivesID=?`, [id], function (err) {
     if (err) {
       console.error(err);
@@ -162,6 +169,16 @@ const DeleteTableProjectdataforchat = (data) => {
     );
   });
 };
+const DeleteTableFinancialCustody = (data) => {
+  db.serialize(function () {
+    db.run(`Delete FROM FinancialCustody WHERE id=?`, data, function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+    });
+  });
+};
 
 const DeleteTablecompanySubProjectChate = () => {};
 
@@ -182,5 +199,6 @@ module.exports = {
   DeletTableuserComppanyCorssUpdateActivationtoFalse,
   DeleteTablecompanyStageHome,
   DeleteTablecompanyStageSub,
-  DeleteTableProjectdataforchat
+  DeleteTableProjectdataforchat,
+  DeleteTableFinancialCustody
 };

@@ -12,9 +12,16 @@ const limiter = rateLimit({
     );
     res.status(options.statusCode).send(options.message);
   },
+keyGenerator: (req) => {
+    // Use the client's real IP, even if trust proxy is enabled
+    return req.ip; // Or custom logic to get the IP
+  },
   // legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
   headers: false, // Disable the `X-RateLimit-*` headers.
   // store: ... , // Redis, Memcached, etc. See below.
 });
 
 module.exports = limiter;
+
+
+

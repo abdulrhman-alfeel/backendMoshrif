@@ -27,3 +27,62 @@
 20241103	08:53:11	0cfa7163-2fa6-4238-b327-1c058b63d1d2	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/DeleteStageHome?ProjectID=1&StageID=2	undefined
 20241103	08:53:26	4c97f567-9b8e-42d8-b031-47b26ae291f6	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/BringStagesub?ProjectID=1&StageID=2	undefined
 20241103	08:53:27	15c61186-9fe7-446b-afc4-8b5199b547ae	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/BringStagesub?ProjectID=1&StageID=2	undefined
+20241201	11:47:18	23f45afa-144a-4c40-a45f-d41ee511fc3e	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/company/brinsh/bring	undefined
+20241201	12:35:59	cecab500-403a-42eb-baf0-c4f8b647334a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:36:47	14b4707c-c3f7-475e-8ab1-188cbd82841e	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:37:28	f9209f01-d1ba-4d54-a891-8867cfee5d68	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:37:34	b40ac313-a196-48af-89c1-a76461910221	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:37:48	08f0dddf-9a9d-4e0d-83cb-51360c04170a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:37:58	4a48ad37-d608-430f-b450-3c22275e6a9d	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:38:57	498a8dcf-29f6-4c23-ad62-c4eeefd034a1	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:42:38	9cd4c029-2cec-466c-b3d1-922246d67f1f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:43:15	396e0afd-fe2c-4a62-9192-29408af6185c	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:43:59	953208f7-6f56-4585-b7c4-dbc4f371eed5	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:44:28	c8fd6061-7caf-4f86-ac4f-43c10ac20cf3	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:45:06	5c8812c1-c11d-4db3-89c6-583284730eb1	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:45:38	bbb5e3d9-26fc-4832-a997-62fb75765ef7	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:46:02	11299afd-575f-4d0e-bf24-79de67fa4928	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:46:17	35ea4765-bc0e-4d16-b560-21a6c7f11f1a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:47:23	4190a029-d6d3-49ed-b23b-338dceaef1ca	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:49:09	1530782b-ff66-4e7d-964f-90faec9f030f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:49:13	c7ab53b8-6a2b-42eb-805f-de369c10b18f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:49:24	6c6acbbb-5972-46cf-85d4-f3012b48998d	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:49:29	0e32e375-e815-4d2c-86a3-a851f27335d8	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:49:53	6fd10666-66a3-4616-a27b-a1021dffffa1	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:50:20	e43e8955-3fd3-4fe8-8733-83c8c23635ba	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:50:35	5e1e7c9d-c11c-434f-a5e0-977c936eebe1	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:50:42	87039851-3595-45c0-be77-e7a86a886cdc	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:51:39	f2807e61-3758-44e8-83c6-4c91b128309a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:51:54	d9620745-da26-496a-a72a-dd63b1865634	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:51:57	0e919353-db41-4442-aece-5d18fa44727e	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:52:42	24c12ba6-b804-4dae-a79d-e2425b93ad87	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:52:53	628de7e1-c4f9-48d1-9f29-4d7246c66684	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:53:08	3966510e-36f9-4e94-b526-24b3a04b01c2	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:53:24	d54b55f2-ba00-4536-ba2a-c2e0f2e6167e	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:54:24	da472a21-8359-4365-9a88-cae1dc0b0b6f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:55:11	1777599d-f87c-49b6-bd71-fcac53f0156e	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:55:19	81ede4b4-27e8-44b9-89d2-718f0eb79f7e	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:55:39	4bf2bac9-a093-47c1-9f33-7f389a94bebc	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:55:44	0096866a-d98a-427a-9721-272a1780841a	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:55:54	4c5ded02-a209-48b4-a1a7-4d509572d3fc	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:56:12	a979be97-1ebc-410d-861e-66173625d5b5	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:56:24	01611261-63d7-4b35-8496-09be6ff24b91	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	12:56:46	618c2793-987e-4462-a10c-5f04bfa04304	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241201	13:00:10	8b7d6f7f-7a18-43d8-a601-12e952b8e1f8	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/brinsh/BringDataFinancialCustody	undefined
+20241202	13:37:56	4f495761-4e6e-491c-853f-b8c0d866fb06	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	13:38:17	f088ba74-41e4-441c-8f32-afcded640e86	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:11:00	8045424d-00ac-4c37-8901-2b5645aa302a	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:11:58	5b2d0dd8-dfd5-49a5-8b5a-66f09b57f602	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:13:16	7bb571d2-66ae-4019-8e47-9cca4ec20621	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:14:05	58424c75-b031-43b2-a7b4-f28f3295d857	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:16:04	fae7d634-9cf5-4857-af8f-79a9460eb63a	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:18:37	194d552c-1e59-476e-9103-936271bc6ce7	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:20:27	6bca14db-2e38-4b4a-99ed-1600362b9095	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:22:03	3bc8c9ec-ccfc-4c87-a46f-a9c006c7292c	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:32:05	d841c410-af6a-4d97-b33b-69d1a8dcd9d3	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:40:28	59c8375b-6706-4b41-a255-23fa78b8559c	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:40:56	4bf59f18-eb6c-42e7-a47b-d6ab7d861a40	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	14:42:40	d514e81f-0c4c-44de-91a8-00dc0cd5d020	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	15:06:42	01ffb159-53be-4636-a890-ce504d047f1c	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	15:07:24	17b9346f-ee12-4015-9e43-a0aff637cc48	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined
+20241202	15:08:20	9c489dc9-0a9d-4770-af73-636703872eb8	PayloadTooLargeError: request entity too large	PUT	/api/user/updat/userBrinsh	undefined

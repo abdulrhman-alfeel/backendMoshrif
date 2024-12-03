@@ -1,3 +1,4 @@
+const { DeleteTableFinancialCustody } = require("../../sql/delete");
 const {
   insertTablecompany,
   insertTablecompanySub,
@@ -10,6 +11,7 @@ const db = require("../../sql/sqlite");
 const {
   UpdateTablecompanySub,
   UpdateTablecompany,
+  UPDATETableFinancialCustody,
 } = require("../../sql/update");
 
 const UpdateDataCompany = async (req, res) => {
@@ -94,4 +96,77 @@ const UpdateCompanybrinsh = async (req, res) => {
   }
 };
 
-module.exports = { UpdateCompanybrinsh, UpdateDataCompany };
+// قبول ورفض الطلبات
+const Acceptandrejectrequests = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const id = req.body.id;
+    const kindORreason = req.body.kindORreason;
+    if (String(kindORreason).length > 0) {
+      if (kindORreason === "قبول") {
+        console.log(userSession.userName);
+        await UPDATETableFinancialCustody(
+          `Approvingperson="${userSession.userName}",ApprovalDate=CURRENT_TIMESTAMP,OrderStatus="true"`,
+          id
+        );
+      } else {
+        await UPDATETableFinancialCustody(
+          `Approvingperson="${userSession.userName}",RejectionStatus="true",Reasonforrejection="${kindORreason}",Dateofrejection=CURRENT_TIMESTAMP`,
+          id
+        );
+      }
+    }
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+};
+
+// تعديل بيانات الطلب
+const Updatecovenantrequests = async (req, res) => {
+  try {
+    const typedata = req.body.typedata;
+    const Statement = req.body.title;
+    const id = req.body.id;
+    if (typedata === "معلقة") {
+      const Amount = req.body.Amount;
+      await UPDATETableFinancialCustody(
+        `Statement="${Statement}",Amount=${Amount}`,
+        id
+      );
+    } else {
+      await UPDATETableFinancialCustody(
+        `Reasonforrejection="${Statement}"`,
+        id
+      );
+    }
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  }
+};
+
+const Deletecovenantrequests = async (req, res) => {
+  try {
+    const id = req.query.id;
+    await DeleteTableFinancialCustody([id]);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(500);
+  }
+};
+
+module.exports = {
+  UpdateCompanybrinsh,
+  UpdateDataCompany,
+  Acceptandrejectrequests,
+  Updatecovenantrequests,
+  Deletecovenantrequests
+};

@@ -111,13 +111,14 @@ const UpdatDtatuser = async (check, resultSend, type, IDCompany) => {
       idBrinsh: resultSend,
       job: type,
       project: [],
+      Acceptingcovenant:false
     });
     await UpdateTableuserComppany([
       findUser?.IDCompany,
       findUser.userName,
       findUser.IDNumber,
       findUser.PhoneNumber,
-      type,
+      findUser?.job,
       JSON.stringify(arraValidity),
       findUser.id,
     ]);
