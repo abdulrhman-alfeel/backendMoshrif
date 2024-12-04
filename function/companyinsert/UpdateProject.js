@@ -35,12 +35,14 @@ const {
 } = require("../../sql/update");
 const {
   Projectinsert,
-  Delayinsert,
   Stageinsert,
   RearrangeStageProject,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
 const { Stage, StageTempletXsl, AccountDays } = require("./insertProject");
+
+const {deleteFileSingle} = require('../../middleware/Fsfile')
+
 // وظيفة تقوم بتعديل بيانات الشمروع
 const UpdataDataProject = async (req, res) => {
   try {
@@ -621,6 +623,8 @@ const ExpenseUpdate = async (req, res) => {
         req.files.map(async (element) => {
           try {
             await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
             arrayImage.push(element.filename);
           } catch (error) {
             console.error(`Failed to upload image ${element.filename}:`, error);
@@ -694,6 +698,8 @@ const RevenuesUpdate = async (req, res) => {
         req.files.map(async (element) => {
           try {
             await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
             arrayImage.push(element.filename);
           } catch (error) {
             console.error(`Failed to upload image ${element.filename}:`, error);
@@ -764,6 +770,8 @@ const ReturnsUpdate = async (req, res) => {
         req.files.map(async (element) => {
           try {
             await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
             arrayImage.push(element.filename);
           } catch (error) {
             console.error(`Failed to upload image ${element.filename}:`, error);
@@ -836,6 +844,8 @@ const UPDATEdataRequests = async (req, res) => {
         req.files.map(async (element) => {
           try {
             await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
             arrayImage.push(element.filename);
           } catch (error) {
             console.error(`Failed to upload image ${element.filename}:`, error);

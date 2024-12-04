@@ -15,7 +15,7 @@ const path = require("path");
 const insertPostURL = async (items) => {
   try {
     if (Object.entries(items.File).length > 0) {
-      if (items.File.type === "video/mp4") {
+      if (String(items.File.type).includes("video") ) {
         const result = await SELECTTableIDcompanytoPost(items.ProjectID);
         const data = [
           items.Sender,

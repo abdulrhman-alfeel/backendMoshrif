@@ -23,6 +23,7 @@ const {
   ChateNotficationdelete,
 } = require("../notifcation/NotifcationProject");
 const { insertPostURL } = require("../postpublic/post");
+const { deleteFileSingle } = require("../../middleware/Fsfile");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
@@ -56,6 +57,12 @@ const ClassChatOpration = async (Socket, io) => {
             result = await SELECTTableChateotherroad(data.idSendr);
           }
 
+          // حذف الملف
+          if (Object.keys(data.File).length > 0) {
+            deleteFileSingle(data.File.name, "upload", data.File.type);
+          }
+          // "./upload"
+
           if (result) {
             if (
               data?.StageID !== "قرارات" &&
@@ -69,14 +76,16 @@ const ClassChatOpration = async (Socket, io) => {
             result.Reply = JSON.parse(result.Reply);
             result.arrived = true;
             result.kind = "new";
-            await ChateNotfication(
-              data.ProjectID,
-              data?.StageID,
-              data.message,
-              data.Sender,
-              data.Reply,
-              data.File
-            );
+            if (data?.StageID !== "تحضير") {
+              await ChateNotfication(
+                data.ProjectID,
+                data?.StageID,
+                data.message,
+                data.Sender,
+                data.Reply,
+                data.File
+              );
+            }
           }
         } else {
           result = await DeleteChatfromdatabaseanddatabaseuser(data);
@@ -196,7 +205,7 @@ const ClassChackTableChat = async (req, res) => {
     console.log(Listchat, "massage new ");
     // جلب البيانات
     let result;
-    if (Listchat.last_id !== null && lengthChat  > 0) {
+    if (Listchat.last_id !== null && lengthChat > 0) {
       result = Number(StageID)
         ? await SELECTLastTableChateStageDontEmpty(
             ProjectID,

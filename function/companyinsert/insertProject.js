@@ -43,6 +43,7 @@ const {
   CloseOROpenStagenotifcation,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
+const {deleteFileSingle} = require('../../middleware/Fsfile')
 const projectBrinsh = async (req, res) => {
   //
   const userSession = req.session.user;
@@ -342,6 +343,7 @@ const Stage = async (teble, StartDate, types = "new") => {
     }
   } catch (err) {}
 };
+
 // ترتيب المراحل
 
 const ChangeDate = (teble, StartDate) => {
@@ -492,6 +494,8 @@ const NotesStage = async (req, res) => {
     }
     if (req.file) {
       await uploaddata(req.file);
+      deleteFileSingle(req.file.filename, "upload");
+
     }
     const StagHOMID = req.body.StagHOMID;
     const ProjectID = req.body.ProjectID;
@@ -604,6 +608,8 @@ const AddNote = async (Note, userName, PhoneNumber, bringData, files) => {
       for (let index = 0; index < files.length; index++) {
         const element = files[index];
         await uploaddata(element);
+        deleteFileSingle(element.filename, "upload");
+
         arrayImage.push(element.filename);
       }
     } else {
@@ -670,6 +676,8 @@ const EditNote = async (
         for (let index = 0; index < files.length; index++) {
           const element = files[index];
           await uploaddata(element);
+          deleteFileSingle(element.filename, "upload");
+
           arrayImage.push(element.filename);
         }
       }
@@ -870,6 +878,8 @@ const ExpenseInsert = async (req, res) => {
         for (let index = 0; index < req.files.length; index++) {
           const element = req.files[index];
           await uploaddata(element);
+          deleteFileSingle(element.filename, "upload");
+
           arrayImage.push(element.filename);
         }
       } else {
@@ -919,6 +929,8 @@ const RevenuesInsert = async (req, res) => {
         for (let index = 0; index < req.files.length; index++) {
           const element = req.files[index];
           await uploaddata(element);
+          deleteFileSingle(element.filename, "upload");
+
           arrayImage.push(element.filename);
         }
       } else {
@@ -964,6 +976,8 @@ const ReturnsInsert = async (req, res) => {
         for (let index = 0; index < req.files.length; index++) {
           const element = req.files[index];
           await uploaddata(element);
+          deleteFileSingle(element.filename, "upload");
+
           arrayImage.push(element.filename);
         }
       } else {

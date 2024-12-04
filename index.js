@@ -2,7 +2,7 @@
 // bringProject.js
 // default-security-backend-service-ssl-tutorial-backend-service
 
-const { express, app,  server, io } = require("./importMIn");
+const { express, app, server, io } = require("./importMIn");
 
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -10,15 +10,14 @@ const cookieparser = require("cookie-parser");
 const session = require("express-session");
 
 const errorHandler = require("./middleware/errorHandler");
+const { deleteFilesInFolder } = require("./middleware/Fsfile");
 const limiter = require("./middleware/loginLimiter");
 const { CreateTable } = require("./sql/createteble");
 const { ChatOpration, ChatOprationView } = require("./function/chate/ChatJobs");
 const uploads = require("./middleware/uploads");
 const { uploaddata, bucket } = require("./bucketClooud");
-const path = require("path");
 app.use(cookieparser());
 app.use(cors());
-const fs = require("fs").promises;
 // app.use(async()=>{cors()});
 app.use(express.json());
 const { fFmpegFunction } = require("./middleware/ffmpeg");
@@ -63,40 +62,13 @@ app.get("/UploadDatabase", async (req, res) => {
 // لحذف الملفات
 app.get("/deleteFileUpload", async (req, res) => {
   try {
-    deleteFilesInFolder('./upload');
+    deleteFilesInFolder("./upload");
     res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(200);
   }
 });
-
-async function deleteFilesInFolder(folderPath) {
-
-    // Get a list of files in the folder
-    try {
-      // Get a list of files and directories in the folder
-      const files = await fs.readdir(folderPath);
-  
-      // Loop through each file or directory
-      for (let file of files) {
-        const filePath = path.join(folderPath, file);
-        const stat = await fs.stat(filePath);
-  
-        // If it's a directory, call this function recursively to delete its contents
-        if (stat.isDirectory()) {
-          await deleteFilesInFolder(filePath);  // Recurse into subdirectory
-        } else if (stat.isFile()) {
-          await fs.unlink(filePath);  // Delete file
-          console.log(`Deleted file: ${filePath}`);
-        }
-      }
-    } catch (err) {
-      console.error('Error deleting files:', err);
-    }
-}
-
-
 
 // Sample HTML content
 
@@ -106,27 +78,27 @@ app.post("/api/file", uploads.single("filechate"), async (req, res) => {
     await uploaddata(req.file);
     // console.log(req.file);
 
-    res
-      .send({ success: "Full request", nameFile: req.file.filename })
-      .status(200);
+
     const timePosition = "00:00:00.100";
-    const filename = req.file.filename.match(/\.([^.]+)$/)[1] === 'MOV'? String(req.file.filename).replace("MOV", "png") : String(req.file.filename).replace("mp4", "png");
+    const filename =
+      req.file.filename.match(/\.([^.]+)$/)[1] === "MOV"
+        ? String(req.file.filename).replace("MOV", "png")
+        : String(req.file.filename).replace("mp4", "png");
     const tempFilePathtimp = `upload/${filename}`;
-    // console.log(filename, req.file);
     // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
-    if (req.file.mimetype === "video/mp4" || req.file.mimetype === "video/quicktime") {
+    if (
+      req.file.mimetype === "video/mp4" ||
+      req.file.mimetype === "video/quicktime"
+    ) {
       await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
       setTimeout(async () => {
         await bucket.upload(tempFilePathtimp);
       }, 1000);
-
-      // clearTimeout(timeout);
-      // setTimeout(() => fs.unlink(tempFilePathtimp, () => {}), 1500);
     }
+    res
+      .send({ success: "Full request", nameFile: req.file.filename })
+      .status(200);
 
-    // setTimeout(async () => {
-    //   await fs.unlink(req.file.path, () => {});
-    // }, 500);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشلة عملية رفع الملف" }).status(500);

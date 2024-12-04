@@ -19,10 +19,8 @@ const Likesinsert = async (req, res) => {
     const result = await SELECTTableLikesPostPublicotherroad(PostId, userName);
     if (result === undefined || result === false) {
       await insertTableLikesPostPublic([PostId, userName]);
-      await Postsnotification(PostId, "Likes",userName, "اعجاب");
     } else {
       await DeleteTableLikesPostPublic([PostId, userName]);
-      await PostsnotificationCansle(PostId, "Likes",userName)
     }
     res.send({ success: true }).status(200);
   } catch (err) {

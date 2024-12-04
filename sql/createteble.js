@@ -131,3 +131,13 @@ const CreateTable = () => {
 // }
 
 module.exports = {CreateTable};
+
+// `DECLARE @DAYS nvarchar(50)
+// DECLARE @DAYSOFStage int
+
+// set @DAYSOFStage =(select sum(Days) from [StagesCUST] where ProjectID = 2)
+// set @DAYS= (select ProjectStartdate from [companySubprojects] where id = 2)
+// IF @DAYS is null
+//     SELECT @DAYSOFStage as 'الناتج';
+// ELSE
+// SELECT DATEDIFF(day, getdate(),DATEADD(day, @DAYSOFStage, ProjectStartdate)) as 'الناتج' from [companySubprojects]  where  id= 2`

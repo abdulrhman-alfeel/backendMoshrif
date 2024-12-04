@@ -196,7 +196,7 @@ const SELECTTablecompanySubProject = (
       kind === "all"
         ? ` SELECT * FROM (SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,EX.Cost AS ConstCompany , Li.urlLink AS Linkevaluation,ca.Disabled FROM companySubprojects ca  LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.IDcompanySub=?  AND (ca.id) > ? AND (ca.Disabled) =? ORDER BY ca.id ASC LIMIT 10) AS subquery ORDER BY id ASC,datetime(Contractsigningdate) ASC`
         : kind === "difference"
-        ? `SELECT Contractsigningdate FROM companySubprojects WHERE id=? AND Disabled =?`
+        ? `SELECT Contractsigningdate,ProjectStartdate FROM companySubprojects WHERE id=? AND Disabled =?`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE ca.IDcompanySub=? `
         : kind === "forchatAdmin"

@@ -41,6 +41,7 @@ const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
 } = require("../../sql/selected/selectuser");
+const { deleteFileSingle } = require("../../middleware/Fsfile");
 // استيراد بيانات المشروع حسب الفرع
 const BringProject = async (req, res) => {
   try {
@@ -232,6 +233,9 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
         element.id,
         element.ConstCompany
       );
+      const Daysremaining = await Numberofdaysremainingfortheproject(
+        element.id
+      );
       const countuser = await BringCountUserinProject(
         IDCompany,
         IDcompanySub,
@@ -244,6 +248,7 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
         cost: dataProject.RemainingBalance,
         rate: rate,
         countuser: countuser,
+        Daysremaining: Daysremaining,
       };
       return data;
     }
@@ -337,6 +342,48 @@ const AccountCostProject = async (id, ConstCompany) => {
   }
   return { daysDifference, Total };
 };
+
+// حساب عدد الايام المتبقية للمشروع
+const Numberofdaysremainingfortheproject = async (id) => {
+  const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
+  let Total = 0;
+
+  if (!isNaN(DataProject[0].ProjectStartdate)) {
+    const dataAllstage = await SELECTTablecompanySubProjectStageCUST(
+      id,
+      "all",
+      "SUM(Days)"
+    );
+    Total = dataAllstage[0]["SUM(Days)"];
+  } else {
+    // const dataAllstage = await SELECTTablecompanySubProjectStageCUST(
+    //   id,
+    //   "all",
+    //   "max(StageCustID) ,EndDate  "
+    // );
+    const days = await SELECTTablecompanySubProjectStageCUST(
+      id,
+      "all",
+      "SUM(Days)"
+    );
+    const DAYSOFStage = days[0]["SUM(Days)"];
+    const currentDate = new Date();
+      const startDate = new Date(DataProject[0].ProjectStartdate);
+      startDate.setDate(startDate.getDate() + DAYSOFStage); // إضافة الأيام
+      
+      const timeDiff = startDate - currentDate; // الفرق بين التواريخ بالمللي ثانية
+      const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24)); // تحويل الفرق إلى أيام
+
+    // let StartDate = new Date(DataProject[0].ProjectStartdate);
+    // const daysDifference = await differenceInDays(
+    //   StartDate,
+    //   new Date(dataAllstage[0].EndDate)
+    // );
+    Total = dayDiff;
+  }
+  return Total;
+};
+
 // حساب فارق الايام
 function differenceInDays(startDate, endDate) {
   const millisecondsPerDay = 1000 * 60 * 60 * 24; // Milliseconds in one day
@@ -461,7 +508,9 @@ const BringStagesub = async (req, res) => {
       ...resultProject,
       rate: rate,
     };
-    res.send({ success: true, data: result,resultProject:resultProject }).status(200);
+    res
+      .send({ success: true, data: result, resultProject: resultProject })
+      .status(200);
   } catch (err) {
     console.log(err);
     res.send({ success: false }).status(400);
@@ -675,6 +724,8 @@ const BringStatmentFinancialforproject = async (req, res) => {
 
       if (fs.existsSync(filePath)) {
         await bucket.upload(filePath);
+        deleteFileSingle(namefile, "upload");
+
       } else {
         console.error(`File ${filePath} does not exist for upload.`);
         return res
