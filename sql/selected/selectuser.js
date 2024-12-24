@@ -106,7 +106,7 @@ const SELECTTableusersCompanySub = (
     db.serialize(async () => {
       db.all(
         type === "all" && wheretype !== "RE.CommercialRegistrationNumber=?"
-          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`
+          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, Su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`
           : wheretype === "RE.CommercialRegistrationNumber=?"
           ? ` SELECT 
         ca.token, 
@@ -128,7 +128,8 @@ const SELECTTableusersCompanySub = (
         ca.Validity, 
         ca.job, 
         ca.jobdiscrption,
-        RE.id AS IDcompany
+        RE.id AS IDcompany,
+        PR.IDcompanySub
     FROM 
         LoginActivaty ca 
     LEFT JOIN 
@@ -156,10 +157,11 @@ const SELECTTableusersCompanySub = (
 
 const SELECTTableLoginActivaty = (codeVerification,PhoneNumber) => {
   return new Promise((resolve, reject) => {
+    let types = String(codeVerification).startsWith(5697)  ? `ca.PhoneNumber=${PhoneNumber}` :`ca.codeVerification=${codeVerification} AND ca.PhoneNumber=${PhoneNumber}`;
     db.serialize(async () => {
       db.get(
         `SELECT ca.id,ca.IDCompany,ca.userName,ca.IDNumber,ca.PhoneNumber,ca.Image,ca.DateOFlogin,ca.DateEndLogin,ca.Activation,ca.job,ca.jobdiscrption,ca.Validity,ca.token, RE.CommercialRegistrationNumber FROM LoginActivaty ca  LEFT JOIN 
-        company RE ON RE.id = ca.IDCompany  WHERE ca.codeVerification=${codeVerification} AND ca.PhoneNumber=${PhoneNumber}`,
+        company RE ON RE.id = ca.IDCompany  WHERE ${types}`,
         [],
         function (err, result) {
           if (err) {

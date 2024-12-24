@@ -17,6 +17,7 @@ const {
   UpdateTableinnuberOfcurrentBranchescompany,
   UpdateTableLinkevaluation,
 } = require("../../sql/update");
+const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
 
@@ -210,14 +211,15 @@ const insertRequestFinancialCustody = async (req,res) => {
     const IDCompany = userSession.IDCompany;
     const Amount = req.body.Amount;
     const Statement = req.body.Statement;
-    console.log(userSession.PhoneNumber , Amount,Statement);
+    // console.log(userSession.PhoneNumber , Amount,Statement);
     if ( IDCompanySub > 0 && String(Statement).length > 0){
       const maxOrder = await SELECTTableMaxFinancialCustody(IDCompanySub);
-      console.log(maxOrder?.last_id);
+      // console.log(maxOrder?.last_id);
       const idOrder = maxOrder?.last_id === null ? 1 : maxOrder.last_id + 1;
-      console.log(idOrder);
+      // console.log(idOrder);
       await insertTableFinancialCustody([idOrder,IDCompany,IDCompanySub,Requestby,String(Amount) > 0 ? Amount : 0 ,Statement]);
-      res.send({success:'تمت العملية بنجاح'}).status(200)
+      await CovenantNotfication(IDCompanySub,Requestby);
+      res.send({success:'تمت العملية بنجاح'}).status(200);
     }else{
       res.send({success:'فشل تنفيذ العملية'}).status(201)
     }

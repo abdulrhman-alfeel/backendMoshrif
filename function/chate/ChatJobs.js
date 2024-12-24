@@ -48,11 +48,14 @@ const BringDataprojectAndStages = async (req, res) => {
       // console.log(arrayData);
       if (arrayData?.length > 0) {
         arrayData?.forEach(async (pic) => {
+          if(String(pic?.Nameproject).length > 0){
           await insertTableProjectdataforchat([
             pic?.ProjectID,
-            pic.Nameproject,
+            pic?.Nameproject,
             PhoneNumber,
+            'false'
           ]);
+        }
         });
       }
     }
@@ -69,7 +72,7 @@ const BringDataprojectAndStages = async (req, res) => {
   }
 };
 // فلترة بيانات المشاريع حسب المستخدم وضمها داخل مصفوفة
-const filterProjectforaddinsertArray = (PhoneNumber) => {
+const filterProjectforaddinsertArray = (PhoneNumber,idBrinsh=0) => {
   try {
     return new Promise(async (resolve, reject) => {
       const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
@@ -88,14 +91,28 @@ const filterProjectforaddinsertArray = (PhoneNumber) => {
             );
             result?.map((pic) =>arrayData.push(pic));
           } else {
-            for (let index = 0; index < element.project.length; index++) {
-              // console.log(validity);
-              const elementProject = element.project[index];
-              const result = await SELECTTablecompanySubProjectLast_id(
-                elementProject.idProject,
-                "forchat"
-              );
-              arrayData.push(result);
+            if(idBrinsh === 0){
+              for (let index = 0; index < element.project.length; index++) {
+                // console.log(validity);
+                const elementProject = element.project[index];
+                const result = await SELECTTablecompanySubProjectLast_id(
+                  elementProject.idProject,
+                  "forchat"
+                );
+                arrayData.push(result);
+              }
+            }else{
+              if(parseInt(element.idBrinsh) === parseInt(idBrinsh)){
+                for (let index = 0; index < element.project.length; index++) {
+                  // console.log(validity);
+                  const elementProject = element.project[index];
+                  const result = await SELECTTablecompanySubProjectLast_id(
+                    elementProject.idProject,
+                    "forchat"
+                  );
+                  arrayData.push(result);
+                }
+              }
             }
           }
         }
@@ -116,22 +133,24 @@ const filterProjectforaddinsertArray = (PhoneNumber) => {
 };
 
 //  جلب بيانات المراحل حسب المشروع المطلوب للدردشة
-const BringStageforfilterProject = (PhoneNumber, numberData) => {
+const BringStageforfilterProject = (PhoneNumber, numberData,disabled='false',type="id") => {
   let ListData = [];
 
   return new Promise(async (resolve, reject) => {
     const dataPorject = await SELECTTableProjectdataforchat(
       PhoneNumber,
-      numberData
+      numberData,
+      disabled,
+      type
     );
-
     await Promise.all(
       dataPorject?.map(async (pic) => {
-        const dataStage = await SELECTTablecompanySubProjectStageCUST(
+
+        const dataStage = disabled === 'false'? await SELECTTablecompanySubProjectStageCUST(
           pic.ProjectID,
           "all",
           "StageID,StageName"
-        );
+        ): [];
 
         ListData.push({
           id:pic.id,
@@ -139,8 +158,9 @@ const BringStageforfilterProject = (PhoneNumber, numberData) => {
           Nameproject: pic.Nameproject,
           arrayStage: dataStage,
         });
+        await DeleteTableProjectdataforchat(pic.id ,"id=?");
 
-        await UPDATETableProjectdataforchat([pic.ProjectID]);
+        // await UPDATETableProjectdataforchat([disabled === 'false'?"true" : "trueProject",pic.ProjectID]);
       })
     );
 
@@ -151,4 +171,6 @@ module.exports = {
   ChatOpration,
   ChatOprationView,
   BringDataprojectAndStages,
+  filterProjectforaddinsertArray,
+  BringStageforfilterProject
 };

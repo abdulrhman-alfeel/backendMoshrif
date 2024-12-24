@@ -57,12 +57,14 @@ const BringDataNotifcation = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const result = await SELECTTableNavigation(userSession?.IDCompany, LastID);
+    const result = await SELECTTableNavigation(LastID);
 
     let arrayNotifcation = [];
     if (result.length > 0) {
+      
       result.forEach(async (pic) => {
         // console.log(pic.tokens, userSession?.IDCompany);
+
         let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
         Token.forEach(async (item) => {
           if (item === userSession.userName) {
@@ -82,7 +84,6 @@ const BringDataNotifcation = async (req, res) => {
       });
     }
     // console.log(arrayNotifcation,'notfication');
-
     res
       .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
       .status(200);

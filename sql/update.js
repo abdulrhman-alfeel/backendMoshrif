@@ -467,7 +467,7 @@ const UPDATETableChate = (data) => {
 }
 const UPDATETableProjectdataforchat = (data) => {
   db.run(
-    `UPDATE Projectdataforchat SET Disabled="true" WHERE ProjectID=?`,
+    `UPDATE Projectdataforchat SET Disabled=? WHERE ProjectID=?`,
     data,
     function (err) {
       if (err) {

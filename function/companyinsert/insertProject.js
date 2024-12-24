@@ -43,7 +43,7 @@ const {
   CloseOROpenStagenotifcation,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const {deleteFileSingle} = require('../../middleware/Fsfile')
+const { deleteFileSingle } = require("../../middleware/Fsfile");
 const projectBrinsh = async (req, res) => {
   //
   const userSession = req.session.user;
@@ -495,7 +495,6 @@ const NotesStage = async (req, res) => {
     if (req.file) {
       await uploaddata(req.file);
       deleteFileSingle(req.file.filename, "upload");
-
     }
     const StagHOMID = req.body.StagHOMID;
     const ProjectID = req.body.ProjectID;
@@ -540,7 +539,7 @@ const NotesStageSub = async (req, res) => {
     const type = req.body.type;
     let NoteArry;
     let kind;
-    if (Boolean(Note)) {
+    if (Note !== "null" && type === 'AddNote' || type === "DeletNote" || type === "EditNote") {
       const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
         StageSubID
       );
@@ -583,14 +582,14 @@ const NotesStageSub = async (req, res) => {
       }
       res.send({ success: "تمت العملية بنجاح" }).status(200);
 
-      await StageSubNote(
-        bringData.ProjectID,
-        bringData.StagHOMID,
-        StageSubID,
-        Note,
-        userSession.userName,
-        type === "AddNote" ? "اضاف" : "تعديل"
-      );
+      // await StageSubNote(
+      //   bringData.ProjectID,
+      //   bringData.StagHOMID,
+      //   StageSubID,
+      //   Note,
+      //   userSession.userName,
+      //   type === "AddNote" ? "اضاف" : "تعديل"
+      // );
     } else {
       res.send({ success: "يجب اكمال البيانات" }).status(200);
     }
@@ -653,7 +652,7 @@ const EditNote = async (
     // console.log(dataNote);
     const findNote = newDtat.find((item) => parseInt(item.id) === parseInt(id));
     if (findNote) {
-      let arrayImage = [...findNote.File];
+      let arrayImage = findNote?.File !== null ? [...findNote?.File] : [];
 
       if (arrayImage.length > 0 && String(Imageolddelete).length > 0) {
         const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];

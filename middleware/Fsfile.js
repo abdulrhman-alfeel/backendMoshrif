@@ -17,7 +17,7 @@ async function deleteFilesInFolder(folderPath) {
         await deleteFilesInFolder(filePath); // Recurse into subdirectory
       } else if (stat.isFile()) {
         await fs.unlink(filePath); // Delete file
-        console.log(`Deleted file: ${filePath}`);
+        // console.log(`Deleted file: ${filePath}`);
       }
     }
   } catch (err) {

@@ -13,7 +13,7 @@ const {
 
 const bringDataCompany = async (req, res) => {
   try {
-    console.log(req.query);
+    // console.log(req.query);
     const idCompany = req.query.idCompany;
     const company = await SELECTTablecompany(idCompany);
     res.send({ masseg: "sucssfuly", data: company }).status(200);
@@ -146,12 +146,12 @@ const BringDataFinancialCustody = async (req, res) => {
 
 const KnowuserpermissioninCovenant = (Validity, IDCompanySub, userName) => {
   try {
-    // console.log(Validity);
     const findBrinsh = Validity.find(
       (items) =>
-        items.idBrinsh === IDCompanySub && items.Acceptingcovenant === true
+        parseInt(items.idBrinsh) === parseInt(IDCompanySub) && items.Acceptingcovenant === true
     );
     if (findBrinsh) {
+
       return `IDCompanySub=${IDCompanySub}`;
     } else {
       return `IDCompanySub=${IDCompanySub} AND Requestby=${userName}`;

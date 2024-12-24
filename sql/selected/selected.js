@@ -293,7 +293,7 @@ const SELECTProjectStartdate = (id, kind = "all") => {
     db.serialize(function () {
       db.get(
         kind === "all"
-          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,numberBuilding,id FROM companySubprojects WHERE id=? `
+          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,numberBuilding,id,IDcompanySub FROM companySubprojects WHERE id=? `
           : "SELECT ca.id,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?",
         [id],
         function (err, result) {
@@ -600,7 +600,7 @@ const SELECTTablecompanySubProjectStageNotesOneObject = (
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT cu.StageName,pr.Nameproject,sn.StageNoteID,sn.StagHOMID,sn.ProjectID,sn.Type,sn.Note,sn.DateNote,sn.RecordedBy,sn.UpdatedDate,sn.countdayDelay,sn.ImageAttachment, MAX(sn.StageNoteID) AS last_id  FROM StageNotes sn LEFT JOIN companySubprojects pr ON pr.id = sn.ProjectID LEFT JOIN StagesCUST cu ON cu.StageID = sn.StagHOMID AND cu.ProjectID = sn.ProjectID  WHERE ${type}`,
+        `SELECT cu.StageName,pr.Nameproject,sn.StageNoteID,sn.StagHOMID,sn.ProjectID,sn.Type,sn.Note,sn.DateNote,sn.RecordedBy,sn.UpdatedDate,sn.countdayDelay,sn.ImageAttachment,pr.IDcompanySub, MAX(sn.StageNoteID) AS last_id  FROM StageNotes sn LEFT JOIN companySubprojects pr ON pr.id = sn.ProjectID LEFT JOIN StagesCUST cu ON cu.StageID = sn.StagHOMID AND cu.ProjectID = sn.ProjectID  WHERE ${type}`,
         data,
         function (err, result) {
           if (err) {
@@ -768,7 +768,7 @@ const SELECTTablecompanySubProjectfornotification = (
         : `max(RequestsID) AS RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
     db.serialize(function () {
       db.get(
-        `SELECT PR.Nameproject,${SqlString} ex 
+        `SELECT PR.Nameproject,PR.IDcompanySub,${SqlString} ex 
           LEFT JOIN companySubprojects PR ON PR.id = ${projecttype} 
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
           WHERE  ${project}=?`,
@@ -804,7 +804,7 @@ const SELECTTablecompanySubProjectfornotificationEdit = (
         : `RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
     db.serialize(function () {
       db.get(
-        `SELECT PR.Nameproject,${SqlString} ex 
+        `SELECT PR.Nameproject,PR.IDcompanySub,${SqlString} ex 
           LEFT JOIN companySubprojects PR ON PR.id = ${project}
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
           WHERE ${kind}=?`,
@@ -1704,12 +1704,12 @@ const SELECTTableViewChate = (chatID) => {
     });
   });
 };
-const SELECTTableNavigation = (id, LastID = 0) => {
+const SELECTTableNavigation = (LastID = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM Navigation WHERE IDCompanySub=? AND id > ? AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
-        [id, LastID],
+        `SELECT * FROM Navigation WHERE id > ? AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
+        [LastID],
         function (err, result) {
           if (err) {
             reject(err);
@@ -1740,12 +1740,12 @@ const SELECTTableNavigationObjectOne = (id, type = "max(id) AS id") => {
     });
   });
 };
-const SELECTTableProjectdataforchat = (PhoneNumber, id) => {
+const SELECTTableProjectdataforchat = (PhoneNumber, id,disabled="false",type='id') => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM Projectdataforchat WHERE PhoneNumber=? AND id > ? AND Disabled = "false" ORDER BY id ASC LIMIT 10`,
-        [PhoneNumber, id],
+        `SELECT * FROM Projectdataforchat WHERE PhoneNumber=? AND ${type} > ? AND Disabled = ? ORDER BY id ASC LIMIT 10`,
+        [PhoneNumber, id,disabled],
         function (err, result) {
           if (err) {
             reject(err);
@@ -1760,11 +1760,11 @@ const SELECTTableProjectdataforchat = (PhoneNumber, id) => {
 };
 
 //  طلب اخر رقم في جدول العهد
-const SELECTTableMaxFinancialCustody = async (id) => {
+const SELECTTableMaxFinancialCustody = async (id,type='max') => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT Max(idOrder) AS  last_id FROM FinancialCustody WHERE IDCompanySub=? `,
+        type === 'max' ? `SELECT Max(idOrder) AS  last_id FROM FinancialCustody WHERE IDCompanySub=? `: "SELECT * FROM FinancialCustody WHERE id=? ",
         [id],
         function (err, result) {
           if (err) {

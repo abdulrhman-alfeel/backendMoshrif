@@ -741,11 +741,11 @@ const ReturnsUpdate = async (req, res) => {
     const Amount = req.body.Amount;
     const Data = req.body.Data;
     const Imageolddelete = req.body.Imageolddelete;
-    console.log(Imageolddelete);
+    (Imageolddelete);
     const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(
       ReturnsId
     );
-    // console.log(elementUpdate);
+    // (elementUpdate);
     const Imageoldindatabese =
       elementUpdate.Image !== null ? JSON.parse(elementUpdate.Image) : [];
     let arrayImage = [...Imageoldindatabese];

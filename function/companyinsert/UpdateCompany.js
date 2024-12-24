@@ -13,6 +13,7 @@ const {
   UpdateTablecompany,
   UPDATETableFinancialCustody,
 } = require("../../sql/update");
+const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 
 const UpdateDataCompany = async (req, res) => {
   const NameCompany = req.body.NameCompany;
@@ -113,11 +114,13 @@ const Acceptandrejectrequests = async (req, res) => {
           `Approvingperson="${userSession.userName}",ApprovalDate=CURRENT_TIMESTAMP,OrderStatus="true"`,
           id
         );
+        await CovenantNotfication(0, userSession.userName, "acceptance", id);
       } else {
         await UPDATETableFinancialCustody(
           `Approvingperson="${userSession.userName}",RejectionStatus="true",Reasonforrejection="${kindORreason}",Dateofrejection=CURRENT_TIMESTAMP`,
           id
         );
+        await CovenantNotfication(0, userSession.userName, "reject", id);
       }
     }
     res.send({ success: "تمت العملية بنجاح" }).status(200);
@@ -168,5 +171,5 @@ module.exports = {
   UpdateDataCompany,
   Acceptandrejectrequests,
   Updatecovenantrequests,
-  Deletecovenantrequests
+  Deletecovenantrequests,
 };

@@ -35,71 +35,90 @@ const {
   StatmentExpensePdf,
 } = require("../../pdf/convertotpdf");
 const { bucket } = require("../../bucketClooud");
-const { insertTableSabepdf } = require("../../sql/INsertteble");
+const {
+  insertTableSabepdf,
+  insertTableProjectdataforchat,
+} = require("../../sql/INsertteble");
 const { UPDATETableSavepdf } = require("../../sql/update");
 const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
 } = require("../../sql/selected/selectuser");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
+const { DeleteTableProjectdataforchat } = require("../../sql/delete");
+const {
+  filterProjectforaddinsertArray,
+  BringStageforfilterProject,
+} = require("../chate/ChatJobs");
 // استيراد بيانات المشروع حسب الفرع
+
 const BringProject = async (req, res) => {
   try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const IDcompanySub = req.query.IDcompanySub;
-    const PhoneNumber = req.query.PhoneNumber;
-    const IDfinlty = req.query.IDfinlty;
     let arrayBrinsh = [];
+    const userSession = req.session.user;
+
+    if (!userSession) {
+      // console.log("Invalid session");
+      return res.status(401).send("Invalid session");
+    }
+
+    const IDcompanySub = req.query.IDcompanySub;
+    const PhoneNumber = userSession.PhoneNumber;
+    const IDfinlty = req.query.IDfinlty;
+    let kinduser = false;
+
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
+
     if (Datausere.job !== "Admin") {
       let validity =
         Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
-      if (validity.length > 0) {
-        for (let index = 0; index < validity?.length; index++) {
-          const element = validity[index];
 
+      if (validity.length > 0) {
+          await Promise.all(validity.map(async(element) =>{
           if (
             element.job === "مدير الفرع" &&
             parseInt(element.idBrinsh) === parseInt(IDcompanySub)
           ) {
+            kinduser = false;
             const result = await SELECTTablecompanySubProject(
               IDcompanySub,
               IDfinlty
             );
-            console.log(result);
-            arrayBrinsh = await BringTotalbalance(
+              arrayBrinsh = await BringTotalbalance(
               IDcompanySub,
               userSession.IDCompany,
               result
             );
-          } else {
-            for (let index = 0; index < element.project.length; index++) {
-              const elementProject = element.project[index];
-              if (parseInt(element.idBrinsh) === parseInt(IDcompanySub)) {
-                const result = await SELECTTablecompanySubProjectLast_id(
-                  elementProject.idProject,
-                  "party"
-                );
-                arrayBrinsh.push(result);
-              }
+          
+          } 
+        }))
+  
+        if (arrayBrinsh.length <= 0) {
+          if (parseInt(IDfinlty) === 0) {
+            await DeleteTableProjectdataforchat(PhoneNumber);
+            // فلترة المشاريع واستخراجها
+            const arrayData = await filterProjectforaddinsertArray(PhoneNumber, IDcompanySub);
+            if (arrayData?.length > 0) {
+              arrayData.forEach(async(pic) =>{
+                if(pic?.Nameproject !== undefined && pic?.ProjectID !== undefined){
+                  await insertTableProjectdataforchat([
+                    pic?.ProjectID,
+                    pic?.Nameproject,
+                    PhoneNumber,
+                    'falseProject'
+                  ]);
+                }
+              })
             }
+          }
 
-            if (arrayBrinsh.length > 0) {
-              arrayBrinsh = await BringTotalbalance(
-                IDcompanySub,
-                userSession.IDCompany,
-                arrayBrinsh
-              );
-            }
-            arrayBrinsh = arrayBrinsh.find(
-              (pic) => parseInt(pic.id) === parseInt(IDfinlty)
-            )
-              ? []
-              : arrayBrinsh;
+          const ListData = await BringStageforfilterProject(PhoneNumber, IDfinlty, 'falseProject','ProjectID');
+          arrayBrinsh = await Promise.all(ListData.map(async (item) => {
+            return await SELECTTablecompanySubProjectLast_id(item.ProjectID, "party");
+          }));
+
+          if (arrayBrinsh.length > 0) {
+            arrayBrinsh = await BringTotalbalance(IDcompanySub, userSession.IDCompany, arrayBrinsh);
           }
         }
       }
@@ -111,10 +130,11 @@ const BringProject = async (req, res) => {
         result
       );
     }
-    res.send({ success: true, data: arrayBrinsh }).status(200);
+
+    return res.status(200).send({ success: true, data: arrayBrinsh });
   } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(400);
+    console.error(err);
+    return res.status(400).send({ success: false, error: err.message });
   }
 };
 
@@ -128,7 +148,7 @@ const FilterProject = async (req, res) => {
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
-      console.log("Invalid session");
+      // console.log("Invalid session");
     }
     const Datausere = await SELECTTableusersCompanyonObject(
       userSession.PhoneNumber
@@ -172,10 +192,9 @@ const FilterProject = async (req, res) => {
     } else {
       findproject = true;
     }
-    const massage =
-      arrayBrinsh.length <= 0
-        ? "لاتوجد بيانات في اطار صلاحياتك بهذا الاسم "
-        : "تمت العملية بنجاح";
+    const massage = !findproject
+      ? "لاتوجد بيانات في اطار صلاحياتك بهذا الاسم "
+      : "تمت العملية بنجاح";
     if (findproject) {
       res.send({ success: massage, data: arrayBrinsh }).status(200);
     } else {
@@ -227,19 +246,23 @@ const BringDataprojectClosed = async (req, res) => {
 const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
   try {
     if (element?.id !== undefined) {
-      const dataProject = await SELECTSUMAmountandBring(element.id);
-      const rate = await PercentagecalculationforProject(element.id);
+      const dataProject = await SELECTSUMAmountandBring(
+        element.ProjectID !== undefined ? element.ProjectID : element.id
+      );
+      const rate = await PercentagecalculationforProject(
+        element.ProjectID !== undefined ? element.ProjectID : element.id
+      );
       const { daysDifference, Total } = await AccountCostProject(
-        element.id,
+        element.ProjectID !== undefined ? element.ProjectID : element.id,
         element.ConstCompany
       );
       const Daysremaining = await Numberofdaysremainingfortheproject(
-        element.id
+        element.ProjectID !== undefined ? element.ProjectID : element.id
       );
       const countuser = await BringCountUserinProject(
         IDCompany,
         IDcompanySub,
-        element.id
+        element.ProjectID !== undefined ? element.ProjectID : element.id
       );
       const data = {
         ...element,
@@ -332,13 +355,18 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
 // حساب تكاليف المشروع حسب الايام
 const AccountCostProject = async (id, ConstCompany) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
-  let StartDate = new Date(DataProject[0].Contractsigningdate);
-  const date2 = new Date();
-  const daysDifference = await differenceInDays(StartDate, date2);
-  // console.log(daysDifference);
-  let Total = parseInt(ConstCompany) * daysDifference;
-  if (isNaN(Total)) {
+  let Total = 0;
+  let daysDifference;
+  if (DataProject[0]?.ProjectStartdate !== null) {
+    let StartDate = new Date(DataProject[0]?.ProjectStartdate);
+    const date2 = new Date();
+    daysDifference = await differenceInDays(StartDate, date2);
+    // console.log(daysDifference);
+    Total = parseInt(ConstCompany) * daysDifference;
+  }
+  if (isNaN(Total) || Total <= 0) {
     Total = 0;
+    daysDifference = 0;
   }
   return { daysDifference, Total };
 };
@@ -348,7 +376,7 @@ const Numberofdaysremainingfortheproject = async (id) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
   let Total = 0;
 
-  if (!isNaN(DataProject[0].ProjectStartdate)) {
+  if (!isNaN(DataProject[0]?.ProjectStartdate)) {
     const dataAllstage = await SELECTTablecompanySubProjectStageCUST(
       id,
       "all",
@@ -368,11 +396,11 @@ const Numberofdaysremainingfortheproject = async (id) => {
     );
     const DAYSOFStage = days[0]["SUM(Days)"];
     const currentDate = new Date();
-      const startDate = new Date(DataProject[0].ProjectStartdate);
-      startDate.setDate(startDate.getDate() + DAYSOFStage); // إضافة الأيام
-      
-      const timeDiff = startDate - currentDate; // الفرق بين التواريخ بالمللي ثانية
-      const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24)); // تحويل الفرق إلى أيام
+    const startDate = new Date(DataProject[0]?.ProjectStartdate);
+    startDate.setDate(startDate.getDate() + DAYSOFStage); // إضافة الأيام
+
+    const timeDiff = startDate - currentDate; // الفرق بين التواريخ بالمللي ثانية
+    const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24)); // تحويل الفرق إلى أيام
 
     // let StartDate = new Date(DataProject[0].ProjectStartdate);
     // const daysDifference = await differenceInDays(
@@ -699,7 +727,7 @@ const BringStatmentFinancialforproject = async (req, res) => {
         if (namefile) {
           const file = bucket.file(namefile);
           await file.delete();
-          console.log(`File ${namefile} deleted successfully.`);
+          // console.log(`File ${namefile} deleted successfully.`);
         }
       } catch (error) {
         console.log(error);
@@ -725,7 +753,6 @@ const BringStatmentFinancialforproject = async (req, res) => {
       if (fs.existsSync(filePath)) {
         await bucket.upload(filePath);
         deleteFileSingle(namefile, "upload");
-
       } else {
         console.error(`File ${filePath} does not exist for upload.`);
         return res
@@ -1292,7 +1319,7 @@ const ExtractTheMostAccomplished = (ProjectID, countTrue) => {
         "accomplished"
       );
       let arrayNew = [];
-      console.log(result);
+      // console.log(result);
       for (let index = 0; index < result.length; index++) {
         const element = result[index];
         let arrayClosing = [];

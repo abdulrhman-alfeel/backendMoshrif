@@ -461,7 +461,7 @@ const insertTableNavigation = (data) => {
 const insertTableProjectdataforchat = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Projectdataforchat (ProjectID,Nameproject,PhoneNumber) VALUES (?,?,?)`,
+      `INSERT INTO Projectdataforchat (ProjectID,Nameproject,PhoneNumber,Disabled) VALUES (?,?,?,?)`,
       data,
       function (err) {
         if (err) {

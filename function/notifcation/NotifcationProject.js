@@ -1,4 +1,5 @@
 const { massges } = require("../../middleware/sendNotification");
+const { insertTableNavigation } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubProjectLast_id,
   SELECTTablecompanySubProjectStageNotesOneObject,
@@ -10,6 +11,7 @@ const {
   SELECTDataPrivatPost,
   SELECTCOUNTCOMMENTANDLIKPOST,
   SELECTDataPrivatPostonObject,
+  SELECTTableMaxFinancialCustody,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanySub,
@@ -195,6 +197,7 @@ const StageSubinsert = async (
       ProjectID: ProjectID,
       type: `StagesSub ${type}`,
       data: resultObject,
+      IDcompanySub: result.IDcompanySub,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -265,6 +268,7 @@ const StageSubNote = async (
       ProjectID: ProjectID,
       type: `StagesSub ${type}`,
       data: resultObject,
+      IDcompanySub: result[0].IDcompanySub,
     };
     // const idmax = await InsertNotifcation(
     //   arraynameuser,
@@ -313,6 +317,7 @@ const CloseOROpenStagenotifcation = async (
       userName: userName,
       ProjectID: ProjectID,
       type: `StagesCUST ${type}`,
+      IDcompanySub: ProjecHome.IDcompanySub,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -403,7 +408,10 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     );
     let resultnew = Object.entries(result).filter(
       ([key, value]) =>
-        key !== "Nameproject" && key !== "StageName" && key !== "last_id"
+        key !== "Nameproject" &&
+        key !== "StageName" &&
+        key !== "last_id" &&
+        key !== "IDcompanySub"
     );
     await Promise.all(
       resultnew.map((item, index) => {
@@ -435,6 +443,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       type: `Delays ${type}`,
       data: resultObject,
       StageID: resultObject.StagHOMID,
+      IDcompanySub: result,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -486,6 +495,7 @@ const RearrangeStageProject = async (idProject, userName) => {
       userName: userName,
       ProjectID: idProject,
       type: `RearrangeStageProject`,
+      IDcompanySub: result.IDcompanySub,
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -539,9 +549,9 @@ const Financeinsertnotification = async (
               ? "RevenueId"
               : "RequestsID"
           );
-
+    console.log(result);
     let resultnew = Object.entries(result).filter(
-      ([key, value]) => key !== "Nameproject"
+      ([key, value]) => key !== "Nameproject" && key !== "IDcompanySub"
     );
     await Promise.all(
       resultnew.map((item, index) => {
@@ -552,7 +562,7 @@ const Financeinsertnotification = async (
     const { token, arraynameuser } = await BringtokenuserCustom(
       result.projectID,
       userName,
-      "Finance",
+      kind === "طلب" ? "chate" : "Finance",
       "sub"
     );
     // console.log(token, result.projectID);
@@ -570,6 +580,7 @@ const Financeinsertnotification = async (
       kind: kind,
       type: type,
       data: resultObject,
+      IDcompanySub: result.IDcompanySub,
     };
     // console.log(token, notification, notification_type, navigationId, data);
     const idmax = await InsertNotifcation(
@@ -727,6 +738,7 @@ const ChateNotfication = async (
     let tokenuser;
     let bodymassge;
     let insertnavigation = "pr.id";
+    const Project = await SELECTProjectStartdate(idProject);
     if (
       StageID !== "قرارات" &&
       StageID !== "استشارات" &&
@@ -742,7 +754,6 @@ const ChateNotfication = async (
       } else {
         nameChate = StageID;
       }
-      const Project = await SELECTProjectStartdate(idProject);
       const { token, arraynameuser } = await BringtokenuserCustom(
         idProject,
         userName,
@@ -800,6 +811,7 @@ const ChateNotfication = async (
       body: bodymassge + `< ${String(massgs).length > 0 ? massgs : typfile} >`,
       image: image,
     };
+    console.log(Project);
     let data = {
       ProjectID: idProject,
       userName: userName,
@@ -807,6 +819,7 @@ const ChateNotfication = async (
       kind: "new",
       nameRoom: nameChate,
       StageID: StageID,
+      IDcompanySub: Project?.IDCompanySub,
     };
     const idmax = await InsertNotifcation(
       arrayuser,
@@ -842,12 +855,10 @@ const ChateNotficationdelete = async (
 ) => {
   try {
     let nameChate;
-
     let arrayuser;
     let tokenuser;
     let bodymassge;
     let insertnavigation = "pr.id";
-
     if (
       StageID !== "قرارات" &&
       StageID !== "استشارات" &&
@@ -936,22 +947,109 @@ const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
     // console.log(result.token);
     const notification = {
       title: type,
-      // body: `في غرفة دردشة مشروع ${Project.Nameproject} قسم ${nameChate}  `  +`< ${massgs} >`,
-      // body:` ${type}لقد قام ${userName} ب`,
       body: ` لقد قام ${userName} ب${type}`,
     };
     const data = {
+      ProjectID: 0,
       userName: userName,
       type: `user`,
       data: Validity,
     };
-    // console.log([result.token], notification, "", "", data);
+    const endData = [
+      0,
+      0,
+      JSON.stringify(notification),
+      JSON.stringify([userName]),
+      JSON.stringify({
+        notification_type: "user",
+        navigationId: "user",
+        data: JSON.stringify(data),
+      }),
+      new Date().toUTCString(),
+    ];
+    await insertTableNavigation(endData);
     await UpdateTableLoginActivatyValidityORtoken(
       JSON.stringify(Validity),
       PhoneNumber,
       "Validity"
     );
     await massges([String(result.token)], notification, "", "", data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// طلبات العهد
+const CovenantNotfication = async (
+  IDCompanySub,
+  PhoneNumber,
+  type = "request",
+  id = 0
+) => {
+  try {
+    let result;
+    let tokens;
+    let arraynameusers;
+    let IDCompanySubs = IDCompanySub;
+    if (type === "request") {
+      result = await SELECTTableLoginActivatActivaty(PhoneNumber);
+
+      const { token, arraynameuser } = await BringtokenuserCustom(
+        IDCompanySubs,
+        result.userName,
+        "all",
+        "CovenantBrinsh"
+      );
+      tokens = token;
+      arraynameusers = arraynameuser;
+    } else {
+      const datacovenent = await SELECTTableMaxFinancialCustody(id, "all");
+      result = await SELECTTableLoginActivatActivaty(datacovenent.Requestby);
+      tokens = [String(result.token)];
+      arraynameusers = [result.userName];
+      IDCompanySubs = datacovenent.IDCompanySub;
+    }
+
+    let title =
+      type === "request"
+        ? `لقد قام ${result.userName} بطلب عهده `
+        : type === "acceptance"
+        ? `لقد قام ${PhoneNumber} بقبول عهدتك `
+        : `لقد قام ${PhoneNumber} برفض عهدتك `;
+
+    const notification_type = "CovenantBrinsh";
+    const navigationId = `${IDCompanySubs}`;
+
+    const notification = {
+      title: title,
+      body: title,
+    };
+    let data = {
+      ProjectID: 0,
+      userName: result.userName,
+      IDCompanySub: IDCompanySubs,
+      type:
+        type === "request"
+          ? "arrayOpen"
+          : type === "acceptance"
+          ? "arrayClosed"
+          : `arrayReject`,
+    };
+    const endData = [
+      IDCompanySubs,
+      0,
+      JSON.stringify(notification),
+      JSON.stringify(arraynameusers),
+      JSON.stringify({
+        notification_type: notification_type,
+        navigationId: navigationId,
+        data: JSON.stringify(data),
+      }),
+      new Date().toUTCString(),
+    ];
+    await insertTableNavigation(endData);
+
+    await massges(tokens, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
   }
@@ -1000,7 +1098,7 @@ const BringtokenuserCustom = async (
     users
       .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
-        if (item.job === "Admin") {
+        if (item.job === "Admin" || item.job === "مالية") {
           token.push(item.token);
           arraynameuser.push(item.userName);
         } else {
@@ -1008,10 +1106,23 @@ const BringtokenuserCustom = async (
             item.Validity !== null ? JSON.parse(item.Validity) : [];
           for (let index = 0; index < Validity.length; index++) {
             const element = Validity[index];
-            if (element.idBrinsh === item.IDcompanySub) {
-              if (element.job === "مدير الفرع" || kind !== "sub") {
+            if (parseInt(element.idBrinsh) === parseInt(item.IDcompanySub)) {
+              if (
+                kind === "CovenantBrinsh" &&
+                element.Acceptingcovenant === true
+              ) {
                 token.push(item.token);
                 arraynameuser.push(item.userName);
+              } else if (element.job === "مدير الفرع" || kind !== "sub") {
+                if (kind !== "sub") {
+                  if (element.jobdiscrption === "موظف") {
+                    token.push(item.token);
+                    arraynameuser.push(item.userName);
+                  }
+                } else {
+                  token.push(item.token);
+                  arraynameuser.push(item.userName);
+                }
               } else {
                 for (let P = 0; P < element?.project?.length; P++) {
                   const elementProject = element?.project[P];
@@ -1058,4 +1169,5 @@ module.exports = {
   AddOrUpdatuser,
   PostsnotificationCansle,
   ChateNotficationdelete,
+  CovenantNotfication,
 };

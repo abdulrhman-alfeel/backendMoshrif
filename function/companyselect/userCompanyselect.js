@@ -1,7 +1,10 @@
 const { createTokens } = require("../../middleware/jwt");
 const { DELETETableLoginActivaty } = require("../../sql/delete");
 const { insertTableLoginActivaty } = require("../../sql/INsertteble");
-const { SELECTTableUsernameBrinsh, SELECTTablecompany } = require("../../sql/selected/selected");
+const {
+  SELECTTableUsernameBrinsh,
+  SELECTTablecompany,
+} = require("../../sql/selected/selected");
 
 const {
   SELECTTableusersCompanyVerification,
@@ -26,7 +29,7 @@ const Loginuser = async (req, res) => {
     const output = Math.floor(1000 + Math.random() * 9000);
     // const output = 1234;
     verificationSend(PhoneNumber, output);
-    console.log(output);
+    // console.log(output);
     // const currentDate = new Date();
     // const futureDate = new Date(currentDate + 5 * 24 * 60 * 60 * 1000);
     const currentDate = new Date();
@@ -90,53 +93,55 @@ const verificationSend = (number, chack) => {
 };
 
 const LoginVerification = async (req, res) => {
-  try{
-  const output = req.query.output;
-  const PhoneNumber = req.query.PhoneNumber;
-  const result = await SELECTTableLoginActivaty(output,parseInt(PhoneNumber));
-  // console.log(result, "user", output);
-  if (result !== undefined) {
-    // create accessToken from data users
-    const user = {
-      IDCompany: result?.IDCompany,
-      CommercialRegistrationNumber:result.CommercialRegistrationNumber,
-      userName: result?.userName,
-      PhoneNumber: result?.PhoneNumber,
-      IDNumber: result?.IDNumber,
-      image: result?.image,
-      job: result.job,
-      jobdiscrption:result.jobdiscrption,
-      token: result.token,
-      DateOFlogin: result.DateOFlogin,
-      DateEndLogin: result.DateEndLogin,
-    };
+  try {
+    const output = req.query.output;
+    const PhoneNumber = req.query.PhoneNumber;
+    const result = await SELECTTableLoginActivaty(
+      output,
+      parseInt(PhoneNumber)
+    );
+    // console.log(result, "user", output);
+    if (result !== undefined) {
+      // create accessToken from data users
+      const user = {
+        IDCompany: result?.IDCompany,
+        CommercialRegistrationNumber: result.CommercialRegistrationNumber,
+        userName: result?.userName,
+        PhoneNumber: result?.PhoneNumber,
+        IDNumber: result?.IDNumber,
+        image: result?.image,
+        job: result.job,
+        jobdiscrption: result.jobdiscrption,
+        token: result.token,
+        DateOFlogin: result.DateOFlogin,
+        DateEndLogin: result.DateEndLogin,
+      };
 
-    
-    const data = await SELECTTablecompany(result?.IDCompany);
-    const accessToken = createTokens(user);
-    // console.log(accessToken);
-    // bring data usres according to validity
-    // const ObjectData = await verificationfromValidity(result);
-    res
-      .send({
-        success: true,
-        accessToken: accessToken,
-        Validity: JSON.parse(result.Validity),
-        data: user,
-        DisabledFinance: data.DisabledFinance
-      })
-      .status(200);
-  } else {
+      const data = await SELECTTablecompany(result?.IDCompany);
+      const accessToken = createTokens(user);
+      // console.log(accessToken);
+      // bring data usres according to validity
+      // const ObjectData = await verificationfromValidity(result);
+      res
+        .send({
+          success: true,
+          accessToken: accessToken,
+          Validity: JSON.parse(result.Validity),
+          data: user,
+          DisabledFinance: data.DisabledFinance,
+        })
+        .status(200);
+    } else {
+      res
+        .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
+        .status(201);
+    }
+  } catch (error) {
+    console.log(error);
     res
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
-}catch(error){
-  console.log(error);
-  res
-  .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
-  .status(201);
-}
 };
 
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
@@ -169,7 +174,6 @@ const BringUserCompanyinBrinsh = async (req, res) => {
     const type = req.query.type;
     let CountID = 0;
     const result = await SELECTTableusersCompany(IDCompany);
-    // console.log(result);
 
     const arrayvalidityuser = [];
     for (let index = 0; index < result.length; index++) {
@@ -190,7 +194,7 @@ const BringUserCompanyinBrinsh = async (req, res) => {
           }
         } else {
           let resultdata;
-          if (type === "justuser") {
+          if (type === "justuser" || type === "Acceptingcovenant") {
             resultdata = validity?.find(
               (item) => parseInt(item.idBrinsh) === parseInt(idBrinsh)
             );
@@ -220,6 +224,8 @@ const BringUserCompanyinBrinsh = async (req, res) => {
         }
       }
     }
+
+  
     if (arrayvalidityuser.length > 0) {
       res
         .send({
@@ -241,10 +247,6 @@ const BringUserCompanyinBrinsh = async (req, res) => {
     console.log(err);
   }
 };
-
-
-
-
 
 // استيراد المستخدمين حسب المشروع
 
@@ -284,13 +286,10 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   return arrayUser;
 };
 
-
-
-
-const BringAllLoginActvity = async(req,res)=>{
- const resultall = await SELECTTableLoginActivatActivatyall() ;
- res.send({success:'تمت العملية بنجاح',data:resultall}).status(200)
-}
+const BringAllLoginActvity = async (req, res) => {
+  const resultall = await SELECTTableLoginActivatActivatyall();
+  res.send({ success: "تمت العملية بنجاح", data: resultall }).status(200);
+};
 module.exports = {
   BringAllLoginActvity,
   Loginuser,

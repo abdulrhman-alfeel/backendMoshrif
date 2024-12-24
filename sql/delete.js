@@ -47,14 +47,14 @@ const DeleteTablecompanyStageSub = (idProject, StageID) => {
 const DeleteTablecompanySubProjectall = (table, type = "projectID", id) => {
   db.serialize(function () {
     db.run(`DELETE FROM ${table} WHERE  ${type}=?`, [id], function (err) {
-      console.log(`Row with the ID has been inserted.`);
+      // console.log(`Row with the ID has been inserted.`);
     });
   });
 };
 const DeleteTableSavepdf = (id) => {
   db.serialize(function () {
     db.run(`DELETE FROM Savepdf WHERE projectID =?`, [id], function (err) {
-      console.log(`Row with the ID has been inserted.`);
+      // console.log(`Row with the ID has been inserted.`);
     });
   });
 };
@@ -118,7 +118,7 @@ const DeletTableuserComppanyCorssUpdateActivationtoFalse = (
               reject(err);
             }
             resolve(true);
-            console.log(`Row with the ID  has been inserted.`);
+            // console.log(`Row with the ID  has been inserted.`);
           }
         );
       });
@@ -137,7 +137,7 @@ const DeleteTableCommentPostPublic = (data) => {
       if (err) {
         console.error(err.message);
       }
-      console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+      // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
     });
   });
 };
@@ -150,21 +150,21 @@ const DeleteTableLikesPostPublic = (data) => {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+        // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
       }
     );
   });
 };
-const DeleteTableProjectdataforchat = (data) => {
+const DeleteTableProjectdataforchat = (data,type='PhoneNumber=?') => {
   db.serialize(function () {
     db.run(
-      `Delete FROM Projectdataforchat WHERE PhoneNumber=?`,
+      `Delete FROM Projectdataforchat WHERE ${type}`,
       data,
       function (err) {
         if (err) {
           console.error(err.message);
         }
-        console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+        // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
       }
     );
   });
@@ -175,7 +175,7 @@ const DeleteTableFinancialCustody = (data) => {
       if (err) {
         console.error(err.message);
       }
-      console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+      // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
     });
   });
 };

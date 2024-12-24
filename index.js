@@ -1,6 +1,14 @@
-// writHtml.js
 // bringProject.js
-// default-security-backend-service-ssl-tutorial-backend-service
+// ChatJobs.js
+// insertteble.js
+// delet.js
+// selected.js
+// selectuser.js
+// update.js
+// NotifcationProject.js
+
+// UpdatuserCompany.js
+
 
 const { express, app, server, io } = require("./importMIn");
 
@@ -21,6 +29,7 @@ app.use(cors());
 // app.use(async()=>{cors()});
 app.use(express.json());
 const { fFmpegFunction } = require("./middleware/ffmpeg");
+const { verifyJWT } = require("./middleware/jwt");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -73,37 +82,40 @@ app.get("/deleteFileUpload", async (req, res) => {
 // Sample HTML content
 
 // Consume messages from the queue
-app.post("/api/file", uploads.single("filechate"), async (req, res) => {
-  try {
-    await uploaddata(req.file);
-    // console.log(req.file);
+app.post(
+  "/api/file",
+  verifyJWT,
+  uploads.single("filechate"),
+  async (req, res) => {
+    try {
+      await uploaddata(req.file);
+      // console.log(req.file);
 
-
-    const timePosition = "00:00:00.100";
-    const filename =
-      req.file.filename.match(/\.([^.]+)$/)[1] === "MOV"
-        ? String(req.file.filename).replace("MOV", "png")
-        : String(req.file.filename).replace("mp4", "png");
-    const tempFilePathtimp = `upload/${filename}`;
-    // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
-    if (
-      req.file.mimetype === "video/mp4" ||
-      req.file.mimetype === "video/quicktime"
-    ) {
-      await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
-      setTimeout(async () => {
-        await bucket.upload(tempFilePathtimp);
-      }, 1000);
+      const timePosition = "00:00:00.100";
+      const filename =
+        req.file.filename.match(/\.([^.]+)$/)[1] === "MOV"
+          ? String(req.file.filename).replace("MOV", "png")
+          : String(req.file.filename).replace("mp4", "png");
+      const tempFilePathtimp = `upload/${filename}`;
+      // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
+      if (
+        req.file.mimetype === "video/mp4" ||
+        req.file.mimetype === "video/quicktime"
+      ) {
+        await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
+        setTimeout(async () => {
+          await bucket.upload(tempFilePathtimp);
+        }, 1000);
+      }
+      res
+        .send({ success: "Full request", nameFile: req.file.filename })
+        .status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشلة عملية رفع الملف" }).status(500);
     }
-    res
-      .send({ success: "Full request", nameFile: req.file.filename })
-      .status(200);
-
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشلة عملية رفع الملف" }).status(500);
   }
-});
+);
 
 CreateTable();
 
