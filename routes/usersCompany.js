@@ -1,10 +1,9 @@
 const express = require("express");
 const { userCompany } = require("../function/companyinsert/insertuserCompany");
-const uploads = require("../middleware/uploads");
-const { BringUserCompany, BringUserCompanyinBrinsh } = require("../function/companyselect/userCompanyselect");
-const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken } = require("../function/companyinsert/UpdatuserCompany");
+const { BringUserCompany, BringUserCompanyinBrinsh, BringvalidityuserinBransh } = require("../function/companyselect/userCompanyselect");
+const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken, InsertmultipleProjecsinvalidity } = require("../function/companyinsert/UpdatuserCompany");
 const { verifyJWT } = require("../middleware/jwt");
-const { BringDataNotifcation } = require("../function/notifcation/InsertNotifcation");
+const { BringDataNotifcation,FilterNotifcation } = require("../function/notifcation/InsertNotifcation");
 const router = express.Router();
 
 router.use(verifyJWT)
@@ -18,15 +17,23 @@ router.route('/DeletUser')
 .put(DeletUser)
 router.route('/UpdateToken')
 .put(UpdateToken)
-// .post(uploads.single('image'),userCompany)
+
+
+router.route('/InsertmultipleProjecsinvalidity')
+.put(InsertmultipleProjecsinvalidity)
+router.route('/BringvalidityuserinBransh')
+.get(BringvalidityuserinBransh)
 
 
 router.route('/BringUserCompany')
 .get(BringUserCompany)
 router.route('/BringUserCompanyBrinsh')
 .get(BringUserCompanyinBrinsh)
+
 router.route('/BringDataNotifcation')
 .get(BringDataNotifcation)
+router.route('/FilterNotifcation')
+.get(FilterNotifcation)
 
 
 module.exports = router

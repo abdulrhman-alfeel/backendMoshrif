@@ -1,5 +1,33 @@
 const db = require("./sqlite");
 // already
+
+
+const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub") =>{
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          `UPDATE ${type} SET ${typename}=? WHERE ${typename}=?`,
+          [toId,fromId],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
+
+
+
 const UpdateTablecompany = (data) => {
   return new Promise((resolve, reject) => {
     try {
@@ -117,12 +145,55 @@ const UpdateTableuserComppany = (data,type ='job=?') => {
     }
   });
 };
+const UpdateTableuserComppanyValidity = (data) => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          `UPDATE usersCompany SET Validity=? WHERE id=?`,
+          data,
+          function (err) {
+            // console.log("updatetableusercompany", data);
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
 
 
 
-const UpdateTablecompanySubProject = (data) => {
+const UpdateTablecompanySubProjectapi = (data,type="id") => {
+
   db.run(
-    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=?,numberBuilding=? WHERE id=?`,
+    `UPDATE companySubprojects  SET Nameproject=?, Note=?,GuardNumber=?,LocationProject=?,numberBuilding=? WHERE   IDcompanySub=?  AND  ${type}=?   AND EXISTS (
+        SELECT 1
+        FROM companySub AS RE
+        WHERE 
+            RE.id = companySubprojects.IDcompanySub
+            AND RE.NumberCompany = ?
+    );`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been inserted.`);
+    }
+  );
+};
+const UpdateTablecompanySubProject = (data,type="id") => {
+  db.run(
+    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=?,numberBuilding=? ,Referencenumber=? WHERE ${type}=?`,
     data,
     function (err) {
       if (err) {
@@ -304,11 +375,13 @@ const UPDATETablecompanySubProjectexpense = (data) => {
     }
   );
 };
+const UPDATETablecompanySubProjectexpenseapi = (data) => {
 
-// المقبوض
-const UPDATETablecompanySubProjectREVENUE = (data) => {
   db.run(
-    `UPDATE Revenue SET  Amount=?, Data=?,Bank=?,Image=? WHERE RevenueId=?`,
+    `UPDATE Expense SET Amount=?, Data=?,ClassificationName=? WHERE Referencenumberfinanc=? AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    ) `,
     data,
     function (err) {
       if (err) {
@@ -319,10 +392,73 @@ const UPDATETablecompanySubProjectREVENUE = (data) => {
   );
 };
 
+// المقبوض
+const UPDATETablecompanySubProjectREVENUE = (data) => {
+  db.run(
+    `UPDATE Revenue SET  Amount=?, Data=?,Bank=?,Image=? WHERE RevenueId=? `,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
+};
+
+const UPDATETablecompanySubProjectREVENUEapi = (data) => {
+  db.run(
+    `UPDATE Revenue SET  Amount=?, Data=?,Bank=? WHERE Referencenumberfinanc=? AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    )`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
+};
+
+
+
+//  حفظ الملفات 
+const UPDATETablecompanySubProjectFinancial = (data,type="Revenue") => {
+  db.run(
+    `UPDATE ${type} SET  Image=? WHERE Referencenumberfinanc=? AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    )`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
+};
 // المرتجع
 const UPDATETablecompanySubProjectReturned = (data) => {
   db.run(
     `UPDATE Returns SET Amount=?, Data=?,Image=? WHERE  ReturnsId=?`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
+};
+const UPDATETablecompanySubProjectReturnedapi = (data) => {
+  db.run(
+    `UPDATE Returns SET Amount=?, Data=? WHERE  Referencenumberfinanc=? AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    )`,
     data,
     function (err) {
       if (err) {
@@ -392,10 +528,10 @@ const UPDATETableinRequests = (data) => {
     console.log(error);
   }
 };
-const UPDATETableinRequestsDone = (data) => {
+const UPDATETableinRequestsDone = (data,type="Done=?,Implementedby=?") => {
   try {
     db.run(
-      `UPDATE Requests SET Done=?,Implementedby=? WHERE RequestsID=?`,
+      `UPDATE Requests SET ${type} WHERE RequestsID=?`,
       data,
       function (err) {
         if (err) {
@@ -467,7 +603,7 @@ const UPDATETableChate = (data) => {
 }
 const UPDATETableProjectdataforchat = (data) => {
   db.run(
-    `UPDATE Projectdataforchat SET Disabled=? WHERE ProjectID=?`,
+    `UPDATE Projectdataforchat SET Disabled=? WHERE ProjectID=? AND PhoneNumber=?`,
     data,
     function (err) {
       if (err) {
@@ -527,5 +663,13 @@ module.exports = {
   UpdateTableLinkevaluation,
   UpdateProjectClosorOpen,
   UPDATETableProjectdataforchat,
-  UPDATETableFinancialCustody
+  UPDATETableFinancialCustody,
+  UpdateMoveingDataBranshtoBrinsh,
+  UpdateTableuserComppanyValidity,
+  UPDATETablecompanySubProjectexpenseapi,
+  UPDATETablecompanySubProjectREVENUEapi,
+  UPDATETablecompanySubProjectReturnedapi,
+  UPDATETablecompanySubProjectFinancial,
+  UpdateTablecompanySubProjectapi
+  
 };

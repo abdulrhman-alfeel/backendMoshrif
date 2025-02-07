@@ -11,6 +11,7 @@ const {
   insertTablecompanySubProjectarchivesFolder,
   insertTablecompanySubProjectarchivesFolderforcreatproject,
   insertTablecompanySubProjectRequestsForcreatOrder,
+  insertTablecompanySubProjectv2,
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubProjectarchivesotherroad,
@@ -44,6 +45,134 @@ const {
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
+
+const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,Contractsigningdate) =>{
+  try{
+    await insertTablecompanySubProjectv2([
+      IDcompanySub,
+      Nameproject,
+      Note,
+      TypeOFContract,
+      GuardNumber,
+      LocationProject,
+      numberBuilding,
+      Referencenumber
+    ]);
+    const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
+    let dataStages = await StageTempletXsl(TypeOFContract);
+    const visity = await StageTempletXsl("NULL");
+    // console.log(visity);
+    let table = [];
+    let tablesub = [];
+    dataStages = [visity[0], ...dataStages];
+    for (let index = 0; index < dataStages.length; index++) {
+      const element = dataStages[index];
+      let Days = await AccountDays(numberBuilding, element.Days);
+
+      table.push({
+        ...element,
+        Days: Math.round(Days),
+        ProjectID: idProject["last_id"],
+        StartDate: null,
+        EndDate: null,
+        CloseDate: null,
+      });
+
+      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
+      resultSubTablet.forEach((pic) => {
+        tablesub.push({
+          StageID: pic.StageID,
+          ProjectID: idProject["last_id"],
+          StageSubName: pic.StageSubName,
+        });
+      });
+    }
+    await Stage(table, Contractsigningdate);
+    await StageSub(tablesub);
+    await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
+
+  }catch(error){console.log(error)}
+} 
+const projectBrinshv2 = async (req, res) => {
+  //
+  const userSession = req.session.user;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
+  try {
+    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber}= req.body;
+    const Contractsigningdate = new Date();
+    if (Boolean(Nameproject)) {
+      const locationsstring = String(LocationProject).startsWith('https')? LocationProject : null;
+      await OpreationProjectInsertv2(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,locationsstring,numberBuilding,Referencenumber,Contractsigningdate);
+      res
+        .send({
+          success: "تم انشاء مشروع بنجاح",
+        })
+        .status(200);
+      await Projectinsert(IDcompanySub, userSession.userName);
+    } else {
+      res
+        .send({
+          success: "يجب اضافة اسم للمشروع ",
+        })
+        .status(200);
+    }
+  } catch (err) {
+    console.log(err);
+    res
+      .send({
+        success: "فشل تنفيذ العملية",
+      })
+      .status(401);
+  }
+};
+const OpreationProjectInsert = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate) =>{
+  try{
+    await insertTablecompanySubProject([
+      IDcompanySub,
+      Nameproject,
+      Note,
+      TypeOFContract,
+      GuardNumber,
+      LocationProject,
+      numberBuilding,
+    ]);
+    const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
+    let dataStages = await StageTempletXsl(TypeOFContract);
+    const visity = await StageTempletXsl("NULL");
+    let table = [];
+    let tablesub = [];
+    dataStages = [visity[0], ...dataStages];
+    for (let index = 0; index < dataStages.length; index++) {
+      const element = dataStages[index];
+      let Days = await AccountDays(numberBuilding, element.Days);
+
+      table.push({
+        ...element,
+        Days: Math.round(Days),
+        ProjectID: idProject["last_id"],
+        StartDate: null,
+        EndDate: null,
+        CloseDate: null,
+      });
+
+      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
+      resultSubTablet.forEach((pic) => {
+        tablesub.push({
+          StageID: pic.StageID,
+          ProjectID: idProject["last_id"],
+          StageSubName: pic.StageSubName,
+        });
+      });
+    }
+    await Stage(table, Contractsigningdate);
+    await StageSub(tablesub);
+    await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
+
+  }catch(error){console.log(error)}
+} 
 const projectBrinsh = async (req, res) => {
   //
   const userSession = req.session.user;
@@ -52,57 +181,10 @@ const projectBrinsh = async (req, res) => {
     console.log("Invalid session");
   }
   try {
-    const IDcompanySub = req.body.IDcompanySub;
-    const Nameproject = req.body.Nameproject;
-    const Note = req.body.Note;
-    const TypeOFContract = req.body.TypeOFContract;
-    const GuardNumber = req.body.GuardNumber;
-    const LocationProject = req.body.LocationProject;
-    const numberBuilding = req.body.numberBuilding;
+    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding}= req.body;
     const Contractsigningdate = new Date();
     if (Boolean(Nameproject)) {
-      await insertTablecompanySubProject([
-        IDcompanySub,
-        Nameproject,
-        Note,
-        TypeOFContract,
-        GuardNumber,
-        LocationProject,
-        numberBuilding,
-      ]);
-      const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-      let dataStages = await StageTempletXsl(TypeOFContract);
-      const visity = await StageTempletXsl("NULL");
-      // console.log(visity);
-      let table = [];
-      let tablesub = [];
-      dataStages = [visity[0], ...dataStages];
-      for (let index = 0; index < dataStages.length; index++) {
-        const element = dataStages[index];
-        let Days = await AccountDays(numberBuilding, element.Days);
-
-        table.push({
-          ...element,
-          Days: Math.round(Days),
-          ProjectID: idProject["last_id"],
-          StartDate: null,
-          EndDate: null,
-          CloseDate: null,
-        });
-
-        const resultSubTablet = await StageSubTempletXlsx(element.StageID);
-        resultSubTablet.forEach((pic) => {
-          tablesub.push({
-            StageID: pic.StageID,
-            ProjectID: idProject["last_id"],
-            StageSubName: pic.StageSubName,
-          });
-        });
-      }
-      await Stage(table, Contractsigningdate);
-      await StageSub(tablesub);
-      await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-
+      await OpreationProjectInsert(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate);
       res
         .send({
           success: "تم انشاء مشروع بنجاح",
@@ -420,7 +502,7 @@ const InsertStage = async (req, res) => {
         const dataend = new Date(Time.setDate(Time.getDate() + Days));
         EndDate = dataend.toDateString();
         OrderBy = parseInt(result.OrderBy) + 1;
-        console.log(result);
+        // console.log(result);
         await insertTablecompanySubProjectStageCUST([
           result.StageID + 1,
           ProjectID,
@@ -1194,6 +1276,7 @@ const InsertDatainTableRequests = async (req, res) => {
         Data,
         user,
         arrayImage !== null ? JSON.stringify(arrayImage) : null,
+        `${new Date()}`
       ]);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       await Financeinsertnotification(
@@ -1234,4 +1317,7 @@ module.exports = {
   InsertDatainTableRequests,
   StageTempletXsl,
   AccountDays,
+  OpreationProjectInsert,
+  OpreationProjectInsertv2,
+  projectBrinshv2
 };

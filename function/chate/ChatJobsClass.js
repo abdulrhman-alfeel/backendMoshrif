@@ -24,6 +24,10 @@ const {
 } = require("../notifcation/NotifcationProject");
 const { insertPostURL } = require("../postpublic/post");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
+const { uploaddata, bucket } = require("../../bucketClooud");
+const { fFmpegFunction, processFile } = require("../../middleware/ffmpeg");
+const { io } = require("../../importMIn");
+const path = require("path");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
@@ -31,75 +35,7 @@ const { deleteFileSingle } = require("../../middleware/Fsfile");
 const ClassChatOpration = async (Socket, io) => {
   try {
     Socket.on("send_message", async (data) => {
-      let result;
-      const chackdata = Number(data?.StageID)
-        ? await SELECTTableChateStageOtherroad(
-            data.idSendr,
-            data.Sender,
-            "idSendr=? AND Sender=?"
-          )
-        : await SELECTTableChateStageOtherroad(
-            data.idSendr,
-            data.Sender,
-            "idSendr=? AND Sender=?",
-            "Chat"
-          );
-
-      if (!chackdata) {
-        if (data.kind === "new") {
-          const newData = Datadistribution(data);
-          if (Number(data?.StageID)) {
-            await insertTableChateStage(newData);
-            result = await SELECTTableChateStageOtherroad(data.idSendr);
-            //  ادخال البيانات جدول البوستات
-          } else {
-            await insertTableChate(newData);
-            result = await SELECTTableChateotherroad(data.idSendr);
-          }
-
-          // حذف الملف
-          if (Object.keys(data.File).length > 0) {
-            deleteFileSingle(data.File.name, "upload", data.File.type);
-          }
-          // "./upload"
-
-          if (result) {
-            if (
-              data?.StageID !== "قرارات" &&
-              data?.StageID !== "استشارات" &&
-              data?.StageID !== "اعتمادات" &&
-              data?.StageID !== "تحضير"
-            ) {
-              await insertPostURL(data);
-            }
-            result.File = JSON.parse(result.File);
-            result.Reply = JSON.parse(result.Reply);
-            result.arrived = true;
-            result.kind = "new";
-            if (data?.StageID !== "تحضير") {
-              await ChateNotfication(
-                data.ProjectID,
-                data?.StageID,
-                data.message,
-                data.Sender,
-                data.Reply,
-                data.File
-              );
-            }
-          }
-        } else {
-          result = await DeleteChatfromdatabaseanddatabaseuser(data);
-        }
-      } else {
-        result = {
-          ...chackdata,
-          File: JSON.parse(chackdata.File),
-          Reply: JSON.parse(chackdata.Reply),
-          arrived: true,
-          kind: "mssageEnd",
-        };
-      }
-
+     const result = await OpreactionSend_message(data)
       io.to(`${data.ProjectID}:${data?.StageID}`)
         .timeout(50)
         .emit("received_message", result);
@@ -109,10 +45,123 @@ const ClassChatOpration = async (Socket, io) => {
   }
 };
 
+
+const OpreactionSend_message = async(data)=>{
+  let result;
+  const chackdata = Number(data?.StageID)
+    ? await SELECTTableChateStageOtherroad(
+        data.idSendr,
+        data.Sender,
+        "idSendr=? AND Sender=?"
+      )
+    : await SELECTTableChateStageOtherroad(
+        data.idSendr,
+        data.Sender,
+        "idSendr=? AND Sender=?",
+        "Chat"
+      );
+
+  if (!chackdata) {
+    if (data.kind === "new") {
+      const newData = Datadistribution(data);
+      if (Number(data?.StageID)) {
+        await insertTableChateStage(newData);
+        result = await SELECTTableChateStageOtherroad(data.idSendr);
+        //  ادخال البيانات جدول البوستات
+      } else {
+        await insertTableChate(newData);
+        result = await SELECTTableChateotherroad(data.idSendr);
+      }
+
+      // حذف الملف
+      if (Object.keys(data.File).length > 0) {
+        deleteFileSingle(data.File.name, "upload", data.File.type);
+      }
+      // "./upload"
+
+      if (result) {
+        if (
+          data?.StageID !== "قرارات" &&
+          data?.StageID !== "استشارات" &&
+          data?.StageID !== "اعتمادات" &&
+          data?.StageID !== "تحضير"
+        ) {
+          await insertPostURL(data);
+        }
+        result.File = JSON.parse(result.File);
+        result.Reply = JSON.parse(result.Reply);
+        result.arrived = true;
+        result.kind = "new";
+        if (data?.StageID !== "تحضير") {
+          await ChateNotfication(
+            data.ProjectID,
+            data?.StageID,
+            data.message,
+            data.Sender,
+            data.Reply,
+            data.File
+          );
+        }
+      }
+    } else {
+      result = await DeleteChatfromdatabaseanddatabaseuser(data);
+    }
+  } else {
+    result = {
+      ...chackdata,
+      File: JSON.parse(chackdata.File),
+      Reply: JSON.parse(chackdata.Reply),
+      arrived: true,
+      kind: "mssageEnd",
+    };
+  }
+  return result
+}
+
+
+
+  const PostFilemassage = async (req, res) => {
+    try {
+      const videofile = req.file;
+  
+      if (!videofile) {
+        return res.status(400).send('No video file uploaded');
+      }
+  
+      const data = JSON.parse(req.body.data);
+      await uploaddata(videofile);
+      // Check if the uploaded file is a video
+      if (videofile.mimetype === "video/mp4" || videofile.mimetype === "video/quicktime") {
+        const timePosition = "00:00:00.100";
+        let filename = 
+          videofile.filename.match(/\.([^.]+)$/)[1] === "MOV" ||
+          videofile.filename.match(/\.([^.]+)$/)[1] === "mov"
+            ? String(videofile.filename).replace("MOV", "png")
+            : String(videofile.filename).replace("mp4", "png");
+  
+        const pathdir = path.dirname(videofile.path);
+        const tempFilePathtimp = `${pathdir}/${filename}`;
+  
+        await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
+        await bucket.upload(tempFilePathtimp);
+      }
+  
+      
+      const result = await OpreactionSend_message(data);
+      
+      res.status(200).send({ success: "Full request" });
+
+      io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
+      .timeout(50)
+      .emit("received_message", result);
+    } catch (error) {
+      // console.error(error);
+      res.status(500).send({ success: "فشلة عملية رفع الملف" });
+    }
+  };
 const Oprationditals = async (data) => {
   let result;
   const newData = Datadistribution(data);
-  // console.log(newData);
   if (Number(data?.StageID)) {
     await insertTableChateStage(newData);
     result = await SELECTTableChateStageOtherroad(data.idSendr);
@@ -122,7 +171,6 @@ const Oprationditals = async (data) => {
     await insertTableChate(newData);
     result = await SELECTTableChateotherroad(data.idSendr);
   }
-  // console.log(result)
   result.File = JSON.parse(result.File);
   result.Reply = JSON.parse(result.Reply);
   result.arrived = true;
@@ -156,7 +204,7 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
       kind: data.kind,
       chatID: chatID,
     };
-    if (Number(data.type)) {
+    if (Number(data.StageID)) {
       await DeleteTableChate("ChatSTAGE", chatID);
     } else {
       await DeleteTableChate("Chat", chatID);
@@ -181,7 +229,6 @@ const ClassChackTableChat = async (req, res) => {
     const ProjectID = req.query.ProjectID;
     const StageID = req.query.StageID;
     const lengthChat = req.query.lengthChat;
-    // const chatID = req.query.chatID;
     const userSession = req.session.user;
 
     if (!userSession) {
@@ -202,7 +249,6 @@ const ClassChackTableChat = async (req, res) => {
           userSession.userName,
           "Chat"
         );
-    console.log(Listchat, "massage new ");
     // جلب البيانات
     let result;
     if (Listchat.last_id !== null && lengthChat > 0) {
@@ -221,7 +267,6 @@ const ClassChackTableChat = async (req, res) => {
       result = Number(StageID)
         ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
         : await SELECTLastTableChate(ProjectID, StageID, 80);
-      // console.log(result)
     }
     // فرز البيانات
     if (result?.length > 0 && result !== undefined) {
@@ -280,7 +325,6 @@ const ClassViewChat = async (req, res) => {
 
 //  لاستقبال مشاهدات الرسائل
 const ClassreceiveMessageViews = async (req, res) => {
-  // console.log('helllow')
   const userName = req.body.userName;
   const ProjectID = req.body.ProjectID;
   const type = req.body.type;
@@ -327,4 +371,6 @@ module.exports = {
   Oprationditals,
   ClassViewChat,
   ClassreceiveMessageViews,
+  PostFilemassage
+
 };

@@ -11,7 +11,6 @@ const {
 } = require("../../sql/selected/selectuser");
 const { UPDATETableProjectdataforchat } = require("../../sql/update");
 const { ClassChatOpration, ClassChatOprationView } = require("./ChatJobsClass");
-const time = require("./TIME.JS");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
@@ -22,10 +21,9 @@ const ChatOpration = async (Socket, io) => {
 // عملية مشاهدة لرسائل شات المراحل
 const ChatOprationView = async (Socket, io) => {
   Socket.on("view_message", async (data) => {
-    const result = await ClassChatOprationView(data);
+  await ClassChatOprationView(data);
   });
 };
-
 
 // عمليات جلب بيانات المشاريع والمراحل
 
@@ -48,14 +46,14 @@ const BringDataprojectAndStages = async (req, res) => {
       // console.log(arrayData);
       if (arrayData?.length > 0) {
         arrayData?.forEach(async (pic) => {
-          if(String(pic?.Nameproject).length > 0){
-          await insertTableProjectdataforchat([
-            pic?.ProjectID,
-            pic?.Nameproject,
-            PhoneNumber,
-            'false'
-          ]);
-        }
+          if (String(pic?.Nameproject).length > 0) {
+            await insertTableProjectdataforchat([
+              pic?.ProjectID,
+              pic?.Nameproject,
+              PhoneNumber,
+              "false",
+            ]);
+          }
         });
       }
     }
@@ -72,7 +70,7 @@ const BringDataprojectAndStages = async (req, res) => {
   }
 };
 // فلترة بيانات المشاريع حسب المستخدم وضمها داخل مصفوفة
-const filterProjectforaddinsertArray = (PhoneNumber,idBrinsh=0) => {
+const filterProjectforaddinsertArray = (PhoneNumber, idBrinsh = 0) => {
   try {
     return new Promise(async (resolve, reject) => {
       const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
@@ -89,9 +87,9 @@ const filterProjectforaddinsertArray = (PhoneNumber,idBrinsh=0) => {
               0,
               "forchat"
             );
-            result?.map((pic) =>arrayData.push(pic));
+            result?.map((pic) => arrayData.push(pic));
           } else {
-            if(idBrinsh === 0){
+            if (idBrinsh === 0) {
               for (let index = 0; index < element.project.length; index++) {
                 // console.log(validity);
                 const elementProject = element.project[index];
@@ -99,18 +97,21 @@ const filterProjectforaddinsertArray = (PhoneNumber,idBrinsh=0) => {
                   elementProject.idProject,
                   "forchat"
                 );
-                arrayData.push(result);
+                if (result !== undefined) {
+                  arrayData.push(result);
+                } 
               }
-            }else{
-              if(parseInt(element.idBrinsh) === parseInt(idBrinsh)){
+            } else {
+              if (parseInt(element.idBrinsh) === parseInt(idBrinsh)) {
                 for (let index = 0; index < element.project.length; index++) {
-                  // console.log(validity);
                   const elementProject = element.project[index];
                   const result = await SELECTTablecompanySubProjectLast_id(
                     elementProject.idProject,
                     "forchat"
                   );
-                  arrayData.push(result);
+                  if (result !== undefined) {
+                    arrayData.push(result);
+                  } 
                 }
               }
             }
@@ -133,7 +134,12 @@ const filterProjectforaddinsertArray = (PhoneNumber,idBrinsh=0) => {
 };
 
 //  جلب بيانات المراحل حسب المشروع المطلوب للدردشة
-const BringStageforfilterProject = (PhoneNumber, numberData,disabled='false',type="id") => {
+const BringStageforfilterProject = (
+  PhoneNumber,
+  numberData,
+  disabled = "false",
+  type = "id"
+) => {
   let ListData = [];
 
   return new Promise(async (resolve, reject) => {
@@ -145,32 +151,44 @@ const BringStageforfilterProject = (PhoneNumber, numberData,disabled='false',typ
     );
     await Promise.all(
       dataPorject?.map(async (pic) => {
-
-        const dataStage = disabled === 'false'? await SELECTTablecompanySubProjectStageCUST(
-          pic.ProjectID,
-          "all",
-          "StageID,StageName"
-        ): [];
+        const dataStage =
+          disabled === "false"
+            ? await SELECTTablecompanySubProjectStageCUST(
+                pic.ProjectID,
+                "all",
+                "StageID,StageName"
+              )
+            : [];
 
         ListData.push({
-          id:pic.id,
+          id: pic.id,
           ProjectID: pic.ProjectID,
           Nameproject: pic.Nameproject,
           arrayStage: dataStage,
         });
-        await DeleteTableProjectdataforchat(pic.id ,"id=?");
+        // await DeleteTableProjectdataforchat(pic.id ,"id=?");
 
-        // await UPDATETableProjectdataforchat([disabled === 'false'?"true" : "trueProject",pic.ProjectID]);
+        await UPDATETableProjectdataforchat([
+          disabled === "false" ? "true" : "trueProject",
+          pic.ProjectID,
+          PhoneNumber,
+        ]);
       })
     );
 
     resolve(ListData);
   });
 };
+
+
+
+
+
+
 module.exports = {
   ChatOpration,
   ChatOprationView,
   BringDataprojectAndStages,
   filterProjectforaddinsertArray,
-  BringStageforfilterProject
+  BringStageforfilterProject,
 };

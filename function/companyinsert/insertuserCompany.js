@@ -1,6 +1,5 @@
 const {
   insertTableuserComppany,
-  insertTableuserComppanySub,
 } = require("../../sql/INsertteble");
 const {
   SELECTTableusersCompanyVerification,
@@ -16,7 +15,6 @@ const userCompany = async (req, res) => {
     const IDNumber = req.body.IDNumber;
     const PhoneNumber = req.body.PhoneNumber;
     const jobdiscrption = req.body.jobdiscrption;
-    // const image = req.file.filename;
     const job = req.body.job;
     const Validity = req.body.Validity;
     let number = String(PhoneNumber);

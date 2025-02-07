@@ -4,7 +4,7 @@ const insertTablecompany = async (data) => {
   let V = true;
   db.serialize(function () {
     db.run(
-      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,NumberOFbranchesAllowed,NumberOFcurrentBranches,Api) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -103,6 +103,20 @@ const insertTablecompanySubProject = (data) => {
   db.serialize(function () {
     db.run(
       `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding) VALUES (?,?,?,?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTablecompanySubProjectv2 = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber) VALUES (?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -222,12 +236,40 @@ const insertTablecompanySubProjectexpense = (data) => {
     );
   });
 };
+const insertTablecompanySubProjectexpenseapi = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Expense (Referencenumberfinanc,projectID, Amount, Data,ClassificationName,InvoiceNo,Taxable) VALUES (?,?,?,?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
 
 // المقبوض
 const insertTablecompanySubProjectREVENUE = (data) => {
   db.serialize(function () {
     db.run(
       `INSERT INTO Revenue (projectID, Amount, Data,Bank,Image) VALUES (?,?, ?, ?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTablecompanySubProjectREVENUEapi = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Revenue (Referencenumberfinanc,projectID, Amount, Data,Bank) VALUES (?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -254,6 +296,25 @@ const insertTablecompanySubProjectReturned = (data) => {
     );
   });
 };
+const insertTablecompanySubProjectReturnedapi = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO Returns (Referencenumberfinanc,projectID, Amount, Data) VALUES (?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+      }
+    );
+  });
+};
+
+
+
+
+
+
 const insertTableSabepdf = (
   data,
   typename = "namefileall",
@@ -309,7 +370,7 @@ const insertTablecompanySubProjectarchivesFolderforcreatproject = (data) => {
 const insertTablecompanySubProjectRequestsForcreatOrder = async (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Requests (ProjectID,Type, Data,InsertBy,Image) VALUES (?,?,?,?,?)`,
+      `INSERT INTO Requests (ProjectID,Type, Data,InsertBy,Image,DateTime) VALUES (?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -498,6 +559,7 @@ module.exports = {
   insertTablecompany,
   insertTablecompanySub,
   insertTablecompanySubProject,
+  insertTablecompanySubProjectv2,
   insertTablecompanySubProjectStagetemplet,
   insertTablecompanySubProjectStageSubtemplet,
   insertTablecompanySubProjectStageNotes,
@@ -523,5 +585,9 @@ module.exports = {
   insertTableNavigation,
   insertTableLinkevaluation,
   insertTableProjectdataforchat,
-  insertTableFinancialCustody
+  insertTableFinancialCustody,
+  insertTablecompanySubProjectexpenseapi,
+  insertTablecompanySubProjectREVENUEapi,
+  insertTablecompanySubProjectReturnedapi,
+
 };

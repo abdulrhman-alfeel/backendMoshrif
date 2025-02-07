@@ -143,6 +143,56 @@ const LoginVerification = async (req, res) => {
       .status(201);
   }
 };
+const LoginVerificationv2 = async (req, res) => {
+  try {
+    const output = req.query.output;
+    const PhoneNumber = req.query.PhoneNumber;
+    const result = await SELECTTableLoginActivaty(
+      output,
+      parseInt(PhoneNumber)
+    );
+    // console.log(result, "user", output);
+    if (result !== undefined) {
+      // create accessToken from data users
+      const user = {
+        IDCompany: result?.IDCompany,
+        CommercialRegistrationNumber: result.CommercialRegistrationNumber,
+        userName: result?.userName,
+        PhoneNumber: result?.PhoneNumber,
+        IDNumber: result?.IDNumber,
+        image: result?.image,
+        job: result.job,
+        jobdiscrption: result.jobdiscrption,
+        token: result.token,
+        DateOFlogin: result.DateOFlogin,
+        DateEndLogin: result.DateEndLogin,
+      };
+
+      const data = await SELECTTablecompany(result?.IDCompany);
+      const accessToken = createTokens(user);
+      // console.log(accessToken);
+      // bring data usres according to validity
+      // const ObjectData = await verificationfromValidity(result);
+      res
+        .send({
+          success: true,
+          accessToken: accessToken,
+          data: user,
+          DisabledFinance: data.DisabledFinance,
+        })
+        .status(200);
+    } else {
+      res
+        .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
+        .status(201);
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
+      .status(201);
+  }
+};
 
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
 
@@ -290,6 +340,57 @@ const BringAllLoginActvity = async (req, res) => {
   const resultall = await SELECTTableLoginActivatActivatyall();
   res.send({ success: "تمت العملية بنجاح", data: resultall }).status(200);
 };
+
+
+// حلب صلاحيات المستخدم داخل الفرع 
+const BringvalidityuserinBransh = async(req,res) => {
+try{
+  const {PhoneNumber,idBrinsh} = req.query;
+
+  const resultuser = await SELECTTableusersCompanyVerification(
+    PhoneNumber
+  );
+  let arrayid= [];
+
+  if(resultuser.length > 0){
+    const validity = JSON.parse(resultuser[0].Validity);
+
+    validity.forEach((pic) => {
+      //  للتحقق من وجود المستخدم بداخل الفرع
+      if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
+        //  للتحقق من وجود تحديد عدد المشاريع
+        if (pic?.project.length > 0) {
+          arrayid = pic?.project.map(item => item?.idProject)
+        } 
+      }
+    });
+  }
+  res.send({ success: "تمت العملية بنجاح", data: arrayid }).status(200);
+
+}catch(error){
+  console.log(error)
+}
+}
+
+
+// فحص وجود المستخدم من عدم وجودة 
+const CheckUserispresentornot=async(req,res) =>{
+  const userSession = req.session.user;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
+  const PhoneNumber = userSession.PhoneNumber;
+  const verificationFinduser = await SELECTTableusersCompanyVerification(
+    PhoneNumber
+  );
+  if(verificationFinduser.length <= 0){
+    res.status(200).send({success:false})
+  }else{
+    res.status(200).send({success:true})
+
+  }
+}
 module.exports = {
   BringAllLoginActvity,
   Loginuser,
@@ -297,4 +398,7 @@ module.exports = {
   BringUserCompany,
   BringUserCompanyinBrinsh,
   BringNameCompany,
+  CheckUserispresentornot,
+  LoginVerificationv2,
+  BringvalidityuserinBransh
 };

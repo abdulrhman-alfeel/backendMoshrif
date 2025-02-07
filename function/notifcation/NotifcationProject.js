@@ -43,7 +43,7 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
       //   image: 'https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png',
     };
     const notification_type = "Public";
-    const navigationId = `${users[0].IDcompany}:${IDcompanySub}:${users[0].NameSub}:${users[0].PhoneNumber}:${users[0].Email}`;
+    const navigationId = `${users[0]?.IDcompany}:${IDcompanySub}:${users[0].NameSub}:${users[0].PhoneNumber}:${users[0].Email}`;
     let data = {
       userName: userName,
       type: `companySubprojects ${type}`,
@@ -549,7 +549,6 @@ const Financeinsertnotification = async (
               ? "RevenueId"
               : "RequestsID"
           );
-    console.log(result);
     let resultnew = Object.entries(result).filter(
       ([key, value]) => key !== "Nameproject" && key !== "IDcompanySub"
     );

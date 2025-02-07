@@ -15,6 +15,7 @@ const {
   ClassCloaseOROpenStage,
   AddfileinFolderHomeinArchive,
   InsertDatainTableRequests,
+  projectBrinshv2,
 } = require("../function/companyinsert/insertProject");
 const uploads = require("../middleware/uploads");
 const {
@@ -40,6 +41,8 @@ const {
   BringProjectObjectone,
   BringDataprojectClosed,
   FilterProject,
+  BringDataRequestsV2,
+  BringCountRequstsV2,
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -59,6 +62,8 @@ const {
   DeleteStageHome,
   DeleteStageSub,
   UpdateDataStageSub,
+  Confirmarrivdrequest,
+  DeleteRequests
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
 
@@ -68,6 +73,9 @@ router.use(verifyJWT);
 //  عمليات الادخال
 // router.route("/project").post(uploads.single("image"), projectBrinsh);
 router.route("/project").post(projectBrinsh);
+router.route("/v2/project").post(projectBrinshv2);
+
+
 router.route("/StageTemplet").post(StageTemplet);
 router.route("/StageSubTemplet").post(StageSubTemplet);
 router.route("/Stage").post(InsertStage);
@@ -112,6 +120,10 @@ router
 router.route("/SearchinFinance").get(SearchinFinance);
 router.route("/BringDataRequests").get(BringDataRequests);
 router.route("/BringCountRequsts").get(BringCountRequsts);
+
+router.route("/v2/BringDataRequests").get(BringDataRequestsV2);
+router.route("/v2/BringCountRequsts").get(BringCountRequstsV2);
+
 router.route("/BringReportforProject").get(BringReportforProject);
 
 //  عملية التعديل
@@ -145,5 +157,11 @@ router
 router
   .route("/UPDATEImplementRquestsORCansle")
   .put(UPDATEImplementRquestsORCansle);
+router
+  .route("/Confirmarrivdrequest")
+  .get(Confirmarrivdrequest);
+
+  // 
+  router.route('/DeleteRequests').get(DeleteRequests)
 
 module.exports = router;

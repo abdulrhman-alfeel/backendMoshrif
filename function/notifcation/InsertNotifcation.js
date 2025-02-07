@@ -7,9 +7,6 @@ const {
   SELECTTableNavigationObjectOne,
   SelectVerifycompanyexistence,
 } = require("../../sql/selected/selected");
-const {
-  SELECTTableLoginActivatActivaty,
-} = require("../../sql/selected/selectuser");
 
 const InsertNotifcation = async (
   token,
@@ -22,7 +19,7 @@ const InsertNotifcation = async (
   select = "pr.id"
 ) => {
   try {
-    await DeleteTableNotifcation();
+    // await DeleteTableNotifcation();
     let result;
     if (type === true) {
       result = await SelectVerifycompanyexistence(id);
@@ -49,6 +46,7 @@ const InsertNotifcation = async (
   }
 };
 
+// جلب بيانات الاشعارات لليوم
 const BringDataNotifcation = async (req, res) => {
   try {
     const LastID = req.query.LastID;
@@ -57,33 +55,10 @@ const BringDataNotifcation = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const result = await SELECTTableNavigation(LastID);
+    const result = await SELECTTableNavigation([parseInt(LastID)]);
+    
+    const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
 
-    let arrayNotifcation = [];
-    if (result.length > 0) {
-      
-      result.forEach(async (pic) => {
-        // console.log(pic.tokens, userSession?.IDCompany);
-
-        let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
-        Token.forEach(async (item) => {
-          if (item === userSession.userName) {
-            const dataNotifction = JSON.parse(pic.data);
-            arrayNotifcation.push({
-              notification: JSON.parse(pic.notification),
-              data: {
-                id: pic.id,
-                Date: pic.Date,
-                notification_type: dataNotifction?.notification_type,
-                navigationId: dataNotifction?.navigationId,
-                data: JSON.stringify(dataNotifction?.data),
-              },
-            });
-          }
-        });
-      });
-    }
-    // console.log(arrayNotifcation,'notfication');
     res
       .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
       .status(200);
@@ -93,4 +68,58 @@ const BringDataNotifcation = async (req, res) => {
   }
 };
 
-module.exports = { InsertNotifcation, BringDataNotifcation };
+
+// جلب بيانات الاشعارات حسب الفلتر
+const FilterNotifcation = async (req, res) =>{
+  try{
+    try {
+      const {LastID,from,to} = req.query;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const result = await SELECTTableNavigation([parseInt(LastID),from,to],`Date(DateDay) BETWEEN ?  AND ?`);
+     console.log(userSession.userName);
+      const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
+      res
+        .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
+        .status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
+    }
+  }catch(error){
+    console.log(error);
+  }
+}
+
+const Sortdatauserfromnotification = (result,userName) =>{
+  let arrayNotifcation = [];
+  if (result.length > 0) {
+    
+    result.forEach(async (pic) => {
+      // console.log(pic.tokens, userSession?.IDCompany);
+
+      let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
+      Token.forEach(async (item) => {
+        if (item === userName) {
+          const dataNotifction = JSON.parse(pic.data);
+          arrayNotifcation.push({
+            notification: JSON.parse(pic.notification),
+            data: {
+              id: pic.id,
+              Date: pic.Date,
+              notification_type: dataNotifction?.notification_type,
+              navigationId: dataNotifction?.navigationId,
+              data: JSON.stringify(dataNotifction?.data),
+            },
+          });
+        }
+      });
+    });
+  }
+  return arrayNotifcation
+}
+
+module.exports = { InsertNotifcation, BringDataNotifcation , FilterNotifcation };

@@ -20,6 +20,7 @@ const {
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
+const bcrypt = require('bcrypt');
 
 // اضافة شركة جديدة
 const insertDataCompany = async (req, res) => {
@@ -35,6 +36,7 @@ const insertDataCompany = async (req, res) => {
     const TaxNumber = req.body.TaxNumber;
     const NumberOFbranchesAllowed = req.body.NumberOFbranchesAllowed;
     const NumberOFcurrentBranches = req.body.NumberOFcurrentBranches;
+
     // console.log(req.body);
     const checkVerifction = await SelectVerifycompanyexistence(
       CommercialRegistrationNumber
@@ -46,25 +48,32 @@ const insertDataCompany = async (req, res) => {
         })
         .status(200);
     } else {
-      const tableCompany = await insertTablecompany([
-        CommercialRegistrationNumber,
-        NameCompany,
-        BuildingNumber,
-        StreetName,
-        NeighborhoodName,
-        PostalCode,
-        City,
-        Country,
-        TaxNumber,
-        NumberOFbranchesAllowed,
-        NumberOFcurrentBranches,
-      ]);
-      // console.log(tableCompany);
-      res
-        .send({
-          success: true,
-        })
-        .status(200);
+
+
+      bcrypt.hash(`${CommercialRegistrationNumber}`, 10,async function(err, hash) {
+    
+        await insertTablecompany([
+          CommercialRegistrationNumber,
+          NameCompany,
+          BuildingNumber,
+          StreetName,
+          NeighborhoodName,
+          PostalCode,
+          City,
+          Country,
+          TaxNumber,
+          NumberOFbranchesAllowed,
+          NumberOFcurrentBranches,
+          hash
+        ]);
+        // console.log(tableCompany);
+        res
+          .send({
+            success: true,
+            data: hash,
+          })
+          .status(200);
+    });
     }
   } catch (error) {
     console.log(error);

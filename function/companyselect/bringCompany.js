@@ -6,6 +6,7 @@ const {
   SELECTTablecompany,
   SELECTTablecompanySubLinkevaluation,
   SELECTTableFinancialCustody,
+  SELECTTableMaxFinancialCustody,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyonObject,
@@ -71,7 +72,7 @@ const biringDatabrinshCompany = async (req, res) => {
         ObjectData.push(ObjectBrinsh);
       }
     }
-
+    const Covenantnumber = await SELECTTableMaxFinancialCustody(IDCompany,'count',"COUNT(idOrder) AS count");
     res
       .send({
         masseg: "succfuly",
@@ -79,6 +80,7 @@ const biringDatabrinshCompany = async (req, res) => {
         nameCompany: company.NameCompany,
         CommercialRegistrationNumber: company.CommercialRegistrationNumber,
         Country: company.Country,
+        Covenantnumber:Covenantnumber.count
       })
       .status(200);
   } catch (error) {

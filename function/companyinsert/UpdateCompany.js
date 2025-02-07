@@ -1,19 +1,14 @@
 const { DeleteTableFinancialCustody } = require("../../sql/delete");
-const {
-  insertTablecompany,
-  insertTablecompanySub,
-} = require("../../sql/INsertteble");
-const {
-  SELECTTablecompanySub,
-  SELECTTablecompanySubID,
-} = require("../../sql/selected/selected");
-const db = require("../../sql/sqlite");
+const {  SELECTTablecompanyName } = require("../../sql/selected/selected");
+
 const {
   UpdateTablecompanySub,
   UpdateTablecompany,
   UPDATETableFinancialCustody,
+  UpdateTableinnuberOfcurrentBranchescompany,
 } = require("../../sql/update");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
+const bcrypt = require('bcrypt');
 
 const UpdateDataCompany = async (req, res) => {
   const NameCompany = req.body.NameCompany;
@@ -39,7 +34,7 @@ const UpdateDataCompany = async (req, res) => {
     String(TaxNumber).length > 0 &&
     String(id)
   ) {
-    const tableCompany = await UpdateTablecompany([
+    await UpdateTablecompany([
       NameCompany,
       BuildingNumber,
       StreetName,
@@ -66,6 +61,20 @@ const UpdateDataCompany = async (req, res) => {
 
   // console.log(tableCompany);
 };
+
+const UpdateApiCompany = async (req,res) => {
+  const id = req.query.id;
+  const chackfromCompany = await SELECTTablecompanyName(id);
+  if (Boolean(chackfromCompany)) {
+    bcrypt.hash(`${chackfromCompany?.CommercialRegistrationNumber}`, 10, async function(err, hash) {
+      await UpdateTableinnuberOfcurrentBranchescompany([hash,id],"Api");
+      res.send({success:'تمت العملية بنجاح',data:`${hash}`}).status(200);
+  });
+}else{
+  res.send({success:'لاتوجد الشركه المطلوبه'}).status(402);
+
+}
+}
 
 const UpdateCompanybrinsh = async (req, res) => {
   const NumberCompany = req.body.NumberCompany;
@@ -166,10 +175,66 @@ const Deletecovenantrequests = async (req, res) => {
   }
 };
 
+
+
+
+
+
+// const OperationMoveingdataProjectfromBranshtoBransh = async (fromId,toId,IDCompany) => {
+//   // const {fromId,toId,IDCompany} = req.query;
+//   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'companySubprojects');
+//   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'FinancialCustody',"IDCompanySub");
+//   const resultuser = await SELECTTableusersCompany(IDCompany);
+//   for(const user of resultuser){
+//     const data = JSON.parse(user.Validity);
+//     const resultValidity = await moveProjectsAndDelete(data, 2, 1);
+//     await UpdateTableuserComppanyValidity([JSON.stringify(resultValidity),user.id])
+//   }
+//   await DeleteTablecompanySubProjectall("companySub",'id',fromId);
+
+// }
+
+
+// OperationMoveingdataProjectfromBranshtoBransh(2,1,1);
+
+// Function to move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
+// function moveProjectsAndDelete(data, fromId, toId) {
+//   const fromBrinshIndex = data.findIndex(item => parseInt(item.idBrinsh) === fromId);
+//   const toBrinsh = data.find(item => parseInt(item.idBrinsh) === toId);
+
+//   if (fromBrinshIndex !== -1 && toBrinsh) {
+//     // Move projects
+//     toBrinsh.project.push(...data[fromBrinshIndex].project);
+    
+//     // Remove the fromId brinsh
+//     data.splice(fromBrinshIndex, 1);
+    
+//     // Return the modified data
+//     return data;
+//   } else if(fromBrinshIndex !== -1 ) {
+//     let datanew = [...data, { 
+//       idBrinsh: 1,
+//       job: 'عضو',
+//       project:data[fromBrinshIndex].project ,
+//       Acceptingcovenant: false}]
+//     return datanew; // Return the original data if not found
+//   }else{
+//     console.log('One of the idBrinsh not found');
+//     return data; // Return the original data if not found
+
+//   }
+// }
+
+
+// Move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
+
+// Output the modified data
+
 module.exports = {
   UpdateCompanybrinsh,
   UpdateDataCompany,
   Acceptandrejectrequests,
   Updatecovenantrequests,
   Deletecovenantrequests,
+  UpdateApiCompany
 };

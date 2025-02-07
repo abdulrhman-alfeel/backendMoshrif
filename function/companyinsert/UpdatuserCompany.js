@@ -6,12 +6,13 @@ const {
   SELECTTableLoginActivatActivaty,
   SELECTTableusersCompanyVerificationIDUpdate,
   SELECTTableusersCompany,
+  SELECTTableusersCompanyVerification,
 } = require("../../sql/selected/selectuser");
 const {
   UpdateTableuserComppany,
   UpdateTableLoginActivatytoken,
 } = require("../../sql/update");
-const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
+// const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
 
 const userCompanyUpdat = async (req, res) => {
   try {
@@ -82,24 +83,16 @@ const UpdatUserCompanyinBrinsh = async (req, res) => {
     const checkGlobleold = req.body.checkGlobleold;
     const kind = req.body.kind;
     // const result = await SELECTTableusersCompany(IDCompany);
-    if (kind === "Acceptingcovenant") {
+    if (kind === "Acceptingcovenant"|| kind === "user") {
       await Updatchackglobluserinbrinsh(
         idBrinsh,
-        kind,
+        kind === "user" ? type:kind,
         checkGloblenew,
         checkGlobleold,
         userSession.userName
       );
     } else {
-      if (kind === "user") {
-        await Updatchackglobluserinbrinsh(
-          idBrinsh,
-          type,
-          checkGloblenew,
-          checkGlobleold,
-          userSession.userName
-        );
-      } else {
+
         await UpdatchackAdmininbrinsh(
           idBrinsh,
           type,
@@ -107,7 +100,7 @@ const UpdatUserCompanyinBrinsh = async (req, res) => {
           checkGlobleold,
           userSession.userName
         );
-      }
+      
     }
     // console.log(result,'updatusercompanyinbrinsh')
     // }
@@ -152,12 +145,12 @@ const UpdatchackAdmininbrinsh = async (
           let job = pic.job;
           if (!chackfromJob) {
             job = pic.jobHOM;
-            await AddOrUpdatuser(
-              pic.PhoneNumber,
-              deletevalidity,
-              " الغاء وظيفتك كمدير للفرع",
-              userName
-            );
+            // await AddOrUpdatuser(
+            //   pic.PhoneNumber,
+            //   deletevalidity,
+            //   " الغاء وظيفتك كمدير للفرع",
+            //   userName
+            // );
           }
   
           const operation = await UpdateTableuserComppany([
@@ -205,12 +198,12 @@ const UpdatchackAdmininbrinsh = async (
           pic.id,
         ]);
 
-        await AddOrUpdatuser(
-          pic.PhoneNumber,
-          deletevalidity,
-          "توكيل لك مهمة مدير فرع",
-          userName
-        );
+        // await AddOrUpdatuser(
+        //   pic.PhoneNumber,
+        //   deletevalidity,
+        //   "توكيل لك مهمة مدير فرع",
+        //   userName
+        // );
 
         // console.log(deletevalidity, "deletevalidity");
       }
@@ -244,7 +237,6 @@ const Updatchackglobluserinbrinsh = async (
     .reduce((acc, key) => ({ ...acc, [key]: checkGloblenew[key] }), {});
   //  المضاف الجديد
 
-  // const arraglobleold =  Object.entries(checkGlobleold);
 
   if (deletedkeys.length > 0) {
     //  عملية حذف صلاحية من شخص ما
@@ -253,52 +245,96 @@ const Updatchackglobluserinbrinsh = async (
       const result = await SELECTTableusersCompanyVerificationID(
         parseInt(element)
       );
-      result.forEach(async (pic) => {
-        if (pic?.Validity.length > 0) {
-          const validity = JSON.parse(pic?.Validity);
-          let deletevalidity;
-          // إزالة المستخدم من المشروع
-          if (type !== "Acceptingcovenant") {
-            deletevalidity = await DeleteUserFromProject(validity, idBrinsh,type);
-          } else {
-            const { arrayBrinsh } = await AddUserInBrinsh(
-              validity,
-              idBrinsh,
-              false
-            );
-            deletevalidity = arrayBrinsh;
-          }
-
-          await AddOrUpdatuser(
-            pic.PhoneNumber,
-            deletevalidity,
-            "ازالة احدى صلاحياتك",
-            userName
-          );
-
-          const operation = await UpdateTableuserComppany([
-            pic.IDCompany,
-            pic.userName,
-            pic.IDNumber,
-            pic.PhoneNumber,
-            pic.job,
-            JSON.stringify(deletevalidity),
-            pic.id,
-          ]);
-          // console.log(deletevalidity, "deletevalidity");
-        }
-      });
+      await opreationDeletuserfromBrinshorProjectorCovenant(result,type,idBrinsh);
     }
   }
   let newObject = Object.values(
     newvalidy > 0 ? newvalidy : checkGloblenew
   ).filter((key) => key);
-  // console.log(newObject, "newvalidyssss");
 
   for (let index = 0; index < newObject.length; index++) {
     const element = newObject[index];
+    await opreationAddvalidityuserBrinshorCovenant(type,idBrinsh,element)
+  }
+};
 
-    // Get result for the current element
+
+
+// عمليات حذف المستخدم من المشروع او العهد
+
+const opreationDeletuserfromBrinshorProjectorCovenant = async(result,type,idBrinsh)=>{
+  try{
+    result.forEach(async (pic) => {
+      if (pic?.Validity.length > 0) {
+        const validity = JSON.parse(pic?.Validity);
+        let deletevalidity;
+        // إزالة المستخدم من المشروع
+        if (type !== "Acceptingcovenant") {
+          deletevalidity = await DeleteUserFromProject(validity, idBrinsh,type);
+        } else {
+          const { arrayBrinsh } = await AddUserInBrinsh(
+            validity,
+            idBrinsh,
+            false
+          );
+          deletevalidity = arrayBrinsh;
+        }
+        const operation = await UpdateTableuserComppany([
+          pic.IDCompany,
+          pic.userName,
+          pic.IDNumber,
+          pic.PhoneNumber,
+          pic.job,
+          JSON.stringify(deletevalidity),
+          pic.id,
+        ]);  
+      }
+    });
+  }catch(error){
+    console.log(error)
+  }
+}
+
+
+const DeletUser = async (req, res) => {
+  const PhoneNumber = req.body.PhoneNumber;
+  try {
+    const deletuser = await DeletTableuserComppanyCorssUpdateActivationtoFalse([
+      PhoneNumber,
+    ]);
+    const deletloginuser =
+      await DeletTableuserComppanyCorssUpdateActivationtoFalse(
+        [PhoneNumber],
+        "LoginActivaty"
+      );
+    if (deletuser) {
+      res
+        .send({
+          success: "تمت العملية بنجاح",
+        })
+        .status(200);
+    } else {
+      res
+        .send({
+          success: "العملية غير ناجحة",
+        })
+        .status(200);
+    }
+  } catch (error) {
+    console.log(error);
+    res
+      .send({
+        success: "العملية غير ناجحة",
+      })
+      .status(400);
+  }
+};
+
+
+//  عمليات اضافة صلاحيات للمستخدم 
+
+const opreationAddvalidityuserBrinshorCovenant = async (type,idBrinsh,element) =>{
+  try{
     const result = await SELECTTableusersCompanyVerificationID(
       !Number(type) ? element : parseInt(element.id)
     );
@@ -322,13 +358,6 @@ const Updatchackglobluserinbrinsh = async (
           validity = arrayBrinsh;
           Booleans = Boolen;
 
-          // Update user with new permissions
-          await AddOrUpdatuser(
-            pic.PhoneNumber,
-            validity,
-            "اضاف لك صلاحيات جديدة",
-            userName
-          );
         } else {
           // If type is not a number, check if it's not Acceptingcovenant
           if (type !== "Acceptingcovenant") {
@@ -349,16 +378,6 @@ const Updatchackglobluserinbrinsh = async (
             validity = arrayBrinsh;
             Booleans = Boolen;
           }
-
-          // Push new arrayBrinshs to validity
-
-          // Update user with new branch info
-          await AddOrUpdatuser(
-            pic.PhoneNumber,
-            validity,
-            "اضافتك إلى فرع جديد",
-            userName
-          );
         }
 
         // If Booleans is true, update the table
@@ -378,8 +397,13 @@ const Updatchackglobluserinbrinsh = async (
         console.error("Error processing pic:", pic.id, error);
       }
     }
+  }catch(error){
+    console.log(error)
   }
-};
+}
+
+
+
 // إضافة مستخدم للفرع او تعديل صلاحيته في العهد
 const AddUserInBrinsh = (validity, idBrinsh, type = "brinshuser") => {
   let arrayBrinsh = type !== "brinshuser" ? validity : {};
@@ -428,7 +452,7 @@ const AddUserInProject = (validity, idBrinsh, type, Validitynew) => {
     );
     if (findValidity) {
       projectArray = findValidity.project;
-      const findProject = findValidity?.project.find(
+      const findProject = projectArray.find(
         (pic) => parseInt(pic.idProject) === parseInt(type)
       );
 
@@ -438,9 +462,12 @@ const AddUserInProject = (validity, idBrinsh, type, Validitynew) => {
           ValidityProject: Validitynew,
         });
       } else {
-        findProject && (findProject.ValidityProject = Validitynew);
-
-        projectArray = findValidity.project;
+        // findProject && (findProject.ValidityProject = Validitynew);
+        const findProjectIndex = projectArray.findIndex(
+          (pic) => parseInt(pic.idProject) === parseInt(type)
+        );
+        projectArray[findProjectIndex].ValidityProject = Validitynew
+        // projectArray = findValidity.project;
       }
       validity[findValidityIndex].project = projectArray;
       // console.log(findValidity, "mkkkkkkkkkkkkkkkkkkke", projectArray);
@@ -466,40 +493,6 @@ const AddUserInProject = (validity, idBrinsh, type, Validitynew) => {
   }
 };
 
-const DeletUser = async (req, res) => {
-  const id = req.body.id;
-  const PhoneNumber = req.body.PhoneNumber;
-  try {
-    const deletuser = await DeletTableuserComppanyCorssUpdateActivationtoFalse([
-      PhoneNumber,
-    ]);
-    const deletloginuser =
-      await DeletTableuserComppanyCorssUpdateActivationtoFalse(
-        [PhoneNumber],
-        "LoginActivaty"
-      );
-    if (deletuser) {
-      res
-        .send({
-          success: "تمت العملية بنجاح",
-        })
-        .status(200);
-    } else {
-      res
-        .send({
-          success: "العملية غير ناجحة",
-        })
-        .status(200);
-    }
-  } catch (error) {
-    console.log(error);
-    res
-      .send({
-        success: "العملية غير ناجحة",
-      })
-      .status(400);
-  }
-};
 
 const UpdateToken = async (req, res) => {
   try {
@@ -529,19 +522,74 @@ const UpdateToken = async (req, res) => {
 };
 
 // إزالة المستخدم من المشروع
-const DeleteUserFromProject = (validity, idBrinsh,type) => {
-  let deletevalidity;
+const DeleteUserFromProject = (validity, idBrinsh, type) => {
+  let deletevalidity = [...validity]; // Clone the array to avoid mutating the original
   if (Number(type)) {
-    let Brinsh = validity.find((item) => item.idBrinsh === idBrinsh);
-    Brinsh.project = Brinsh.project.filter((pic) => pic.idProject !== type);
-
-    deletevalidity = validity.filter((item) => item.idBrinsh === idBrinsh);
-    deletevalidity.push(Brinsh);
+    const BrinshIndex = validity.findIndex((item) => item.idBrinsh === idBrinsh);
+    if (BrinshIndex > -1) {
+      deletevalidity[BrinshIndex].project = deletevalidity[BrinshIndex].project.filter(
+        (pic) => parseInt(pic.idProject) !== parseInt(type)
+      );
+    }
   } else {
     deletevalidity = validity.filter((item) => item.idBrinsh !== idBrinsh);
   }
-  return deletevalidity
+  return deletevalidity;
 };
+
+// إدخال مشاريع متعددة في صلاحية المستخدم
+const InsertmultipleProjecsinvalidity = async (req, res) => {
+  try {
+    const { ProjectesNew,  Validitynew, idBrinsh, PhoneNumber } = req.body;
+
+    const resultuser = await SELECTTableusersCompanyVerification(PhoneNumber);
+    // Delete projects
+    for (const pic of resultuser) {
+      const validity = JSON.parse(pic.Validity);
+      let deletevalidity = [...validity]
+      const BrinshIndex = deletevalidity.findIndex((item) => item.idBrinsh === idBrinsh);
+      deletevalidity[BrinshIndex].project =  [];
+      await UpdateTableuserComppany([
+        pic.IDCompany,
+        pic.userName,
+        pic.IDNumber,
+        pic.PhoneNumber,
+        pic.job,
+        JSON.stringify(deletevalidity),
+        pic.id,
+      ]);
+    }
+    const resultusernew = await SELECTTableusersCompanyVerification(PhoneNumber);
+
+    // Add new projects
+    let validity = resultusernew[0]?.Validity?.length > 0 ? JSON.parse(resultusernew[0]?.Validity) : [];
+
+    for (const item of ProjectesNew) {
+      const { arrayBrinsh, Boolen } = await AddUserInProject(validity, idBrinsh, item, Validitynew);
+      validity = arrayBrinsh;
+
+      // If Boolen is true, update the table
+      if (Boolen) {
+        await UpdateTableuserComppany([
+          resultusernew[0].IDCompany,
+          resultusernew[0].userName,
+          resultusernew[0].IDNumber,
+          resultusernew[0].PhoneNumber,
+          resultusernew[0].job,
+          JSON.stringify(validity),
+          resultusernew[0].id,
+        ]);
+      }
+    }
+
+    res.status(200).send({ success: 'تمت العملية بنجاح' });
+  } catch (error) {
+    console.error(error);
+    res.status(402).send({ success: 'فشل تنفيذ العملية' });
+  }
+};
+
+// InsertmultipleProjecsinvalidity([1,2,6,7,8,9,10],[1,2,3,4,5],['تشييك طلبيات','تشييك انجازات','اقفال مراحل'],1,505566502)
 
 const BringUpdateuser = async () =>{
   try{
@@ -577,6 +625,7 @@ module.exports = {
   UpdatUserCompanyinBrinsh,
   DeletUser,
   UpdateToken,
+  InsertmultipleProjecsinvalidity
 };
 
 

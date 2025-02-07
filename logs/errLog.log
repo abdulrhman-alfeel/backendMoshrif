@@ -89,3 +89,9 @@
 20241204	08:37:46	182dd0ff-5e93-40ee-a9dc-3db6dc6ce847	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/auth?PhoneNumber=502464530&token=eeBxaF3US4u4n_bMyqJxMq:APA91bFPzw8M-1iNCvdnuyDPcO8V-j0fX_Pi8CHD5WhwQRmnesAPwYw5DjKqWvVFkD4Joav26E-Q5zHjXkrrqrDEy1sSVzZXLfRFpU67fK_ogmV10n69030	undefined
 20241204	08:38:09	329a45af-2c6a-45b3-a20f-7bae6a633c87	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/auth?PhoneNumber=502464530&token=eeBxaF3US4u4n_bMyqJxMq:APA91bFPzw8M-1iNCvdnuyDPcO8V-j0fX_Pi8CHD5WhwQRmnesAPwYw5DjKqWvVFkD4Joav26E-Q5zHjXkrrqrDEy1sSVzZXLfRFpU67fK_ogmV10n69030	undefined
 20241204	08:39:00	305c0ec4-4e84-409f-9858-8017d5093352	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/auth?PhoneNumber=502464530&token=eeBxaF3US4u4n_bMyqJxMq:APA91bFPzw8M-1iNCvdnuyDPcO8V-j0fX_Pi8CHD5WhwQRmnesAPwYw5DjKqWvVFkD4Joav26E-Q5zHjXkrrqrDEy1sSVzZXLfRFpU67fK_ogmV10n69030	undefined
+20250114	11:21:02	a934419e-7043-4db1-b04d-0716b815ffc9	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/auth/Checkfinduser	undefined
+20250114	11:24:35	ffdb04c1-727a-4858-9251-9c034dcb5b1e	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/auth/Checkfinduser	undefined
+20250114	11:25:30	cce54b06-1ecd-4bad-abeb-9aaf0afb8262	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/auth/Checkfinduser	undefined
+20250114	11:25:56	9f069e5a-2b5d-48d3-bb4b-c45c1a49b571	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/auth/Checkfinduser	undefined
+20250202	12:00:49	7bee9d93-36d5-4c53-9b73-98a33e3d4de8	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/UpdateApiCompany	undefined
+20250202	12:01:06	0cdb30ba-9c4f-4e04-8b34-65ae734de546	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/company/UpdateApiCompany?id=1	undefined

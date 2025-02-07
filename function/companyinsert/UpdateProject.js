@@ -51,16 +51,8 @@ const UpdataDataProject = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
+    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,ProjectID}= req.body;
 
-    const IDcompanySub = req.body.IDcompanySub;
-    const Nameproject = req.body.Nameproject;
-    const Note = req.body.Note;
-    const TypeOFContract = req.body.TypeOFContract;
-    const GuardNumber = req.body.GuardNumber;
-    const LocationProject = req.body.LocationProject;
-    const numberBuilding = req.body.numberBuilding;
-
-    const ProjectID = req.body.ProjectID;
     const StartDate = await SELECTProjectStartdate(ProjectID);
 
     await UpdateTablecompanySubProject([
@@ -71,13 +63,14 @@ const UpdataDataProject = async (req, res) => {
       GuardNumber,
       LocationProject,
       numberBuilding,
+      Referencenumber,
       ProjectID,
     ]);
     if (StartDate?.numberBuilding !== numberBuilding) {
       await RearrangeStageID(ProjectID, StartDate, numberBuilding);
     }
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-    console.log(ProjectID, "update");
+    // console.log(ProjectID, "update");
 
     await Projectinsert(IDcompanySub, userSession.userName, "تعديل");
   } catch (error) {
@@ -164,35 +157,6 @@ const DeletProjectwithDependencies = async (req, res) => {
   }
 };
 
-const DeleteFinance = async (req, res) => {
-  try {
-    const id = req.query.id;
-    const type = req.query.type;
-    let nametype;
-    let typeid;
-    if (type === "مصروفات") {
-      nametype = "Expense";
-      typeid = "Expenseid";
-    } else if (type === "عهد") {
-      nametype = "Revenue";
-      typeid = "RevenueId";
-    } else {
-      nametype = "Returns";
-      typeid = "ReturnsId";
-    }
-    const result = await SELECTTableFinance(id, nametype, typeid);
-    let Images = Boolean(result.Image) ? JSON.parse(result.Image) : [];
-    for (let index = 0; index < Images.length; index++) {
-      const element = Images[index];
-      await Switchbetweendeleteorupdatefiles(element, "", "delete");
-    }
-    await DeleteTablecompanySubProjectall(nametype, typeid, id);
-    res.send({ success: "تم الحذف بنجاح" }).status(200);
-  } catch (error) {
-    res.send({ success: "فشل تنفيذ العملية" }).status(500);
-    console.log(error);
-  }
-};
 
 // وظيفة تقوم بإضافة تاريخ بدء تنفيذ المشروع واعادة ترتيب تواريخ المراحل
 const UpdateStartdate = async (req, res) => {
@@ -557,7 +521,7 @@ const Switchbetweendeleteorupdatefiles = async (nameOld, name, type) => {
             // console.log(`File ${nameOld} deleted from bucket`);
           })
           .catch((err) => {
-            console.error(`Error deleting file: ${err}`);
+            console.log(`Error deleting file: ${err}`);
           });
     }
   } catch (error) {
@@ -800,6 +764,38 @@ const ReturnsUpdate = async (req, res) => {
   }
 };
 
+
+const DeleteFinance = async (req, res) => {
+  try {
+    const id = req.query.id;
+    const type = req.query.type;
+    let nametype;
+    let typeid;
+    if (type === "مصروفات") {
+      nametype = "Expense";
+      typeid = "Expenseid";
+    } else if (type === "عهد") {
+      nametype = "Revenue";
+      typeid = "RevenueId";
+    } else {
+      nametype = "Returns";
+      typeid = "ReturnsId";
+    }
+    const result = await SELECTTableFinance(id, nametype, typeid);
+    let Images = Boolean(result.Image) ? JSON.parse(result.Image) : [];
+    for (let index = 0; index < Images.length; index++) {
+      const element = Images[index];
+      await Switchbetweendeleteorupdatefiles(element, "", "delete");
+    }
+    await DeleteTablecompanySubProjectall(nametype, typeid, id);
+    res.send({ success: "تم الحذف بنجاح" }).status(200);
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(500);
+    console.log(error);
+  }
+};
+
+
 // *******************************************************************
 // ****************** تعديل بيانات الطلبيات ************************
 
@@ -845,7 +841,6 @@ const UPDATEdataRequests = async (req, res) => {
           try {
             await uploaddata(element);
             deleteFileSingle(element.filename, "upload");
-
             arrayImage.push(element.filename);
           } catch (error) {
             console.error(`Failed to upload image ${element.filename}:`, error);
@@ -890,6 +885,36 @@ const UPDATEImplementRquestsORCansle = async (req, res) => {
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
 };
+const Confirmarrivdrequest= async (req, res) => {
+  try {
+    const RequestsID = req.query.RequestsID;
+    const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(RequestsID);
+    const Done = DoneOrgin.checkorderout === "true" ? "false" : "true";
+    await UPDATETableinRequestsDone([Done, RequestsID],type="checkorderout=?");
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
+  }
+};
+
+
+const DeleteRequests = async (req, res) => {
+  try {
+    const RequestsID = req.query.RequestsID;
+    await DeleteTablecompanySubProjectall(
+      "Requests",
+      "RequestsID",
+      RequestsID
+    );
+    res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(501);
+  }
+};
+
 
 module.exports = {
   UpdataDataProject,
@@ -909,4 +934,8 @@ module.exports = {
   DeleteStageHome,
   DeleteStageSub,
   UpdateDataStageSub,
+  Confirmarrivdrequest,
+  DeleteRequests,
+  RearrangeStageID,
+  Switchbetweendeleteorupdatefiles
 };

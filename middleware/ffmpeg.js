@@ -32,4 +32,4 @@ const fFmpegFunction = (filename, tempFilePath, timePosition) => {
 
 // console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 
-module.exports = {ffmpeg,fFmpegFunction};
+module.exports = {fFmpegFunction};

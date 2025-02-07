@@ -1,22 +1,17 @@
-// bringProject.js
-// ChatJobs.js
-// insertteble.js
-// delet.js
-// selected.js
-// selectuser.js
-// update.js
-// NotifcationProject.js
-
-// UpdatuserCompany.js
-
-
+// insertproject.js
+// createteble.js
+// INsertteble.js
+// insertCompany.js
+// UpdateCompany.js
+// company.js
+//  selected.js
 const { express, app, server, io } = require("./importMIn");
 
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieparser = require("cookie-parser");
 const session = require("express-session");
-
+const helmet = require('helmet');
 const errorHandler = require("./middleware/errorHandler");
 const { deleteFilesInFolder } = require("./middleware/Fsfile");
 const limiter = require("./middleware/loginLimiter");
@@ -24,31 +19,40 @@ const { CreateTable } = require("./sql/createteble");
 const { ChatOpration, ChatOprationView } = require("./function/chate/ChatJobs");
 const uploads = require("./middleware/uploads");
 const { uploaddata, bucket } = require("./bucketClooud");
-app.use(cookieparser());
-app.use(cors());
-// app.use(async()=>{cors()});
-app.use(express.json());
 const { fFmpegFunction } = require("./middleware/ffmpeg");
 const { verifyJWT } = require("./middleware/jwt");
 
+
+
+
+app.use(cookieparser());
+app.use(cors());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
 app.use("/upload", express.static("upload"));
+
 
 app.use(
   session({
     secret:
-      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYWN0aW9uIjoi2LPZhNin2K0g2K7ZgdmK2YEiLCJwcmljZSI6Ijc1MDAiLCJkZXNjcmlwdGlvbiI6ImFzZGZhc2Rmc2RmIGRmIHMgc2Rmc2RmIGRnZGcgc2RkZmFzZGRmc2QgZWYgZ3NhZ2FzZGZzZGZkcyBkc3NkIGRzZmYgZHMgc2ZkIiwiaWF0IjoxNjc3ODUyNTAzLCJleHAiOjE2Nzc5Mzg5MDN9.QeCWuUg1CEW0W-4nTCQ1AYVf8vBlC50jUnI_n6u3vD5h8rIZ7gJ9Uz7db8VL1ODG0M7_RIYi40HYpWQBmalzOqlKQAyqetphOHs2qhSRghu_LzOIkxeEjLh-QXmGVrqz4ybyqN",
+    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYWN0aW9uIjoi2LPZhNin2K0g2K7ZgdmK2YEiLCJwcmljZSI6Ijc1MDAiLCJkZXNjcmlwdGlvbiI6ImFzZGZhc2Rmc2RmIGRmIHMgc2Rmc2RmIGRnZGcgc2RkZmFzZGRmc2QgZWYgZ3NhZ2FzZGZzZGZkcyBkc3NkIGRzZmYgZHMgc2ZkIiwiaWF0IjoxNjc3ODUyNTAzLCJleHAiOjE2Nzc5Mzg5MDN9.QeCWuUg1CEW0W-4nTCQ1AYVf8vBlC50jUnI_n6u3vD5h8rIZ7gJ9Uz7db8VL1ODG0M7_RIYi40HYpWQBmalzOqlKQAyqetphOHs2qhSRghu_LzOIkxeEjLh-QXmGVrqz4ybyqN",
     cookie: { httpOnly: true },
     resave: false,
     saveUninitialized: false,
   })
 );
+app.use(helmet({
+  contentSecurityPolicy: false,
+  xDownloadOptions: false,
+}));
 
 PORT = process.env.PORT || 8080;
 
 app.use("/", require("./routes/root"));
+// الربط المالي
+app.use("/apis/company", require("./routes/apiMoshrif"));
+// **********
 app.use("/api/auth", require("./routes/login"));
 app.use("/api/company", require("./routes/company"));
 app.use("/api/user", require("./routes/usersCompany"));
@@ -92,10 +96,12 @@ app.post(
       // console.log(req.file);
 
       const timePosition = "00:00:00.100";
-      const filename =
-        req.file.filename.match(/\.([^.]+)$/)[1] === "MOV"
+      let filename = 
+        req.file.filename.match(/\.([^.]+)$/)[1] === "MOV" ||
+        req.file.filename.match(/\.([^.]+)$/)[1] === "mov"
           ? String(req.file.filename).replace("MOV", "png")
           : String(req.file.filename).replace("mp4", "png");
+
       const tempFilePathtimp = `upload/${filename}`;
       // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
       if (
@@ -103,13 +109,18 @@ app.post(
         req.file.mimetype === "video/quicktime"
       ) {
         await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
-        setTimeout(async () => {
+        const times = setTimeout(async () => {
           await bucket.upload(tempFilePathtimp);
         }, 1000);
-      }
-      res
+        res
         .send({ success: "Full request", nameFile: req.file.filename })
         .status(200);
+        return () => clearTimeout(times)
+      }else{
+        res
+          .send({ success: "Full request", nameFile: req.file.filename })
+          .status(200);
+      }
     } catch (error) {
       console.log(error);
       res.send({ success: "فشلة عملية رفع الملف" }).status(500);

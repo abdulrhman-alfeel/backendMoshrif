@@ -51,6 +51,16 @@ const DeleteTablecompanySubProjectall = (table, type = "projectID", id) => {
     });
   });
 };
+const DeleteTablecompanySubProjectallapi = (table,id,NumberCompany,IDcompanySub,Referencenumber) => {
+  db.serialize(function () {
+    db.run(`DELETE FROM ${table} WHERE Referencenumberfinanc=?  AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    )`, [id,NumberCompany,IDcompanySub,Referencenumber], function (err) {
+      // console.log(`Row with the ID has been inserted.`);
+    });
+  });
+};
 const DeleteTableSavepdf = (id) => {
   db.serialize(function () {
     db.run(`DELETE FROM Savepdf WHERE projectID =?`, [id], function (err) {
@@ -200,5 +210,6 @@ module.exports = {
   DeleteTablecompanyStageHome,
   DeleteTablecompanyStageSub,
   DeleteTableProjectdataforchat,
-  DeleteTableFinancialCustody
+  DeleteTableFinancialCustody,
+  DeleteTablecompanySubProjectallapi
 };

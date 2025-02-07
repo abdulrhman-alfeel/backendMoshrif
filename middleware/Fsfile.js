@@ -33,7 +33,8 @@ const deleteFileSingle = async (Pathfolder, folderPath, type="jpge") => {
           : String(Pathfolder).replace("mp4", "png");
       await implmentOpreationSingle(folderPath, Pathfolder);
       
-      setTimeout(async()=>await implmentOpreationSingle(folderPath, filename),1500)
+      const timeout = setTimeout(async()=>await implmentOpreationSingle(folderPath, filename),1500);
+      return () => clearTimeout(timeout);
     } else {
       implmentOpreationSingle(folderPath, Pathfolder);
     }

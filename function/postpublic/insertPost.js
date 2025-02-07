@@ -5,14 +5,11 @@ const {
 } = require("../../sql/INsertteble");
 const {
   SELECTTableLikesPostPublicotherroad,
-  SELECTTableCommentID,
 } = require("../../sql/selected/selected");
-const time = require("../chate/TIME.JS");
-const { Postsnotification, PostsnotificationCansle } = require("../notifcation/NotifcationProject");
+const { Postsnotification } = require("../notifcation/NotifcationProject");
 
 const Likesinsert = async (req, res) => {
   try {
-
     const PostId = req.query.PostID;
     const userName = req.query.userName;
 

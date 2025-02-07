@@ -27,6 +27,8 @@ const {
   SELECTTablecompanySubProjectLast_id,
   SELECTTablecompany,
   SELECTTablecompanySubProjectFilter,
+  SELECTallDatafromTableRequestsV2,
+  SELECTDataAndTaketDonefromTableRequests2
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -43,6 +45,7 @@ const { UPDATETableSavepdf } = require("../../sql/update");
 const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
+  SELECTTableusersCompanyVerification,
 } = require("../../sql/selected/selectuser");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 const { DeleteTableProjectdataforchat } = require("../../sql/delete");
@@ -58,14 +61,11 @@ const BringProject = async (req, res) => {
     const userSession = req.session.user;
 
     if (!userSession) {
-      // console.log("Invalid session");
       return res.status(401).send("Invalid session");
     }
-
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = userSession.PhoneNumber;
     const IDfinlty = req.query.IDfinlty;
-    let kinduser = false;
 
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
 
@@ -98,8 +98,10 @@ const BringProject = async (req, res) => {
             await DeleteTableProjectdataforchat(PhoneNumber);
             // فلترة المشاريع واستخراجها
             const arrayData = await filterProjectforaddinsertArray(PhoneNumber, IDcompanySub);
+
             if (arrayData?.length > 0) {
               arrayData.forEach(async(pic) =>{
+
                 if(pic?.Nameproject !== undefined && pic?.ProjectID !== undefined){
                   await insertTableProjectdataforchat([
                     pic?.ProjectID,
@@ -112,14 +114,20 @@ const BringProject = async (req, res) => {
             }
           }
 
+
           const ListData = await BringStageforfilterProject(PhoneNumber, IDfinlty, 'falseProject','ProjectID');
-          arrayBrinsh = await Promise.all(ListData.map(async (item) => {
-            return await SELECTTablecompanySubProjectLast_id(item.ProjectID, "party");
-          }));
+          for (let index = 0; index < ListData.length; index++) {
+            const item = ListData[index];
+            const result=  await SELECTTablecompanySubProjectLast_id(item.ProjectID, "party");
+            arrayBrinsh.push(result)
+          }
+          
 
           if (arrayBrinsh.length > 0) {
             arrayBrinsh = await BringTotalbalance(IDcompanySub, userSession.IDCompany, arrayBrinsh);
+
           }
+
         }
       }
     } else {
@@ -130,8 +138,11 @@ const BringProject = async (req, res) => {
         result
       );
     }
+    const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
 
-    return res.status(200).send({ success: true, data: arrayBrinsh });
+    const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),IDcompanySub,0,'validityJob');
+
+    return res.status(200).send({ success: true, data: arrayBrinsh,boss: boss});
   } catch (err) {
     console.error(err);
     return res.status(400).send({ success: false, error: err.message });
@@ -212,6 +223,7 @@ const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
 
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
+
     const data = await OpreationExtrinProject(element, IDCompany, IDcompanySub);
     if (data !== undefined) {
       arrayReturnProject.push({
@@ -245,7 +257,7 @@ const BringDataprojectClosed = async (req, res) => {
 // عملية استخراج بيانات المشروع ككائان واحد
 const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
   try {
-    if (element?.id !== undefined) {
+    if (element?.id !== undefined ) {
       const dataProject = await SELECTSUMAmountandBring(
         element.ProjectID !== undefined ? element.ProjectID : element.id
       );
@@ -338,20 +350,37 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   Validity.forEach((pic) => {
     //  للتحقق من وجود المستخدم بداخل الفرع
     if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
-      //  للتحقق من وجود تحديد عدد المشاريع
+      if(element === 'validityJob'){
+        arrayUser = pic.job
+      }else if (pic?.project.length > 0) {
+        const findUserinProject = pic?.project?.find(
+          (items) => parseInt(items.idProject) === parseInt(idProject)
+        );
+        //  للتحقق من وجود ان للمستخدم صلاحية لدخول المشروع
+        if (findUserinProject) {
+          arrayUser =  element ;
+        }
+      }
+    }else{
       if (pic?.project.length > 0) {
         const findUserinProject = pic?.project?.find(
           (items) => parseInt(items.idProject) === parseInt(idProject)
         );
         //  للتحقق من وجود ان للمستخدم صلاحية لدخول المشروع
         if (findUserinProject) {
-          arrayUser = element;
+          arrayUser =  findUserinProject ;
         }
       }
     }
   });
   return arrayUser;
 };
+
+
+
+
+
+
 // حساب تكاليف المشروع حسب الايام
 const AccountCostProject = async (id, ConstCompany) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
@@ -467,7 +496,11 @@ const BringStageSubTemplet = async (req, res) => {
 //  استيراد بيانات المراحل الاساسية
 const BringStage = async (req, res) => {
   try {
-    // console.log('hellllllllllllllllllllow')
+    const userSession = req.session.user;
+
+    if (!userSession) {
+      return res.status(401).send("Invalid session");
+    }
     const ProjectID = req.query.ProjectID;
     const result = await SELECTTablecompanySubProjectStageCUST(ProjectID);
     let arrayresult = [];
@@ -483,8 +516,12 @@ const BringStage = async (req, res) => {
         rate: rate,
       });
     }
-    // console.log(result)
-    res.send({ success: true, data: arrayresult }).status(200);
+    // استيراد صلاحية المستخدم للمشروع  
+
+    const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
+    
+    const validity = await BringUserinProject(JSON.parse(userdata[0].Validity),0,ProjectID,'validityProject');
+    res.send({ success: true, data: arrayresult,Validity:isNaN(validity?.ValidityProject)? validity?.ValidityProject :validity }).status(200);
   } catch (err) {
     console.log(err);
     res.send({ success: false }).status(400);
@@ -1135,14 +1172,14 @@ const ExtractDatafromRevenue = async (idproject, type, idSub) => {
   }
 };
 
-// ********************************************************************************
 // ************** استيرات بيانات الطلبيات ***************************************
-// console.log(count['COUNT(Done)'],count,'hhh')
 const BringDataRequests = async (req, res) => {
   try {
     const ProjectID = req.query.ProjectID;
     const Type = req.query.Type;
-    const result = await SELECTallDatafromTableRequests(Type, ProjectID);
+    const typeselect = String(Type).split(" ")[1];
+    let querytype = typeselect === 'خفيفة' ||typeselect === 'ثقيلة'? typeselect :Type;
+    const result = await SELECTallDatafromTableRequests(querytype, ProjectID);
     let arraynew = [];
     await Promise.all(
       result.map(async (pic) => {
@@ -1183,6 +1220,92 @@ const BringCountRequsts = async (req, res) => {
     const countOPEN = await SELECTDataAndTaketDonefromTableRequests(
       ProjectID,
       "true"
+    );
+    res.send({
+      success: "تمت العملية النجاح",
+      data: {
+        Close: countCLOSE["COUNT(Done)"],
+        Open: countOPEN["COUNT(Done)"],
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+};
+const BringDataRequestsV2 = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const {ProjectID,Type,kind,Done,lastID} = req.query;
+    const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
+    
+    const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),ProjectID,0,'validityJob');
+    let verifyUser = String(userSession.job).split(" ")[1] === "طلبيات" || boss === 'مدير الفرع' ||userSession.job === 'Admin';
+    
+    const typeselect = String(Type).split(" ")[1];
+    let querytype = typeselect === 'خفيفة' ||typeselect === 'ثقيلة'? typeselect :Type;
+    const result = await SELECTallDatafromTableRequestsV2(querytype, ProjectID,kind,Done,lastID,!verifyUser ?"AND InsertBy='"+userSession.PhoneNumber+"'" :"");
+    let arraynew = [];
+    await Promise.all(
+      result.map(async (pic) => {
+        let InsertBy = null;
+        let Implementedby = null;
+        if (pic.InsertBy !== null) {
+          const user = await SELECTTableusersCompanyonObject(pic.InsertBy);
+          InsertBy = user.userName;
+        }
+        if (pic.Implementedby !== null) {
+          const user = await SELECTTableusersCompanyonObject(pic.Implementedby);
+          Implementedby = user.userName;
+        }
+        arraynew.push({
+          ...pic,
+          Image: pic.Image !== null ? JSON.parse(pic.Image) : [],
+          InsertBy: InsertBy,
+          Implementedby: Implementedby,
+        });
+      })
+    );
+    const sortedData = arraynew.sort((a, b) => a.RequestsID - b.RequestsID).reverse(); 
+
+    res.send({ success: "تمت العملية بنجاح", data: sortedData }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+};
+
+const BringCountRequstsV2 = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const {ProjectID,type} = req.query;
+
+    const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
+
+    const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),ProjectID,0,'validityJob');
+    let verifyUser = String(userSession.job).split(" ")[1] === "طلبيات" || boss === 'مدير الفرع' ||userSession.job === 'Admin';
+
+
+
+    const countCLOSE = await SELECTDataAndTaketDonefromTableRequests2(
+      ProjectID,
+      type,
+      "false",
+      !verifyUser ?" InsertBy='"+userSession.PhoneNumber+"' AND" :""
+    );
+    const countOPEN = await SELECTDataAndTaketDonefromTableRequests2(
+      ProjectID,
+      type,
+      "true",
+      !verifyUser ?" InsertBy='"+userSession.PhoneNumber+"' AND" :""
     );
     res.send({
       success: "تمت العملية النجاح",
@@ -1447,4 +1570,6 @@ module.exports = {
   BringProjectObjectone,
   BringDataprojectClosed,
   FilterProject,
+  BringDataRequestsV2,
+  BringCountRequstsV2,
 };
