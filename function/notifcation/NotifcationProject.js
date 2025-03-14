@@ -810,7 +810,6 @@ const ChateNotfication = async (
       body: bodymassge + `< ${String(massgs).length > 0 ? massgs : typfile} >`,
       image: image,
     };
-    console.log(Project);
     let data = {
       ProjectID: idProject,
       userName: userName,

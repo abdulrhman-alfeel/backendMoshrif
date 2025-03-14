@@ -93,7 +93,7 @@ async function convertHtmlToPdf(htmlContent, outputPath) {
     // Close the browser
     await browser.close();
 
-    console.log("PDF generated successfully!");
+    // console.log("PDF generated successfully!");
   } catch (error) {
     console.error("Error generating PDF:", error);
   }

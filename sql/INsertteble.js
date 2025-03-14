@@ -45,7 +45,6 @@ const insertTablecompanySub = async (data) => {
         function (err) {
           if (err) {
             resolve(false);
-            console.log(err.message);
           } else {
             resolve(true);
           }

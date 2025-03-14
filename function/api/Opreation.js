@@ -536,7 +536,6 @@ const DeleteOperationsFinancial = async (req, res) => {
       IDcompanySub,
       Referencenumber,
     } = req.query;
-    console.log(req.query);
     const NumberCompany = dataCampny.id;
     const result = await SELECTTableFinanceapi(
       SectionType,

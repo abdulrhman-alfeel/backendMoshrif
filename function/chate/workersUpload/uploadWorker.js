@@ -96,7 +96,7 @@ const initializeWorker = (config) => {
   // Handle worker events
   uploadWorker.on('completed', (job) => {
     const { fileId } = job.data;
-    console.log(`Job ${job.id} for file ${fileId} completed successfully`);
+    // console.log(`Job ${job.id} for file ${fileId} completed successfully`);
   });
   
   uploadWorker.on('failed', (job, error) => {

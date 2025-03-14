@@ -198,7 +198,6 @@ const Acceptandrejectrequests = async (req, res) => {
     const kindORreason = req.body.kindORreason;
     if (String(kindORreason).length > 0) {
       if (kindORreason === "قبول") {
-        console.log(userSession.userName);
         await UPDATETableFinancialCustody(
           `Approvingperson="${userSession.userName}",ApprovalDate=CURRENT_TIMESTAMP,OrderStatus="true"`,
           id

@@ -257,7 +257,6 @@ const BringDatabrachCompany = async (req, res) => {
       "id,NameSub AS name"
     );
     res.send({ success: "تمت العملية بنجاح", data: result });
-    console.log(userSession.IDCompany);
   } catch (error) {
     console.log(error);
   }

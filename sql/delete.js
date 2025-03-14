@@ -124,7 +124,6 @@ const DeletTableuserComppanyCorssUpdateActivationtoFalse = (
           function (err) {
             // console.log("updatetableusercompany", data);
             if (err) {
-              console.log(err.message);
               reject(err);
             }
             resolve(true);
