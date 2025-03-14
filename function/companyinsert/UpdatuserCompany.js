@@ -1,6 +1,7 @@
 const {
   DeletTableuserComppanyCorssUpdateActivationtoFalse,
 } = require("../../sql/delete");
+const { SelectVerifycompanyexistencePhonenumber } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyVerificationID,
   SELECTTableLoginActivatActivaty,
@@ -33,8 +34,9 @@ const userCompanyUpdat = async (req, res) => {
     }
     const verificationFinduser =
       await SELECTTableusersCompanyVerificationIDUpdate(number, id);
-    if (verificationFinduser.length <= 0) {
-      const operation = await UpdateTableuserComppany(
+    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(number);
+    if (verificationFinduser.length <= 0 && findRegistrioncompany === undefined) {
+      await UpdateTableuserComppany(
         [
           IDCompany,
           userName,
@@ -55,7 +57,7 @@ const userCompanyUpdat = async (req, res) => {
     } else {
       res
         .send({
-          success: "الرقم الذي اضفته لمستخدم موجود",
+          success: findRegistrioncompany !== undefined ?  "الرقم موجود في قائمة انتظار تسجيل حساب شركات"  :"الرقم الذي اضفته لمستخدم موجود",
         })
         .status(200);
     }
@@ -63,7 +65,7 @@ const userCompanyUpdat = async (req, res) => {
     console.log(err);
     res
       .send({
-        success: false,
+        success: 'فشل في تنفيذ العملية',
       })
       .status(400);
   }

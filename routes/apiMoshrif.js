@@ -7,8 +7,11 @@ const {
   FinancialOperationsDataUpdate,
   FinancialOperationsFile,
   DeleteOperationsFinancial,
+  DeleteFileinFinancialOperationse,
+  BringDatafileFinancial,
+  FinancialUpdateInvoiceNo,
 } = require("../function/api/Opreation");
-const uploads = require("../middleware/uploads");
+const uploadsapis = require("../middleware/uploadsapis");
 
 const router = express.Router();
 
@@ -18,8 +21,13 @@ router.route("/ProjectOpreations").put(ProjectOpreationsUpdate);
 
 router.route("/FinancialOperatios").post(FinancialOperationsDatainsert);
 router.route("/FinancialOperatios").put(FinancialOperationsDataUpdate);
+router.route("/FinancialUpdateInvoiceNo").put(FinancialUpdateInvoiceNo);
 router.route("/DeleteOperationsFinancial").delete(DeleteOperationsFinancial);
+router.route("/DeleteFileinFinancial").delete(DeleteFileinFinancialOperationse);
 
-router.route("/FinancialOperatiosFile").post(uploads.any("image"),FinancialOperationsFile);
+
+router.route("/BringDatafileFinancial").get(BringDatafileFinancial);
+
+router.route("/FinancialOperatiosFile").post(uploadsapis.any("image"),FinancialOperationsFile);
 
 module.exports = router;

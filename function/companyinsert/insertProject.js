@@ -788,19 +788,51 @@ const EditNote = async (
     console.log(error);
   }
 };
+// AddORCanselAchievmentarrayall
 
 // وظيفة تقوم باضافة الانجازات او إلغائها
 
 const AddORCanselAchievment = async (req, res) => {
+  const userSession = req.session.user;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
+  const StageSubID = req.body.StageSubID;
+  const userName = userSession.userName;
+  const PhoneNumber = userSession.PhoneNumber;
+  await opreationAddAchivevment(StageSubID,userName,PhoneNumber);
+  res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+
+};
+
+// const cansles = [1,2,3,4];
+// const arrays =[1,4,5,3];
+// console.log(cansles.filter(item => !arrays.includes(item)))
+const AddORCanselAchievmentarrayall = async (req,res) =>{
+  const userSession = req.session.user;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
+  const selectAllarray = req.body.selectAllarray;
+  const selectAllarraycansle = req.body.selectAllarraycansle;
+
+  const userName = userSession.userName;
+  const PhoneNumber = userSession.PhoneNumber;
+  const arraycansle = selectAllarraycansle?.filter(item => !selectAllarray.includes(item));
+  for (const element of arraycansle) {
+    await opreationAddAchivevment(element,userName,PhoneNumber);
+  }
+  for (const element of selectAllarray) {
+    await opreationAddAchivevment(element,userName,PhoneNumber,'alladd');
+  }
+  res.send({ success: "تمت العملية بنجاح" }).status(200);
+}
+
+const opreationAddAchivevment = async  (StageSubID,userName,PhoneNumber,type='single')=>{
   try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const StageSubID = req.body.StageSubID;
-    const userName = req.body.userName;
-    const PhoneNumber = req.body.PhoneNumber;
     let data = {
       id: Math.floor(1000 + Math.random() * 9000),
       userName: userName,
@@ -810,50 +842,63 @@ const AddORCanselAchievment = async (req, res) => {
     const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
       StageSubID
     );
-    let Done;
-    let CloseDate;
-    let Operations = [];
-    let types;
-    // console.log(bringData.Done);
-    if (bringData.Done === "true") {
-      types = "إلغاء الانجاز";
-      data = {
-        ...data,
-        type: types,
-      };
-      Done = "false";
-      CloseDate = null;
-    } else {
-      (types = "تم الانجاز"),
-        (data = {
-          ...data,
-          type: types,
-        });
-      Done = "true";
-      CloseDate = new Date().toDateString();
-    }
-
-    if (bringData.closingoperations !== null) {
-      Operations = JSON.parse(bringData.closingoperations);
-      Operations.push(data);
-    } else {
-      Operations.push(data);
-    }
-    await UPDATETablecompanySubProjectStagesSub(
-      [JSON.stringify(Operations), CloseDate, Done, StageSubID],
-      "Closingoperations"
-    );
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    await AchievmentStageSubNote(
-      StageSubID,
-      userSession.userName,
-      types === "تم الانجاز" ? "إنجاز" : types
-    );
+    if(type === 'single'){
+      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
+    }else{
+      if ( type === 'alladd' && bringData.Done === "true")
+        return;
+      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
+      }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
-};
+}
+
+
+const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
+  let Done;
+  let CloseDate;
+  let Operations = [];
+  let types;
+  if (bringData.Done === "true") {
+    types = "إلغاء الانجاز";
+    data = {
+      ...data,
+      type: types,
+    };
+    Done = "false";
+    CloseDate = null;
+  } else {
+    (types = "تم الانجاز"),
+      (data = {
+        ...data,
+        type: types,
+      });
+    Done = "true";
+    CloseDate = new Date().toDateString();
+  }
+
+    Operations = bringData.closingoperations !== null? JSON.parse(bringData.closingoperations): [];
+    Operations.push(data);
+  await UPDATETablecompanySubProjectStagesSub(
+    [JSON.stringify(Operations), CloseDate, Done, StageSubID],
+    "Closingoperations"
+  );
+  await AchievmentStageSubNote(
+    StageSubID,
+    userName,
+    types === "تم الانجاز" ? "إنجاز" : types
+  );
+}
+
+
+
+
+
+
+
+
 
 //  إغلاق او التراجع عن اغلاق  المراحل
 const ClassCloaseOROpenStage = async (req, res) => {
@@ -1319,5 +1364,6 @@ module.exports = {
   AccountDays,
   OpreationProjectInsert,
   OpreationProjectInsertv2,
-  projectBrinshv2
+  projectBrinshv2,
+  AddORCanselAchievmentarrayall
 };

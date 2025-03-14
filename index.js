@@ -1,11 +1,10 @@
-// insertproject.js
-// createteble.js
-// INsertteble.js
-// insertCompany.js
-// UpdateCompany.js
-// company.js
-//  selected.js
-const { express, app, server, io } = require("./importMIn");
+// ChatJobsClass.js
+// index.js 
+// uploads.js
+// chatroute.js
+// companySub.js
+// Fsfile.js
+const { express, app,  server,io} = require("./importMIn");
 
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -17,17 +16,51 @@ const { deleteFilesInFolder } = require("./middleware/Fsfile");
 const limiter = require("./middleware/loginLimiter");
 const { CreateTable } = require("./sql/createteble");
 const { ChatOpration, ChatOprationView } = require("./function/chate/ChatJobs");
-const uploads = require("./middleware/uploads");
+const {uploads,handleUploadErrors} = require("./middleware/uploads");
 const { uploaddata, bucket } = require("./bucketClooud");
 const { fFmpegFunction } = require("./middleware/ffmpeg");
 const { verifyJWT } = require("./middleware/jwt");
+const { Queue } = require("bullmq");
+const { ExpressAdapter } = require("@bull-board/express");
+const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter.js");
+const { createBullBoard } = require("@bull-board/api");
+const  config  = require("./config.js");
+const {uploadRoutes} = require('./routes/upload.js')
+const {initializeWorker} = require('./function/chate/workersUpload/uploadWorker.js');
+const fs = require('fs');
 
+
+
+// Set up middlewares
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+
+// Initialize upload queue
+const uploadQueue = new Queue('fileUploads', {
+  connection: config.redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000
+    },
+    removeOnComplete: false,
+    removeOnFail: false
+  }
+});
+
+// Set up Bull Board for queue monitoring
+const serverAdapter = new ExpressAdapter();
+createBullBoard({
+  queues: [new BullMQAdapter(uploadQueue)],
+  serverAdapter
+});
+serverAdapter.setBasePath('/admin/queues');
 
 
 
 app.use(cookieparser());
-app.use(cors());
-app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/upload", express.static("upload"));
@@ -42,12 +75,10 @@ app.use(
     saveUninitialized: false,
   })
 );
-app.use(helmet({
-  contentSecurityPolicy: false,
-  xDownloadOptions: false,
-}));
+
 
 PORT = process.env.PORT || 8080;
+
 
 app.use("/", require("./routes/root"));
 // الربط المالي
@@ -61,6 +92,12 @@ app.use("/api/posts", require("./routes/postpublic"));
 app.use("/api/Chate", require("./routes/chatroute"));
 app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
+
+app.use('/admin/queues', serverAdapter.getRouter());
+
+// Initialize route handlers
+app.use('/api', uploadRoutes({ uploadQueue }));
+
 
 // لاستقبال الملفات والصور
 app.get("/UploadDatabase", async (req, res) => {
@@ -128,6 +165,20 @@ app.post(
   }
 );
 
+
+
+(async function() {
+  console.log('Starting upload worker process');
+  const worker = initializeWorker(config);
+  
+  // Handle graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('Worker shutting down');
+    await worker.close();
+    process.exit(0);
+  });
+})();
+
 CreateTable();
 
 app.use(limiter);
@@ -149,15 +200,46 @@ app.all("*", (req, res) => {
 
 // close the database connection
 
-io.on("connection", (Socket) => {
+io.on("connection", (socket) => {
+      // Handle client joining a file room for updates
+      socket.on('trackUpload', async (fileId) => {
+        // Join the room for this file
+        socket.join(`file:${fileId}`);
+        console.log(`Socket ${socket.id} tracking upload ${fileId}`);
+        
+        try {
+          // Get current job status if available
+          const processJob = await uploadQueue.getJob(`process_${fileId}`);
+                  
+          if (processJob) {
+            const jobState = await processJob.getState();
+            // Send current status to newly connected client
+            socket.emit('uploadProgress', {
+              fileId,
+              status: jobState,
+              timestamp: Date.now(),
+              
+            });
+          }
+        } catch (error) {
+          console.error(`Error getting job status for ${fileId}:`, error);
+        }
+      });
+      
+      // Handle client untracking an upload
+      socket.on('untrackUpload', (fileId) => {
+        socket.leave(`file:${fileId}`);
+        console.log(`Socket ${socket.id} stopped tracking upload ${fileId}`);
+      });
+      
   // const generateID =  Math.random().toString(36).substring(2, 10);
-  Socket.on("newRome", (nameroom) => {
-    Socket.join(nameroom);
+  socket.on("newRome", (nameroom) => {
+    socket.join(nameroom);
   });
-  ChatOpration(Socket, io);
-  ChatOprationView(Socket, io);
+  ChatOpration(socket, io);
+  ChatOprationView(socket, io);
   //  io.emit("received_message", "data");
-  Socket.on("disconnect", (data) => {
+  socket.on("disconnect", (data) => {
     // Socket.disconnect()
     // console.log("user disconnected", data.id);
   });
@@ -173,6 +255,32 @@ app.all("*", (req, res) => {
     res.type("txt").send("404 Not Found");
   }
 });
+
+
+
+
+// const { GoogleAuth } = require('google-auth-library');
+// async function getAccessToken() {
+//   // قراءة بيانات الاعتماد من ملف JSON
+//   const auth = new GoogleAuth({
+//     keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
+//     scopes: ['https://www.googleapis.com/auth/cloud-platform'], // نطاقات الوصول المطلوبة
+//   });
+
+//   const client = await auth.getClient();
+//   const accessToken = await client.getAccessToken();
+
+//   console.log('Access Token:', accessToken);
+//   return accessToken;
+// }
+
+// getAccessToken().catch(console.error);
+
+
+
+// Error handling middleware
+app.use(handleUploadErrors);
+
 
 server.listen(PORT, () => {
   console.log(PORT, "SERVER ALREADY");

@@ -1,25 +1,40 @@
 const db = require("./sqlite");
 // already
-const insertTablecompany = async (data) => {
-  let V = true;
-  db.serialize(function () {
+const insertTablecompanycompanyRegistration = async (data) => {
+  return new Promise((resolve, reject) => {
+      db.serialize(function () {
     db.run(
-      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,NumberOFbranchesAllowed,NumberOFcurrentBranches,Api) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO companyRegistration (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
-          V = false;
+          resolve(false);
           console.error(err.message);
         } else {
-          V = true;
+          resolve(true);
         }
-        // console.log(`Row with the ID  has been inserted.`);
       }
     );
-    // db.close();
   });
-
-  return V;
+});
+};
+const insertTablecompany = async (data) => {
+  return new Promise((resolve, reject) => {
+      db.serialize(function () {
+    db.run(
+      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?,0,0)`,
+      data,
+      function (err) {
+        if (err) {
+          resolve(false);
+          console.error(err.message);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+});
 };
 const insertTablecompanySub = async (data) => {
   return new Promise((resolve, reject) => {
@@ -237,9 +252,10 @@ const insertTablecompanySubProjectexpense = (data) => {
   });
 };
 const insertTablecompanySubProjectexpenseapi = (data) => {
+  console.log(data);
   db.serialize(function () {
     db.run(
-      `INSERT INTO Expense (Referencenumberfinanc,projectID, Amount, Data,ClassificationName,InvoiceNo,Taxable) VALUES (?,?,?,?,?,?,?)`,
+      `INSERT INTO Expense (Referencenumberfinanc,projectID, Amount, Data,ClassificationName,InvoiceNo,Taxable,Date) VALUES (?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -269,7 +285,7 @@ const insertTablecompanySubProjectREVENUE = (data) => {
 const insertTablecompanySubProjectREVENUEapi = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Revenue (Referencenumberfinanc,projectID, Amount, Data,Bank) VALUES (?,?,?,?,?)`,
+      `INSERT INTO Revenue (Referencenumberfinanc,projectID, Amount, Data,Bank,Date) VALUES (?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -299,7 +315,7 @@ const insertTablecompanySubProjectReturned = (data) => {
 const insertTablecompanySubProjectReturnedapi = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO Returns (Referencenumberfinanc,projectID, Amount, Data) VALUES (?,?,?,?)`,
+      `INSERT INTO Returns (Referencenumberfinanc,projectID, Amount, Data,Date) VALUES (?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -588,6 +604,6 @@ module.exports = {
   insertTableFinancialCustody,
   insertTablecompanySubProjectexpenseapi,
   insertTablecompanySubProjectREVENUEapi,
-  insertTablecompanySubProjectReturnedapi,
+  insertTablecompanySubProjectReturnedapi,insertTablecompanycompanyRegistration
 
 };

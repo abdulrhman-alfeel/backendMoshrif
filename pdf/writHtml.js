@@ -1,3 +1,10 @@
+const Totaltofixt = number => {
+  return new Intl.NumberFormat('en-US', {minimumFractionDigits: 2}).format(
+    parseFloat(number),
+  );
+
+  
+};
 const HtmlContent = (item, home) => {
   const html = `<!DOCTYPE html>
   <html lang="ar">
@@ -209,9 +216,7 @@ const HtmlContent = (item, home) => {
           <td>${pic.items[0].InvoiceNo}</td>
           <td>${pic.items[0].Data}</td>
           <td>${pic.items[0].Date}</td>
-          <td>${parseInt(pic.items[0].Amount)
-            .toFixed(2)
-            .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+          <td>${Totaltofixt(pic.items[0].Amount)}</td>
           <td style="background-color: #447dee; color: #fff;" rowspan=${
             pic.items.filter(
               (i) => i.ClassificationName === pic.ClassificationName
@@ -231,31 +236,22 @@ const HtmlContent = (item, home) => {
          <td>${data.InvoiceNo}</td>
           <td>${data.Data}</td>
           <td>${data.Date}</td>
-          <td>${parseInt(data.Amount)
-            .toFixed(2)
-            .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+          <td>${Totaltofixt(data.Amount)}</td>
           
         </tr>`;
           })}
             </tr>
         <tr>
-                  <td colspan="4">${parseInt(pic.total)
-                    .toFixed(2)
-                    .replace(
-                      /(\d)(?=(\d{3})+(?!\d))/g,
-                      "$1,"
-                    )} :الاجمالي حسب الصنف</td>
+                  <td colspan="4">${Totaltofixt(pic.total)} :الاجمالي حسب الصنف</td>
       </tr>
        `;
         })}
   
   <tr>
   
-  <td style="background-color: #447dee; color: #fff;" colspan="4">${parseInt(
+  <td style="background-color: #447dee; color: #fff;" colspan="4">${Totaltofixt(
     item.reduce((acc, current) => acc + current.total, 0)
-  )
-    .toFixed(2)
-    .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+  )}</td>
           <td style="background-color: #447dee; color: #fff;">اجمالي المصروفات</td>
         </tr>
       
@@ -500,9 +496,7 @@ span{
         <tr>
         <td>${item.Data}</td>
         <td>${item.Date}</td>
-        <td>${parseInt(item.Amount)
-          .toFixed(2)
-          .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+        <td>${Totaltofixt(item.Amount)}</td>
         </tr>
         `;
     })}
@@ -540,9 +534,7 @@ span{
         <td>${item.InvoiceNo}</td>
         <td>${item.Data}</td>
         <td>${item.Date}</td>
-        <td>${parseInt(item.Amount)
-          .toFixed(2)
-          .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+        <td>${Totaltofixt(item.Amount)}</td>
         </tr>
         `;
     })}
@@ -574,9 +566,7 @@ span{
         <tr>
         <td>${item.Data}</td>
         <td>${item.Date}</td>
-        <td>${parseInt(item.Amount)
-          .toFixed(2)
-          .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</td>
+        <td>${Totaltofixt(item.Amount)}</td>
         </tr>
         `;
     })}
@@ -586,28 +576,20 @@ span{
 <div class="footer">
   <div class="footerone">
     <h6>اجمالي مبلغ العهد</h6>
-    <h6 class="number">${parseInt(Totalproject.TotalRevenue)
-      .toFixed(2)
-      .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</h6>
+    <h6 class="number">${Totaltofixt(Totalproject.TotalRevenue)}</h6>
   </div>
   <div class="footerone">
     <h6>اجمالي مبلغ المصروفات</h6>
-    <h6 class="number">${parseInt(Totalproject.TotalExpense)
-      .toFixed(2)
-      .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</h6>
+    <h6 class="number">${Totaltofixt(Totalproject.TotalExpense)}</h6>
   </div>
   <div class="footerone">
     <h6>اجمالي مبلغ المرتجعات</h6>
-    <h6 class="number">${parseInt(Totalproject.TotalReturns)
-      .toFixed(2)
-      .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</h6>
+    <h6 class="number">${Totaltofixt(Totalproject.TotalReturns)}</h6>
   </div>
   </div>
   <div class="footerone">
     <h6>الرصيد المتبقي</h6>
-    <h6 class="number">${parseInt(Totalproject.RemainingBalance)
-      .toFixed(2)
-      .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}</h6>
+    <h6 class="number">${Totaltofixt(Totalproject.RemainingBalance)}</h6>
   </div>
 
         </div>

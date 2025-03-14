@@ -66,7 +66,7 @@ const BringProject = async (req, res) => {
     const IDcompanySub = req.query.IDcompanySub;
     const PhoneNumber = userSession.PhoneNumber;
     const IDfinlty = req.query.IDfinlty;
-
+    let result;
     const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
 
     if (Datausere.job !== "Admin") {
@@ -80,64 +80,36 @@ const BringProject = async (req, res) => {
             parseInt(element.idBrinsh) === parseInt(IDcompanySub)
           ) {
             kinduser = false;
-            const result = await SELECTTablecompanySubProject(
+            result = await SELECTTablecompanySubProject(
               IDcompanySub,
               IDfinlty
             );
-              arrayBrinsh = await BringTotalbalance(
-              IDcompanySub,
-              userSession.IDCompany,
-              result
-            );
+      
           
-          } 
+          } else{
+            if (parseInt(element.idBrinsh) === parseInt(IDcompanySub)) {
+                const where = element.project.map(items => items.idProject).reduce((item,r) => `${String(item) + " , "+ r}`);
+                const typeproject = `AND ca.id IN (${where})`
+                result = await SELECTTablecompanySubProject(
+                  IDcompanySub,
+                  IDfinlty,
+                  'all',
+                  'true',
+                  typeproject
+                );
+              }
+            
+          }
         }))
   
-        if (arrayBrinsh.length <= 0) {
-          if (parseInt(IDfinlty) === 0) {
-            await DeleteTableProjectdataforchat(PhoneNumber);
-            // فلترة المشاريع واستخراجها
-            const arrayData = await filterProjectforaddinsertArray(PhoneNumber, IDcompanySub);
 
-            if (arrayData?.length > 0) {
-              arrayData.forEach(async(pic) =>{
-
-                if(pic?.Nameproject !== undefined && pic?.ProjectID !== undefined){
-                  await insertTableProjectdataforchat([
-                    pic?.ProjectID,
-                    pic?.Nameproject,
-                    PhoneNumber,
-                    'falseProject'
-                  ]);
-                }
-              })
-            }
-          }
-
-
-          const ListData = await BringStageforfilterProject(PhoneNumber, IDfinlty, 'falseProject','ProjectID');
-          for (let index = 0; index < ListData.length; index++) {
-            const item = ListData[index];
-            const result=  await SELECTTablecompanySubProjectLast_id(item.ProjectID, "party");
-            arrayBrinsh.push(result)
-          }
-          
-
-          if (arrayBrinsh.length > 0) {
-            arrayBrinsh = await BringTotalbalance(IDcompanySub, userSession.IDCompany, arrayBrinsh);
-
-          }
-
-        }
       }
     } else {
-      const result = await SELECTTablecompanySubProject(IDcompanySub, IDfinlty);
-      arrayBrinsh = await BringTotalbalance(
-        IDcompanySub,
-        userSession.IDCompany,
-        result
-      );
+      result = await SELECTTablecompanySubProject(IDcompanySub, IDfinlty);
     }
+
+    arrayBrinsh = await BringTotalbalance(IDcompanySub, userSession.IDCompany, result);
+
     const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
 
     const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),IDcompanySub,0,'validityJob');
@@ -650,8 +622,8 @@ const PercentagecalculationforSTage = async (StageID, ProjectID) => {
 // استيراد بيانات المصروفات
 const BringExpense = async (req, res) => {
   try {
-    const idproject = req.query.idproject;
-    const result = await SELECTTablecompanySubProjectexpense(idproject);
+    const {idproject,lastID} = req.query;
+    const result = await SELECTTablecompanySubProjectexpense(idproject,'all',lastID);
     let array = [];
     result.forEach((pic) => {
       array.push({
@@ -669,8 +641,8 @@ const BringExpense = async (req, res) => {
 //  استيراد بيانات العهد
 const BringRevenue = async (req, res) => {
   try {
-    const idproject = req.query.idproject;
-    const result = await SELECTTablecompanySubProjectREVENUE(idproject);
+    const {idproject,lastID} = req.query;
+    const result = await SELECTTablecompanySubProjectREVENUE(idproject,lastID);
     let array = [];
     result.forEach((pic) => {
       array.push({
@@ -688,8 +660,8 @@ const BringRevenue = async (req, res) => {
 //  استيراد بيانات المرتجعات
 const BringReturned = async (req, res) => {
   try {
-    const idproject = req.query.idproject;
-    const result = await SELECTTablecompanySubProjectReturned(idproject);
+    const {idproject,lastID} = req.query;
+    const result = await SELECTTablecompanySubProjectReturned(idproject,lastID);
     let array = [];
     result.forEach((pic) => {
       array.push({
@@ -823,16 +795,7 @@ const BringStatmentFinancialforproject = async (req, res) => {
 // عمليات البحث في قسم المالية
 const SearchinFinance = async (req, res) => {
   try {
-    // console.log(req.query);
-    const projectID = req.query.projectID;
-    const type = req.query.type;
-    const from = req.query.from;
-    const to = req.query.to;
-    const fromtime = req.query.fromtime;
-    const totime = req.query.totime;
-    // {id: 1, name: 'مصروفات'},
-    // {id: 2, name: 'عهد'},
-    // {id: 3, name: 'مرتجعات'},
+    const {projectID,type,from,to,fromtime,totime} = req.query;
     let array = [];
 
     let kind =

@@ -48,6 +48,7 @@ const ClassChatOpration = async (Socket, io) => {
 
 const OpreactionSend_message = async(data)=>{
   let result;
+
   const chackdata = Number(data?.StageID)
     ? await SELECTTableChateStageOtherroad(
         data.idSendr,
@@ -73,10 +74,7 @@ const OpreactionSend_message = async(data)=>{
         result = await SELECTTableChateotherroad(data.idSendr);
       }
 
-      // حذف الملف
-      if (Object.keys(data.File).length > 0) {
-        deleteFileSingle(data.File.name, "upload", data.File.type);
-      }
+
       // "./upload"
 
       if (result) {
@@ -115,9 +113,35 @@ const OpreactionSend_message = async(data)=>{
       kind: "mssageEnd",
     };
   }
+
   return result
 }
 
+
+
+const Chackarrivedmassage = async (req,res) =>{
+  const userSession = req.session.user;
+  const {StageID,idSendr} = req.query;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
+
+  const chackdata = Number(StageID)
+    ? await SELECTTableChateStageOtherroad(
+        idSendr,
+        userSession.userName,
+        "idSendr=? AND Sender=?"
+      )
+    : await SELECTTableChateStageOtherroad(
+        idSendr,
+        userSession.userName,
+        "idSendr=? AND Sender=?",
+        "Chat"
+      );
+      res.send({success:chackdata}).status(200)
+
+}
 
 
   const PostFilemassage = async (req, res) => {
@@ -129,15 +153,20 @@ const OpreactionSend_message = async(data)=>{
       }
   
       const data = JSON.parse(req.body.data);
+      const result = await OpreactionSend_message(data);
+      
+      res.status(200).send({ success: "Full request" ,chatID:result.chatID});
+
+      io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
+      .timeout(50)
+      .emit("received_message", result);
+
       await uploaddata(videofile);
       // Check if the uploaded file is a video
       if (videofile.mimetype === "video/mp4" || videofile.mimetype === "video/quicktime") {
         const timePosition = "00:00:00.100";
-        let filename = 
-          videofile.filename.match(/\.([^.]+)$/)[1] === "MOV" ||
-          videofile.filename.match(/\.([^.]+)$/)[1] === "mov"
-            ? String(videofile.filename).replace("MOV", "png")
-            : String(videofile.filename).replace("mp4", "png");
+        let matchvideo = videofile.filename.match(/\.([^.]+)$/)[1];
+        let filename = String(videofile.filename).replace(matchvideo, "png");
   
         const pathdir = path.dirname(videofile.path);
         const tempFilePathtimp = `${pathdir}/${filename}`;
@@ -145,18 +174,11 @@ const OpreactionSend_message = async(data)=>{
         await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
         await bucket.upload(tempFilePathtimp);
       }
-  
+      // حذف الملف
+      await deleteFileSingle(data.File.name, "upload", data.File.type);
       
-      const result = await OpreactionSend_message(data);
-      
-      res.status(200).send({ success: "Full request" });
-
-      io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
-      .timeout(50)
-      .emit("received_message", result);
     } catch (error) {
-      // console.error(error);
-      res.status(500).send({ success: "فشلة عملية رفع الملف" });
+      res.status(402).send({ success: "فشلة عملية رفع الملف" });
     }
   };
 const Oprationditals = async (data) => {
@@ -371,6 +393,8 @@ module.exports = {
   Oprationditals,
   ClassViewChat,
   ClassreceiveMessageViews,
-  PostFilemassage
+  PostFilemassage,
+  Chackarrivedmassage,
+  OpreactionSend_message
 
 };

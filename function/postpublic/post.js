@@ -9,9 +9,7 @@ const {
   SELECTTablePostPublicOneObject,
   SELECTTablecompanySub,
 } = require("../../sql/selected/selected");
-const ffmpeg = require("../../middleware/ffmpeg");
-const fs = require("fs");
-const path = require("path");
+const { SELECTTableusersCompanyonObject } = require("../../sql/selected/selectuser");
 const insertPostURL = async (items) => {
   try {
     if (Object.entries(items.File).length > 0) {
@@ -35,46 +33,6 @@ const insertPostURL = async (items) => {
     console.log(err.message);
   }
 };
-// const Screenshot = async (fileName) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const file = bucket.file(fileName);
-//       // console.log(fileName, "find");
-//       const tempFilePath = path.join(__dirname, "../../upload/", fileName);
-//       const filesImage = `image${String(fileName).replace("mp4", "png")}`;
-//       const tempFilePathtimp = path.join(__dirname, "../../temp/", filesImage);
-//       const timePosition = "00:00:00.100";
-//       const filename = `temp/${filesImage}`;
-//       const filePath = path.join(__dirname, "../../upload/", fileName);
-
-//       const finds = checkFileExistsSync(fileName, filePath);
-
-//       if (finds) {
-//         await fFmpegFunction(filename, filePath, timePosition);
-//         resolve(filesImage);
-//       } else {
-//         file.download({ destination: tempFilePath }, async (err) => {
-//           await fFmpegFunction(filename, tempFilePath, timePosition);
-//           resolve(filesImage);
-//         });
-//       }
-//       const findsImage = checkFileExistsSync(
-//         tempFilePathtimp,
-//         tempFilePathtimp
-//       );
-//       if (findsImage) {
-//         try {
-//           bucket.upload(tempFilePathtimp);
-//         } catch (error) {
-//           console.log(error);
-//         }
-//       }
-//     } catch (error) {
-//       console.log(error);
-//       reject(error);
-//     }
-//   });
-// };
 
 const BringPost = async (req, res) => {
   try {
@@ -82,6 +40,11 @@ const BringPost = async (req, res) => {
     const PostID = req.query.PostID;
     const user = req.query.user;
     const now = new Date();
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
 
     // Extract day, month, and year from the Date object
     const day = String(now.getUTCDate()).padStart(2, "0"); // Day of the month (01 to 31)
@@ -90,30 +53,15 @@ const BringPost = async (req, res) => {
 
     // Format the date as "DD-MM-YY"
     const formattedDate = `${year}-${month}-${day}`;
-    const result = await SELECTTablePostPublic(id, formattedDate, PostID);
-    let arrayPosts = [];
-    for (let index = 0; index < result.length; index++) {
-      const element = result[index];
-      const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
-        element.PostID,
-        "Comment"
-      );
-      const Likeuser = await SELECTTableLikesPostPublicotherroad(
-        element.PostID,
-        user
-      );
-      const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(element.PostID, "Likes");
-      // console.log(Likeuser, "hhhhhh", element.PostID, user);
-      let data = {
-        ...element,
-        Likeuser:
-          Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
-        Comment: Comment["COUNT(userName)"],
-        Likes: Likes["COUNT(userName)"],
-      };
-      arrayPosts.push(data);
+    let where ='';
+
+    if(userSession.jobdiscrption !== 'موظف'){
+    const arrayes= await BringPostforUsersinCompany(userSession.PhoneNumber);
+    where = `AND PR.id= ${arrayes}`
     }
 
+
+    const arrayPosts = await BringPostforEmploaysCompany(id, formattedDate, PostID,user,where);
     res.send({ success: "تمت العملية بنجاح", data: arrayPosts }).status(200);
     // console.log(arrayPosts);
   } catch (error) {
@@ -126,6 +74,7 @@ const BringCommentinsert = async (req, res) => {
   try {
     const PostId = req.query.PostID;
     const count = req.query.count;
+
     const result = await SELECTTableCommentPostPublic(PostId, count);
     res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
   } catch (error) {
@@ -134,9 +83,76 @@ const BringCommentinsert = async (req, res) => {
   }
 };
 
+
+// وظيفة جلب المنشورات لاعضاء الشركة 
+const BringPostforEmploaysCompany =async (id, formattedDate, PostID,user,where ="") =>{
+  try{   
+    const result = await SELECTTablePostPublic(id, formattedDate, PostID,where);
+    let arrayPosts = [];
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
+        element.PostID,
+        "Comment"
+      );
+      const Likeuser = await SELECTTableLikesPostPublicotherroad(
+        element.PostID,
+        user
+      );
+      const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(element.PostID, "Likes");
+
+      let data = {
+        ...element,
+        Likeuser:
+          Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
+        Comment: Comment["COUNT(userName)"],
+        Likes: Likes["COUNT(userName)"],
+      };
+      arrayPosts.push(data);
+    }
+    return arrayPosts;
+  }catch(error){console.log(error)}
+}
+
+
+
+const BringPostforUsersinCompany = async (PhoneNumber) => {
+  try{
+    
+    const arrayData = await filterProjectforusers(PhoneNumber);
+    const where = arrayData.reduce((item,r) => `${String(item) + " AND "+ r}`);
+    return where;
+  }catch(error){
+    console.log(error);
+  };
+}
+
+
+const filterProjectforusers = (PhoneNumber, idBrinsh = 0) => {
+  try {
+    return new Promise(async (resolve, reject) => {
+      const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
+
+      let validity =
+        Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
+      let arrayData = [];
+        for (let index = 0; index < validity?.length; index++) {
+          const element = validity[index];
+          for (let index = 0; index < element.project.length; index++) {
+                const elementProject = element.project[index];
+                  arrayData.push(elementProject.idProject);
+              }
+        }
+        resolve(arrayData);
+     
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const SearchPosts = async (req, res) => {
   try {
-    // console.log(req.query);
     const id = req.query.CompanyID;
     const DateStart = req.query.DateStart;
     const DateEnd = req.query.DateEnd;
@@ -147,6 +163,19 @@ const SearchPosts = async (req, res) => {
     const PostID = req.query.PostID;
     const user = req.query.user;
 
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+
+    let where ='';
+
+    if(userSession.jobdiscrption !== 'موظف'){
+    const arrayes= await BringPostforUsersinCompany(userSession.PhoneNumber);
+    where = `AND PR.id= ${arrayes}`
+    };
+
     const result = await SELECTTablePostPublicSearch(
       id,
       DateStart,
@@ -155,9 +184,11 @@ const SearchPosts = async (req, res) => {
       nameProject,
       userName,
       branch,
-      parseInt(PostID)
+      parseInt(PostID),
+      where
     );
     let arraynew = [];
+
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
       const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(

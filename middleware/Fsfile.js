@@ -27,10 +27,10 @@ async function deleteFilesInFolder(folderPath) {
 const deleteFileSingle = async (Pathfolder, folderPath, type="jpge") => {
   try {
     if (String(type).includes("video")) {
-      const filename =
-        Pathfolder.match(/\.([^.]+)$/)[1] === "MOV"
-          ? String(Pathfolder).replace("MOV", "png")
-          : String(Pathfolder).replace("mp4", "png");
+      let matchvideo = Pathfolder.match(/\.([^.]+)$/)[1];
+
+      const filename = String(Pathfolder).replace(matchvideo, "png");
+
       await implmentOpreationSingle(folderPath, Pathfolder);
       
       const timeout = setTimeout(async()=>await implmentOpreationSingle(folderPath, filename),1500);

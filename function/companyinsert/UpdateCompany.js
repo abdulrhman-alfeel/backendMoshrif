@@ -1,38 +1,31 @@
-const { DeleteTableFinancialCustody } = require("../../sql/delete");
-const {  SELECTTablecompanyName } = require("../../sql/selected/selected");
+const { DeleteTableFinancialCustody, DeleteTablecompanySubProjectall } = require("../../sql/delete");
+const { insertTableuserComppany, insertTablecompany } = require("../../sql/INsertteble");
+const {  SELECTTablecompanyName, SELECTTablecompanyRegistration, SelectVerifycompanyexistencePhonenumber, SelectVerifycompanyexistence } = require("../../sql/selected/selected");
+const { SELECTTableusersCompanyVerification } = require("../../sql/selected/selectuser");
 
 const {
   UpdateTablecompanySub,
   UpdateTablecompany,
   UPDATETableFinancialCustody,
   UpdateTableinnuberOfcurrentBranchescompany,
+  UpdateTablecompanyRegistration,
 } = require("../../sql/update");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const bcrypt = require('bcrypt');
 
 const UpdateDataCompany = async (req, res) => {
-  const NameCompany = req.body.NameCompany;
-  const BuildingNumber = req.body.BuildingNumber;
-  const StreetName = req.body.StreetName;
-  const NeighborhoodName = req.body.NeighborhoodName;
-  const PostalCode = req.body.PostalCode;
-  const City = req.body.City;
-  const Country = req.body.Country;
-  const TaxNumber = req.body.TaxNumber;
-  const Cost = req.body.Cost;
+  const {NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Cost,id} = req.body;
 
   // console.log(req.body);
-  const id = req.body.id;
   if (
-    String(NameCompany).length > 0 &&
-    String(BuildingNumber).length > 0 &&
-    String(StreetName).length > 0 &&
-    String(NeighborhoodName).length > 0 &&
-    String(PostalCode).length > 0 &&
-    String(City).length > 0 &&
-    String(Country).length > 0 &&
-    String(TaxNumber).length > 0 &&
-    String(id)
+    NameCompany?.length > 0 &&
+    BuildingNumber?.length > 0 &&
+    StreetName?.length > 0 &&
+    NeighborhoodName?.length > 0 &&
+    PostalCode?.length > 0 &&
+    City?.length > 0 &&
+    Country?.length > 0 &&
+    TaxNumber?.length > 0 
   ) {
     await UpdateTablecompany([
       NameCompany,
@@ -72,9 +65,96 @@ const UpdateApiCompany = async (req,res) => {
   });
 }else{
   res.send({success:'لاتوجد الشركه المطلوبه'}).status(402);
+}
+}
+
+const AgreedRegistrationCompany = async (req,res) => {
+  try{
+  const id= req.query.id;
+  const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
+  if(Boolean(dataCompany)){
+    await bcrypt.hash(`${dataCompany?.CommercialRegistrationNumber}`, 10, async function(err, hash) {
+        await insertTablecompany([
+        dataCompany?.CommercialRegistrationNumber,
+        dataCompany?.NameCompany,
+        dataCompany?.BuildingNumber,
+        dataCompany?.StreetName,
+        dataCompany?.NeighborhoodName,
+        dataCompany?.PostalCode,
+        dataCompany?.City,
+        dataCompany?.Country,
+        dataCompany?.TaxNumber,
+        hash
+      ]);
+      const checkCompany = await SelectVerifycompanyexistence(
+        dataCompany?.CommercialRegistrationNumber
+      );
+      if(Boolean(checkCompany)){
+        await insertTableuserComppany([
+          checkCompany?.id,
+          dataCompany?.userName,
+          0,
+          dataCompany?.PhoneNumber,
+          "Admin",
+          "موظف",
+          "Admin",
+          JSON.stringify([]),
+        ]);
+        await DeleteTablecompanySubProjectall("companyRegistration","id",id);
+        res.send({success:'تمت العملية بنجاح',data:`${hash}`}).status(200);
+      }
+  });
+  }
+}catch(error){
+  res.send({success:'فشل تنفيذ العملية'}).status(402);
+}
+}
+
+const UpdatedataRegistration =  async (req,res) =>{
+  try{
+    const {CommercialRegistrationNumber,NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName,id} = req.body;
+    let number = String(PhoneNumber);
+    if (number.startsWith(0)) {
+      number = number.slice(1);
+    }
+    const checkVerifction = await SelectVerifycompanyexistence(
+      CommercialRegistrationNumber,"companyRegistration"
+    );
+    const verificationFinduser = await SELECTTableusersCompanyVerification(
+      number
+    );
+
+    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(number)
+    if(verificationFinduser.length <= 0 ){
+      if(!Boolean(findRegistrioncompany) || Boolean(findRegistrioncompany)  && findRegistrioncompany.CommercialRegistrationNumber === CommercialRegistrationNumber || Boolean(findRegistrioncompany) 
+        && findRegistrioncompany.CommercialRegistrationNumber !== CommercialRegistrationNumber && !Boolean(checkVerifction)   ){
+        await UpdateTablecompanyRegistration([     
+          NameCompany,
+          BuildingNumber,
+          StreetName,
+          NeighborhoodName,
+          PostalCode,
+          City,
+          Country,
+          TaxNumber,
+          number,
+          userName,
+          String(Api),
+          id]);
+        res.send({success:'تمت العملية بنجاح'}).status(200);
+      }else{
+        res.send({success:'الرقم مستخدم لاضافة حساب شركة اخرى '}).status(200);
+      }
+    }else{
+      res.send({success:'الرقم مستخدم بالفعل في حساب باحدى الشركات '}).status(200);
+    }
+  }catch(error){
+    console.log(error)}
+
 
 }
-}
+
+
 
 const UpdateCompanybrinsh = async (req, res) => {
   const NumberCompany = req.body.NumberCompany;
@@ -166,9 +246,20 @@ const Updatecovenantrequests = async (req, res) => {
 
 const Deletecovenantrequests = async (req, res) => {
   try {
-    const id = req.query.id;
-    await DeleteTableFinancialCustody([id]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const PhoneNumber = userSession.PhoneNumber;
+    if(PhoneNumber !== "502464530"){
+      const id = req.query.id;
+      await DeleteTableFinancialCustody([id]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+    }else{
+      res.send({ success: "لايمكنك  القيام بالحذف" }).status(200);
+
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(500);
@@ -236,5 +327,7 @@ module.exports = {
   Acceptandrejectrequests,
   Updatecovenantrequests,
   Deletecovenantrequests,
-  UpdateApiCompany
+  UpdateApiCompany,
+  AgreedRegistrationCompany,
+  UpdatedataRegistration,
 };

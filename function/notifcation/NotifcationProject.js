@@ -1069,7 +1069,12 @@ const Bringtokenuser = async (
     users
       .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
-        if (wheretype === "PR.id =?") {
+        if(type === 'PublicationsBransh' || wheretype === "RE.CommercialRegistrationNumber=?"){
+          if (item.jobdiscrption === "موظف") {
+            token.push(item.token);
+            arraynameuser.push(item.userName);
+          }
+        }else if (wheretype === "PR.id =?") {
           token.push(item.token);
           arraynameuser.push(item.userName);
         } else {

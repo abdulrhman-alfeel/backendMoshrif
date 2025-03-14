@@ -7,11 +7,22 @@ const {
   SELECTTablecompanySubLinkevaluation,
   SELECTTableFinancialCustody,
   SELECTTableMaxFinancialCustody,
+  SELECTTablecompanyRegistrationall,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyonObject,
 } = require("../../sql/selected/selectuser");
 
+const bringDataCompanyRegistration = async (req, res) => {
+  try {
+    const {type,LastID} = req.query;
+    const company = await SELECTTablecompanyRegistrationall(type,LastID);
+    res.send({ masseg: "sucssfuly", data: company }).status(200);
+  } catch (err) {
+    console.log(err);
+    res.send({ masseg: "sucssfuly" }).status(400);
+  }
+};
 const bringDataCompany = async (req, res) => {
   try {
     // console.log(req.query);
@@ -20,7 +31,7 @@ const bringDataCompany = async (req, res) => {
     res.send({ masseg: "sucssfuly", data: company }).status(200);
   } catch (err) {
     console.log(err);
-    res.send({ masseg: "sucssfuly", data: company }).status(400);
+    res.send({ masseg: "فشل تنفيذ العملية" }).status(402);
   }
 };
 
@@ -118,24 +129,25 @@ const BringDataFinancialCustody = async (req, res) => {
             userSession.PhoneNumber
           )
         : "";
+        let plase = parseInt(LastID)  === 0 ? ">" :"<" ;
     switch (kindRequest) {
       case "معلقة":
         Bringaway =
           kindOpreation === "all"
-            ? `OrderStatus='false' AND RejectionStatus='false' AND fi.id > ${LastID} `
-            : `${Validityuser} AND OrderStatus='false' AND RejectionStatus='false' AND fi.id > ${LastID}`;
+            ? `OrderStatus='false' AND RejectionStatus='false' AND fi.id ${plase} ${LastID} `
+            : `${Validityuser} AND OrderStatus='false' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
         break;
       case "مغلقة":
         Bringaway =
           kindOpreation === "all"
-            ? `OrderStatus='true' AND fi.id > ${LastID}`
-            : `${Validityuser} AND OrderStatus='true' AND RejectionStatus='false' AND fi.id > ${LastID}`;
+            ? `OrderStatus='true' AND fi.id ${plase} ${LastID}`
+            : `${Validityuser} AND OrderStatus='true' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
         break;
       case "مرفوضة":
         Bringaway =
           kindOpreation === "all"
-            ? `RejectionStatus='true' AND fi.id > ${LastID}`
-            : `${Validityuser} AND RejectionStatus='true' AND fi.id > ${LastID}`;
+            ? `RejectionStatus='true' AND fi.id ${plase} ${LastID}`
+            : `${Validityuser} AND RejectionStatus='true' AND fi.id ${plase} ${LastID}`;
         break;
     }
     const result = await SELECTTableFinancialCustody(IDCompany, Bringaway);
@@ -167,4 +179,5 @@ module.exports = {
   biringDatabrinshCompany,
   bringDataCompany,
   BringDataFinancialCustody,
+  bringDataCompanyRegistration
 };

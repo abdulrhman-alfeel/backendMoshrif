@@ -1,6 +1,7 @@
 const {
   insertTableuserComppany,
 } = require("../../sql/INsertteble");
+const { SelectVerifycompanyexistencePhonenumber } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyVerification,
   SELECTTableusersCompany,
@@ -24,7 +25,8 @@ const userCompany = async (req, res) => {
     const verificationFinduser = await SELECTTableusersCompanyVerification(
       number
     );
-    if (verificationFinduser.length <= 0) {
+    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(number)
+    if (verificationFinduser.length <= 0 && findRegistrioncompany === undefined) {
       await insertTableuserComppany([
         IDCompany,
         userName,
@@ -43,7 +45,7 @@ const userCompany = async (req, res) => {
     } else {
       res
         .send({
-          success: "المستخدم موجود بالفعل",
+          success: findRegistrioncompany !== undefined ?  "الرقم موجود في قائمة انتظار تسجيل حساب شركات" :"المستخدم موجود بالفعل",
         })
         .status(400);
     }
@@ -51,7 +53,7 @@ const userCompany = async (req, res) => {
     console.log(err);
     res
       .send({
-        success: false,
+        success: 'فشل في تنفيذ العملية',
       })
       .status(400);
   }

@@ -6,9 +6,15 @@ const db = require("./sqlite");
 //  ALTER TABLE Requests ADD COLUMN checkorderout TEXT NULL DEFAULT 'false'
 
 const CreateTable = () => {
+  db.run(`CREATE TABLE IF NOT EXISTS companyRegistration (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CommercialRegistrationNumber INTEGER NOT NULL,NameCompany TEXT NOT NULL,
+        BuildingNumber INTEGER NOT NULL,StreetName TEXT NOT NULL,
+        NeighborhoodName TEXT NOT NULL, PostalCode TEXT NOT NULL, City TEXT NOT NULL,Country TEXT NOT NULL,TaxNumber INTEGER NOT NULL,SubscriptionStartDate DATE NULL DEFAULT CURRENT_DATE,Api TEXT NULL DEFAULT 'false',PhoneNumber TEXT NOT NULL,userName TEXT NOT NULL
+      )`);
   db.run(`CREATE TABLE IF NOT EXISTS company (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-    CommercialRegistrationNumber INTEGER NOT NULL,NameCompany TEXT NOT NULL,
+        CommercialRegistrationNumber INTEGER NOT NULL,NameCompany TEXT NOT NULL,
         BuildingNumber INTEGER NOT NULL,StreetName TEXT NOT NULL,
         NeighborhoodName TEXT NOT NULL, PostalCode TEXT NOT NULL, City TEXT NOT NULL,Country TEXT NOT NULL,TaxNumber INTEGER NOT NULL,NumberOFbranchesAllowed INTEGER NOT NULL , NumberOFcurrentBranches INTEGER NOT NULL,SubscriptionStartDate DATE NULL DEFAULT CURRENT_DATE,SubscriptionEndDate DATE NULL,Api TEXT NULL,Cost INTEGER NULL DEFAULT 0,DisabledFinance TEXT NULL DEFAULT 'true'
       )`);
@@ -32,16 +38,11 @@ const CreateTable = () => {
   );
 
   // templet ****************************************
-  db.run(
-    `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL 
-  )`
-  );
+  db.run(`CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`)
 
-  db.run(
-    `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`
-  );
+  db.run(`CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`);
 
-  // CUSTOMER TEBLE*************************************
+  // CUSTOMER TEBLE *************************************
   db.run(
     `CREATE TABLE IF NOT EXISTS StagesCUST(StageCustID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER  NULL ,ProjectID INTEGER NULL ,Type nvarchar[50]  NULL,StageName TEXT NOT NULL, Days INTEGER NULL,StartDate DATE NOT NULL, EndDate DATE NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL ,Difference decimal NULL,Done NULL DEFAULT 'false',NoteOpen TEXT NULL,
     OpenBy nvarchar[50] NULL,NoteClosed TEXT NULL,
@@ -119,8 +120,8 @@ const CreateTable = () => {
     ,ApprovalDate DATE NULL,OrderStatus TEXT NULL DEFAULT 'false',RejectionStatus TEXT NULL DEFAULT 'false', Reasonforrejection TEXT NULL  , Dateofrejection DATE NULL)`
   )
   // db.run(`
-  //   ALTER TABLE companySubprojects 
-  //   ADD COLUMN Referencenumber INTEGER NULL;`)
+  //   ALTER TABLE Expense 
+  //   ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
   // db.run(`
   //   ALTER TABLE Expense 
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)

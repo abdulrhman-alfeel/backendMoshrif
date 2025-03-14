@@ -14,20 +14,37 @@ async function uploaddata(file) {
   } catch (error) {
     console.log(error);
   }
-  // const blobStream = blob.createWriteStream({
-  //   metadata:{
-  //     contentType:file.mimetype,
-  //   }
-  // });
 
-  // blobStream.on("error",(err)=>{
-  //   console.log(err)
-  // })
+}
 
-  // blobStream.on("finish",()=>{
-  //   console.log('finsh upload filed');
-  // });
-  // blobStream.end(file.path)
+async function DeleteBucket (nameOld){
+  try {
+    const file = bucket.file(nameOld);
+
+    await file
+    .delete()
+    .then(() => {
+      // console.log(`File ${nameOld} deleted from bucket`);
+    })
+    .catch((err) => {
+      console.log(`Error deleting file: ${err}`);
+    });  } catch (error) {
+    console.log(error);
+  }
+}
+async function RenameBucket (nameOld,name){
+  try {
+    const file = bucket.file(nameOld);
+    await file
+    .rename(name)
+    .then(() => {
+      // console.log(`File renamed to ${name}`);
+    })
+    .catch((err) => {
+      console.error(`Error renaming file: ${err}`);
+    });  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function checkIfFileExists(fileName) {
@@ -50,4 +67,4 @@ async function checkIfFileExists(fileName) {
   });
 }
 
-module.exports = { uploaddata, bucket, checkIfFileExists };
+module.exports = { uploaddata, bucket, checkIfFileExists,DeleteBucket,RenameBucket };

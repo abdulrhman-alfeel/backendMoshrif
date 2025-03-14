@@ -51,6 +51,29 @@ const UpdateTablecompany = (data) => {
     }
   });
 };
+const UpdateTablecompanyRegistration = (data) => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          `UPDATE companyRegistration SET NameCompany=?, BuildingNumber=?, StreetName=?,NeighborhoodName=?,PostalCode=?,City=?,Country=?,TaxNumber=?,PhoneNumber=?,userName=? ,Api=? WHERE id=?`,
+          data,
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
 const UpdateTableinnuberOfcurrentBranchescompany = (data,type="NumberOFcurrentBranches") => {
   return new Promise((resolve, reject) => {
     try {
@@ -378,7 +401,23 @@ const UPDATETablecompanySubProjectexpense = (data) => {
 const UPDATETablecompanySubProjectexpenseapi = (data) => {
 
   db.run(
-    `UPDATE Expense SET Amount=?, Data=?,ClassificationName=? WHERE Referencenumberfinanc=? AND EXISTS (
+    `UPDATE Expense SET Amount=?, Data=?,ClassificationName=?,Date=?,Taxable=?,InvoiceNo=? WHERE Referencenumberfinanc=? AND EXISTS (
+    SELECT 1
+    FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
+    ) `,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    }
+  );
+};
+const UPDATETablecompanySubProjectexpenseInvoiceNoapi = (data) => {
+
+  db.run(
+    `UPDATE Expense SET InvoiceNo=? WHERE Referencenumberfinanc=? AND EXISTS (
     SELECT 1
     FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
     ) `,
@@ -408,7 +447,7 @@ const UPDATETablecompanySubProjectREVENUE = (data) => {
 
 const UPDATETablecompanySubProjectREVENUEapi = (data) => {
   db.run(
-    `UPDATE Revenue SET  Amount=?, Data=?,Bank=? WHERE Referencenumberfinanc=? AND EXISTS (
+    `UPDATE Revenue SET  Amount=?, Data=?,Bank=?,Date=? WHERE Referencenumberfinanc=? AND EXISTS (
     SELECT 1
     FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
     )`,
@@ -455,7 +494,7 @@ const UPDATETablecompanySubProjectReturned = (data) => {
 };
 const UPDATETablecompanySubProjectReturnedapi = (data) => {
   db.run(
-    `UPDATE Returns SET Amount=?, Data=? WHERE  Referencenumberfinanc=? AND EXISTS (
+    `UPDATE Returns SET Amount=?, Data=?,Date=? WHERE  Referencenumberfinanc=? AND EXISTS (
     SELECT 1
     FROM companySubprojects  PR LEFT JOIN companySub RE ON  PR.IDcompanySub = RE.id WHERE RE.NumberCompany=? AND PR.IDcompanySub=?  AND PR.Referencenumber=?
     )`,
@@ -670,6 +709,8 @@ module.exports = {
   UPDATETablecompanySubProjectREVENUEapi,
   UPDATETablecompanySubProjectReturnedapi,
   UPDATETablecompanySubProjectFinancial,
-  UpdateTablecompanySubProjectapi
+  UpdateTablecompanySubProjectapi,
+  UpdateTablecompanyRegistration,
+  UPDATETablecompanySubProjectexpenseInvoiceNoapi
   
 };

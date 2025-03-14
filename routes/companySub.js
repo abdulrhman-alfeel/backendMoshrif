@@ -16,8 +16,9 @@ const {
   AddfileinFolderHomeinArchive,
   InsertDatainTableRequests,
   projectBrinshv2,
+  AddORCanselAchievmentarrayall,
 } = require("../function/companyinsert/insertProject");
-const uploads = require("../middleware/uploads");
+const {uploads} = require("../middleware/uploads");
 const {
   BringProject,
   BringProjectindividual,
@@ -84,6 +85,7 @@ router.route("/ClassCloaseOROpenStage").post(ClassCloaseOROpenStage);
 router.route("/NotesStage").post(uploads.single("image"), NotesStage);
 router.route("/NotesStageSub").post(uploads.any("image"),NotesStageSub);
 router.route("/AddORCanselAchievment").post(AddORCanselAchievment);
+router.route("/AddORCanselAchievmentarrayall").post(AddORCanselAchievmentarrayall);
 router.route("/ExpenseInsert").post(uploads.any("image"), ExpenseInsert);
 router.route("/RevenuesInsert").post(uploads.any("image"), RevenuesInsert);
 router.route("/ReturnsInsert").post(uploads.any("image"), ReturnsInsert);

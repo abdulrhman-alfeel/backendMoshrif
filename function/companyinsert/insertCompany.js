@@ -3,6 +3,7 @@ const {
   insertTablecompanySub,
   insertTableLinkevaluation,
   insertTableFinancialCustody,
+  insertTablecompanycompanyRegistration,
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubID,
@@ -13,6 +14,7 @@ const {
   SELECTTablecompany,
   SELECTTableMaxFinancialCustody,
 } = require("../../sql/selected/selected");
+const { SELECTTableusersCompanyVerification } = require("../../sql/selected/selectuser");
 const {
   UpdateTableinnuberOfcurrentBranchescompany,
   UpdateTableLinkevaluation,
@@ -25,34 +27,30 @@ const bcrypt = require('bcrypt');
 // اضافة شركة جديدة
 const insertDataCompany = async (req, res) => {
   try {
-    const CommercialRegistrationNumber = req.body.CommercialRegistrationNumber;
-    const NameCompany = req.body.NameCompany;
-    const BuildingNumber = req.body.BuildingNumber;
-    const StreetName = req.body.StreetName;
-    const NeighborhoodName = req.body.NeighborhoodName;
-    const PostalCode = req.body.PostalCode;
-    const City = req.body.City;
-    const Country = req.body.Country;
-    const TaxNumber = req.body.TaxNumber;
-    const NumberOFbranchesAllowed = req.body.NumberOFbranchesAllowed;
-    const NumberOFcurrentBranches = req.body.NumberOFcurrentBranches;
-
-    // console.log(req.body);
+    const {CommercialRegistrationNumber,NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName} = req.body;
     const checkVerifction = await SelectVerifycompanyexistence(
-      CommercialRegistrationNumber
+      CommercialRegistrationNumber,"companyRegistration"
     );
-    if (checkVerifction !== undefined) {
-      res
-        .send({
-          success: "الشركة موجودة بالفعل",
-        })
-        .status(200);
-    } else {
+    let number = String(PhoneNumber);
+    if (number.startsWith(0)) {
+      number = number.slice(1);
+    }
+    if(Boolean(CommercialRegistrationNumber),Boolean(NameCompany),Boolean(BuildingNumber),Boolean(StreetName),Boolean(NeighborhoodName),Boolean(PostalCode),Boolean(City),Boolean(Country),Boolean(TaxNumber),Boolean(Api),Boolean(PhoneNumber),Boolean(userName)){
 
-
-      bcrypt.hash(`${CommercialRegistrationNumber}`, 10,async function(err, hash) {
-    
-        await insertTablecompany([
+      const verificationFinduser = await SELECTTableusersCompanyVerification(
+        number
+      );
+      if (checkVerifction !== undefined) {
+        return res
+          .send({
+            success: "الشركة موجودة بالفعل",
+          })
+          .status(200);
+      } else  if (verificationFinduser.length > 0){
+        res.send({success:'الرقم مستخدم بالفعل في حساب باحدى الشركات '}).status(200);
+  
+      }else{
+        await insertTablecompanycompanyRegistration([
           CommercialRegistrationNumber,
           NameCompany,
           BuildingNumber,
@@ -62,23 +60,36 @@ const insertDataCompany = async (req, res) => {
           City,
           Country,
           TaxNumber,
-          NumberOFbranchesAllowed,
-          NumberOFcurrentBranches,
-          hash
+          String(Api),
+          number,
+          userName
         ]);
-        // console.log(tableCompany);
         res
           .send({
-            success: true,
-            data: hash,
+            success: "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات ",
           })
           .status(200);
-    });
+      
+      }
+    }else{
+      res
+      .send({
+        success: "يجب اكمال البيانات ",
+      })
+      .status(200);
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+    .send({
+      success: "فشل تنفيذ العملية",
+    })
+    .status(402);
+
   }
 };
+
+
 
 //  اضافة فرع جديد
 const inseertCompanybrinsh = async (req, res) => {

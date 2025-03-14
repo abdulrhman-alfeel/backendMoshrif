@@ -11,7 +11,7 @@ const { HtmlContent, HtmlStatmentall } = require("./writHtml");
 //  كشف حساب كامل للمصروفات
 const StatmentExpensePdf = async (idproject, namefile) => {
   const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
-  const dataSub = await SELECTTablecompanySubProjectexpense(idproject);
+  const dataSub = await SELECTTablecompanySubProjectexpense(idproject,'pdf');
   const dates = dataSub.map((item) => item.ClassificationName);
 
   const uniqueDates = [...new Set(dates)];
@@ -36,9 +36,9 @@ const StatmentExpensePdf = async (idproject, namefile) => {
 const StatmentAllpdf = async (idproject, namefile) => {
   try {
     const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
-    const dataExpense = await SELECTTablecompanySubProjectexpense(idproject);
-    const dataRevenue = await SELECTTablecompanySubProjectREVENUE(idproject);
-    const dataReturned = await SELECTTablecompanySubProjectReturned(idproject);
+    const dataExpense = await SELECTTablecompanySubProjectexpense(idproject,'pdf');
+    const dataRevenue = await SELECTTablecompanySubProjectREVENUE(idproject,'pdf');
+    const dataReturned = await SELECTTablecompanySubProjectReturned(idproject,'pdf');
     const Totalproject = await SELECTSUMAmountandBring(idproject);
 
     const htmlContent = await HtmlStatmentall(

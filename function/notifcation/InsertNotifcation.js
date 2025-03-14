@@ -58,7 +58,6 @@ const BringDataNotifcation = async (req, res) => {
     const result = await SELECTTableNavigation([parseInt(LastID)]);
     
     const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
-
     res
       .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
       .status(200);
@@ -80,7 +79,6 @@ const FilterNotifcation = async (req, res) =>{
         console.log("Invalid session");
       }
       const result = await SELECTTableNavigation([parseInt(LastID),from,to],`Date(DateDay) BETWEEN ?  AND ?`);
-     console.log(userSession.userName);
       const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
       res
         .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
@@ -102,6 +100,7 @@ const Sortdatauserfromnotification = (result,userName) =>{
       // console.log(pic.tokens, userSession?.IDCompany);
 
       let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
+      // console.log(pic,Token);
       Token.forEach(async (item) => {
         if (item === userName) {
           const dataNotifction = JSON.parse(pic.data);
