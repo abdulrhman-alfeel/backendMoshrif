@@ -559,7 +559,7 @@ const SELECTTablecompanySubProjectStageCUST = (
 ) => {
   let stringSql =
     kind === "all"
-      ? `SELECT ${type} FROM StagesCUST WHERE ProjectID=?`
+      ? `SELECT ${type} FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE ProjectID=?`
       : kind === "CountDate"
       ? `SELECT EndDate , StartDate FROM StagesCUST WHERE ProjectID=?`
       : `SELECT * FROM StagesCUST WHERE ProjectID=? AND trim(StageName)=trim(?)`;
@@ -587,7 +587,7 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
 ) => {
   const stringSql =
     kind === "all"
-      ? `SELECT * FROM StagesCUST WHERE ProjectID=? AND StageID=?`
+      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ProjectID=? AND StageID=?`
       : kind === "notifcation"
       ? `SELECT pr.Nameproject,pr.IDcompanySub, MAX(cu.StageID) AS StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ${type} `
       :`SELECT Done,Days FROM StagesCUST WHERE ProjectID=? AND Done = "true"`;
@@ -1730,7 +1730,6 @@ const SELECTTableViewChateUser = (chatID, userName, type) => {
     db.serialize(function () {
       db.all(stringSql, [chatID, userName], function (err, result) {
         if (err) {
-          reject(err);
           resolve([]);
           console.log(err.message, "nooooo");
         } else {

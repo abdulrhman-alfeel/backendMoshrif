@@ -139,6 +139,7 @@ const Chackarrivedmassage = async (req,res) =>{
         "idSendr=? AND Sender=?",
         "Chat"
       );
+
       res.send({success:chackdata}).status(200)
 
 }

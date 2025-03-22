@@ -39,7 +39,6 @@ const {
 const { bucket } = require("../../bucketClooud");
 const {
   insertTableSabepdf,
-  insertTableProjectdataforchat,
 } = require("../../sql/INsertteble");
 const { UPDATETableSavepdf } = require("../../sql/update");
 const {
@@ -48,11 +47,7 @@ const {
   SELECTTableusersCompanyVerification,
 } = require("../../sql/selected/selectuser");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
-const { DeleteTableProjectdataforchat } = require("../../sql/delete");
-const {
-  filterProjectforaddinsertArray,
-  BringStageforfilterProject,
-} = require("../chate/ChatJobs");
+
 // استيراد بيانات المشروع حسب الفرع
 
 const BringProject = async (req, res) => {

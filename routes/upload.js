@@ -1,9 +1,11 @@
 const uploadController = require('../function/chate/workersUpload/uploadController.js')
 const express = require("express");
+const { verifyJWT } = require('../middleware/jwt.js');
 
-const router = express.Router();
 const uploadRoutes =({ uploadQueue }) => {
-  
+  const router = express.Router();
+  router.use(verifyJWT);
+
   // Upload routes
   router.post('/uploads/initialize', uploadController.initializeUpload(uploadQueue));
   router.put('/uploads/chunk', uploadController.handleChunk(uploadQueue));

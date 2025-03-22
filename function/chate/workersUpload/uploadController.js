@@ -4,7 +4,8 @@ const path = require('path');
 const uuidv4 = require('uuid');
 const {createHash} = require('crypto')
 const config = require("../../../config");
-const TEMP_UPLOAD_DIR = path.join( 'tmp', 'uploads');
+const TEMP_UPLOAD_DIR = path.join(process.cwd(), 'tmp', 'uploads');
+
 // Ensure temp directory exists
 if (!fs.existsSync(TEMP_UPLOAD_DIR)) {
   fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true });
@@ -28,13 +29,16 @@ const uploadController = {
           error: 'Missing required fields (fileName, fileSize, contentType)' 
         });
       }
-
+      
       // Generate a unique file ID
       const fileId = req.headers['file-id'] || uuidv4.v4();
-      
+      let massges = {
+      ...data,
+      idSendr:fileId,
+    };
       // Create upload manifest
       const manifest = {
-        data,
+        data:massges,
         fileId,
         fileName,
         fileSize: parseInt(fileSize, 10),
@@ -51,13 +55,13 @@ const uploadController = {
         getManifestPath(fileId), 
         JSON.stringify(manifest, null, 2)
       );
+      
       // Return upload details to client
       res.status(201).json({
         fileId,
         uploadUrl: `${config.apiBaseUrl}/api/uploads/chunk`,
         expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
       });
-
     } catch (error) {
       console.error('Error initializing upload:', error);
       res.status(500).json({ error: 'Failed to initialize upload' });
@@ -66,18 +70,14 @@ const uploadController = {
   
   // Handle an incoming chunk
   handleChunk: (uploadQueue) => async (req, res) => {
-
-    
     const fileId = req.headers['file-id'];
-    console.log(fileId);
-
     const chunkIndex = parseInt(req.headers['chunk-index'] || '0', 10);
     const totalChunks = parseInt(req.headers['total-chunks'] || '1', 10);
     
     if (!fileId) {
       return res.status(400).json({ error: 'Missing File-ID header' });
     }
-
+    
     const manifestPath = getManifestPath(fileId);
     
     // Check if manifest exists

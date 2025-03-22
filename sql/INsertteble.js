@@ -251,7 +251,6 @@ const insertTablecompanySubProjectexpense = (data) => {
   });
 };
 const insertTablecompanySubProjectexpenseapi = (data) => {
-  console.log(data);
   db.serialize(function () {
     db.run(
       `INSERT INTO Expense (Referencenumberfinanc,projectID, Amount, Data,ClassificationName,InvoiceNo,Taxable,Date) VALUES (?,?,?,?,?,?,?,?)`,

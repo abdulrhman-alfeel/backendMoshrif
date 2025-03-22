@@ -816,6 +816,7 @@ const ChateNotfication = async (
       type: `chate`,
       kind: "new",
       nameRoom: nameChate,
+      Nameproject: Project?.Nameproject,
       StageID: StageID,
       IDcompanySub: Project?.IDCompanySub,
     };

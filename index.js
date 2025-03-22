@@ -26,8 +26,6 @@ const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter.js");
 const { createBullBoard } = require("@bull-board/api");
 const  config  = require("./config.js");
 const {uploadRoutes} = require('./routes/upload.js')
-const {initializeWorker} = require('./function/chate/workersUpload/uploadWorker.js');
-const fs = require('fs');
 
 
 
@@ -120,9 +118,6 @@ app.get("/deleteFileUpload", async (req, res) => {
   }
 });
 
-// Sample HTML content
-
-// Consume messages from the queue
 app.post(
   "/api/file",
   verifyJWT,
@@ -167,17 +162,7 @@ app.post(
 
 
 
-(async function() {
-  console.log('Starting upload worker process');
-  const worker = initializeWorker(config);
-  
-  // Handle graceful shutdown
-  process.on('SIGTERM', async () => {
-    console.log('Worker shutting down');
-    await worker.close();
-    process.exit(0);
-  });
-})();
+
 
 CreateTable();
 
@@ -205,7 +190,7 @@ io.on("connection", (socket) => {
       socket.on('trackUpload', async (fileId) => {
         // Join the room for this file
         socket.join(`file:${fileId}`);
-        console.log(`Socket ${socket.id} tracking upload ${fileId}`);
+        // console.log(`Socket ${socket.id} tracking upload ${fileId}`);
         
         try {
           // Get current job status if available
@@ -229,7 +214,7 @@ io.on("connection", (socket) => {
       // Handle client untracking an upload
       socket.on('untrackUpload', (fileId) => {
         socket.leave(`file:${fileId}`);
-        console.log(`Socket ${socket.id} stopped tracking upload ${fileId}`);
+        // console.log(`Socket ${socket.id} stopped tracking upload ${fileId}`);
       });
       
   // const generateID =  Math.random().toString(36).substring(2, 10);

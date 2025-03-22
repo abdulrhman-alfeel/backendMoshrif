@@ -48,7 +48,7 @@ const implmentOpreationSingle = async (folderPath, Pathfolder) => {
     const stat = await fs.stat(filePath);
     if (stat.isFile()) {
       await fs.unlink(filePath);
-      console.log("success full");
+      // console.log("success full");
     }
   } catch (error) {
     console.log(error);
