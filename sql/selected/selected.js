@@ -303,7 +303,7 @@ FROM (
 ) AS subquery
 ORDER BY id ASC, datetime(Contractsigningdate) ASC`
         : kind === "difference"
-        ? `SELECT Contractsigningdate,ProjectStartdate FROM companySubprojects WHERE id=? AND Disabled =?`
+        ? `SELECT Contractsigningdate,ProjectStartdate,Nameproject,IDcompanySub,TypeOFContract FROM companySubprojects WHERE id=? AND Disabled =?`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=?  `
         : kind === "forchatAdmin"
@@ -587,14 +587,12 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
 ) => {
   const stringSql =
     kind === "all"
-      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ProjectID=? AND StageID=?`
+      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed  FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ProjectID=? AND StageID=?`
       : kind === "notifcation"
-      ? `SELECT pr.Nameproject,pr.IDcompanySub, MAX(cu.StageID) AS StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ${type} `
+      ? `SELECT max(cu.StageID) AS StageID,pr.Nameproject,pr.IDcompanySub, cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE cu.StageID != 'A1' AND ${type} `
       :`SELECT Done,Days FROM StagesCUST WHERE ProjectID=? AND Done = "true"`;
   const data =
-    kind === "all"
-      ? [ProjectID, StageID]
-      : type !== "cu.projectID=?"
+    kind === "all" || kind ===  "cu.projectID=? AND cu.StageID=?"
       ? [ProjectID, StageID]
       : [ProjectID];
   return new Promise((resolve, reject) => {
@@ -713,6 +711,25 @@ const SELECTTablecompanySubProjectStageNotes = (ProjectID, StageID) => {
             // console.error(err.message);
           } else {
             // console.log(result);
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableStageNotesAllproject = (ProjectID) => {
+  return new Promise((resolve, reject) => {
+
+    db.serialize(function () {
+      db.all(
+        `SELECT countdayDelay,Type,Note,DateNote FROM StageNotes WHERE  ProjectID=?`,
+        [ProjectID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
             resolve(result);
           }
         }
@@ -2121,5 +2138,6 @@ module.exports = {
   SELECTTablecompanyRegistration,
   SELECTTablecompanyRegistrationall,
   SelectVerifycompanyexistencePhonenumber,
-  SELECTProjectStartdateapis
+  SELECTProjectStartdateapis,
+  SELECTTableStageNotesAllproject
 };

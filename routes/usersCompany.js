@@ -4,9 +4,12 @@ const { BringUserCompany, BringUserCompanyinBrinsh, BringvalidityuserinBransh } 
 const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken, InsertmultipleProjecsinvalidity } = require("../function/companyinsert/UpdatuserCompany");
 const { verifyJWT } = require("../middleware/jwt");
 const { BringDataNotifcation,FilterNotifcation } = require("../function/notifcation/InsertNotifcation");
+const limiter = require("../middleware/loginLimiter");
 const router = express.Router();
 
 router.use(verifyJWT)
+router.use(limiter);
+
 router.route('/')
 .post(userCompany)
 router.route('/updat')

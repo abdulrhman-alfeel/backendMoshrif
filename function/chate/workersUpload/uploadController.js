@@ -133,7 +133,7 @@ const uploadController = {
             jobId: `process_${fileId}`
           });
         }
-        
+        console.log(`Chunk ${chunkIndex} for file ${fileId} received successfully.`);
         // Return response to client
         res.status(200).json({
           fileId,

@@ -27,11 +27,9 @@ const Loginuser = async (req, res) => {
   //   send operation login to table loginActivaty
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
-    // const output = 1234;
+
     verificationSend(PhoneNumber, output);
-    // console.log(output);
-    // const currentDate = new Date();
-    // const futureDate = new Date(currentDate + 5 * 24 * 60 * 60 * 1000);
+
     const currentDate = new Date();
     const futureDate = new Date(currentDate);
     futureDate.setDate(currentDate.getDate() + 5);
@@ -64,26 +62,24 @@ const Loginuser = async (req, res) => {
 };
 const axios = require("axios");
 
-const verificationSend = (number, chack) => {
+const verificationSend = (number, chack=null,title=null) => {
   try {
+    let title1 = Boolean(chack)? `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`: title;
     const url = "https://el.cloud.unifonic.com/rest/Messages/SendBulk";
     const params = {
       AppSid: "ll3noHmCZwsFLD7B6ysdm2Vmhh3U0p",
       SenderID: "Mushrf.com",
-      Body: `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`,
+      Body: title1,
       // Recipient: `966567256943`,
       Recipient: `966${number}`,
     };
-
     const headers = {
       accept: "application/json",
     };
 
     axios
       .post(url, null, { params, headers })
-      .then((response) => {
-        // console.log(response.data);
-      })
+      .then((response) => {})
       .catch((error) => {
         console.error(error);
       });
@@ -400,5 +396,6 @@ module.exports = {
   BringNameCompany,
   CheckUserispresentornot,
   LoginVerificationv2,
-  BringvalidityuserinBransh
+  BringvalidityuserinBransh,
+  verificationSend
 };

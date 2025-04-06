@@ -19,6 +19,7 @@ const {
   UpdateTableinnuberOfcurrentBranchescompany,
   UpdateTableLinkevaluation,
 } = require("../../sql/update");
+const { verificationSend } = require("../companyselect/userCompanyselect");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
@@ -78,6 +79,8 @@ const insertDataCompany = async (req, res) => {
       })
       .status(200);
     }
+
+    await sendNotificationCompany(NameCompany);
   } catch (error) {
     // console.log(error);
     res
@@ -90,6 +93,20 @@ const insertDataCompany = async (req, res) => {
 };
 
 
+
+
+const sendNotificationCompany = async (name) =>{
+  try{
+    let array = ['582405952','502464530',"567256943","564565001","570635004"]
+    for (let index = 0; index < array.length; index++) {
+      const element = array[index];
+      await verificationSend(element,null, `طلب انشاء حساب جديد من ${name}`)
+    }
+  }catch
+  (error){
+    console.log(error);
+  }
+}
 
 //  اضافة فرع جديد
 const inseertCompanybrinsh = async (req, res) => {

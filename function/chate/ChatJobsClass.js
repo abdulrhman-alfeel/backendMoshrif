@@ -34,7 +34,9 @@ const path = require("path");
 // عملية ارسال واستقبال لشات المراحل
 const ClassChatOpration = async (Socket, io) => {
   try {
+    
     Socket.on("send_message", async (data) => {
+      console.log("user connected", data);
      const result = await OpreactionSend_message(data)
       io.to(`${data.ProjectID}:${data?.StageID}`)
         .timeout(50)

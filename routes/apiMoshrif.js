@@ -12,10 +12,13 @@ const {
   FinancialUpdateInvoiceNo,
 } = require("../function/api/Opreation");
 const uploadsapis = require("../middleware/uploadsapis");
+const limiter = require("../middleware/loginLimiter");
 
 const router = express.Router();
 
 router.use(verifyJWTapi);
+router.use(limiter);
+
 router.route("/ProjectOpreations").post(ProjectOpreationsinsert);
 router.route("/ProjectOpreations").put(ProjectOpreationsUpdate);
 

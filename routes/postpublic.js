@@ -15,8 +15,11 @@ const {
   BringDatabrachCompany,
 } = require("../function/postpublic/post");
 const { verifyJWT } = require("../middleware/jwt");
+const limiter = require("../middleware/loginLimiter");
 const router = express.Router();
 router.use(verifyJWT);
+router.use(limiter);
+
 router.route("/Commentinsert").post(Commentinsert);
 router.route("/CommentUpdate").put(CommentUpdate);
 router.route("/CommentDelete").delete(CommentDelete);

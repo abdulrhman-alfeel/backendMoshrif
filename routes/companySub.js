@@ -67,10 +67,12 @@ const {
   DeleteRequests
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
+const limiter = require("../middleware/loginLimiter");
 
 const router = express.Router();
 
 router.use(verifyJWT);
+router.use(limiter);
 //  عمليات الادخال
 // router.route("/project").post(uploads.single("image"), projectBrinsh);
 router.route("/project").post(projectBrinsh);

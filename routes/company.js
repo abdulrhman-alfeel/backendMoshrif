@@ -7,16 +7,20 @@ const {
   insertRequestFinancialCustody,
 } = require("../function/companyinsert/insertCompany");
 const {biringDatabrinshCompany, bringDataCompany, BringDataFinancialCustody, bringDataCompanyRegistration} = require('../function/companyselect/bringCompany');
-const { UpdateCompanybrinsh, UpdateDataCompany, Acceptandrejectrequests, Updatecovenantrequests, Deletecovenantrequests, UpdateApiCompany, AgreedRegistrationCompany, UpdatedataRegistration } = require("../function/companyinsert/UpdateCompany");
+const { UpdateCompanybrinsh, UpdateDataCompany, Acceptandrejectrequests, Updatecovenantrequests, Deletecovenantrequests, UpdateApiCompany, AgreedRegistrationCompany, UpdatedataRegistration, DeleteCompanyRegistration } = require("../function/companyinsert/UpdateCompany");
 const { BringNameCompany } = require("../function/companyselect/userCompanyselect");
 const { verifyJWT } = require("../middleware/jwt");
+const limiter = require("../middleware/loginLimiter");
 const router = express.Router();
 router.use(verifyJWT);
+router.use(limiter);
+
 
 router.route("/").post(insertDataCompany);
 router.route("/AgreedRegistrationCompany").get(AgreedRegistrationCompany);
 router.route("/UpdatedataRegistration").put(UpdatedataRegistration);
 router.route("/bringCompanyRegitration").get(bringDataCompanyRegistration);
+router.route("/DeleteCompanyRegistration").delete(DeleteCompanyRegistration);
 
 
 

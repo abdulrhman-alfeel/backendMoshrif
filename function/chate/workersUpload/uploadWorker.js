@@ -20,10 +20,10 @@ if (!fs.existsSync(TEMP_UPLOAD_DIR)) {
 const initializeWorker = (config) => {
 
   // Initialize Redis client for Socket.IO emitter
-  const redisClient = new Redis(config.redis);
+  // const redisClient = new Redis(config.redis);
   
   // Create Socket.IO Redis emitter
-  const socketEmitter = new Emitter(redisClient);
+  // const socketEmitter = new Emitter(redisClient);
 
   // Helper functions
   const getChunkPath = (fileId, chunkIndex) => 
@@ -34,13 +34,13 @@ const initializeWorker = (config) => {
   
   const updateProgress = (fileId, progress, status, message = null) => {
     // Emit progress update via Socket.io
-    socketEmitter.to(`file:${fileId}`).emit('uploadProgress', {
-      fileId,
-      progress,
-      status,
-      message,
-      timestamp: Date.now()
-    });
+    // socketEmitter.to(`file:${fileId}`).emit('uploadProgress', {
+    //   fileId,
+    //   progress,
+    //   status,
+    //   message,
+    //   timestamp: Date.now()
+    // });
     
     // Update manifest if it exists
     const manifestPath = getManifestPath(fileId);

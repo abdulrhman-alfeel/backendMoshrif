@@ -28,7 +28,8 @@ const {
   SELECTTablecompany,
   SELECTTablecompanySubProjectFilter,
   SELECTallDatafromTableRequestsV2,
-  SELECTDataAndTaketDonefromTableRequests2
+  SELECTDataAndTaketDonefromTableRequests2,
+  SELECTTableStageNotesAllproject
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -45,6 +46,7 @@ const {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompany,
   SELECTTableusersCompanyVerification,
+  SELECTTableusersCompanyboss,
 } = require("../../sql/selected/selectuser");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 
@@ -92,6 +94,7 @@ const BringProject = async (req, res) => {
                   'true',
                   typeproject
                 );
+
               }
             
           }
@@ -188,7 +191,7 @@ const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
   let arrayReturnProject = [];
   const datacompany = await SELECTTablecompany(IDCompany, "DisabledFinance");
 
-  for (let index = 0; index < result.length; index++) {
+  for (let index = 0; index < result?.length; index++) {
     const element = result[index];
 
     const data = await OpreationExtrinProject(element, IDCompany, IDcompanySub);
@@ -235,7 +238,7 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
         element.ProjectID !== undefined ? element.ProjectID : element.id,
         element.ConstCompany
       );
-      const Daysremaining = await Numberofdaysremainingfortheproject(
+      const {TotalDay} = await Numberofdaysremainingfortheproject(
         element.ProjectID !== undefined ? element.ProjectID : element.id
       );
       const countuser = await BringCountUserinProject(
@@ -250,7 +253,7 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
         cost: dataProject.RemainingBalance,
         rate: rate,
         countuser: countuser,
-        Daysremaining: Daysremaining,
+        Daysremaining: TotalDay,
       };
       return data;
     }
@@ -344,8 +347,22 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
 };
 
 
+// استخراج مدير فرع الخاص بالتقرير 
 
-
+const Extract_Reporting_Section_Manager = (userdata,IDcompanySub) => {
+  try{
+    let boss ;
+    for (const user of userdata)
+    {
+      const validity = JSON.parse(user.Validity);
+      const verification = validity.find(item => item.idBrinsh === IDcompanySub && item.job === "مدير الفرع");
+      if(verification){
+        boss = user.userName;
+      }
+    }
+    return boss;
+  }catch(error){console.log(error)}
+}
 
 
 // حساب تكاليف المشروع حسب الايام
@@ -367,45 +384,40 @@ const AccountCostProject = async (id, ConstCompany) => {
   return { daysDifference, Total };
 };
 
+// const d = 328
+// const b = -124
+// console.log((b / d) * 100 )
+// const percentageDifference = ((d - Math.abs(b)) / d) * 100;
+// console.log(percentageDifference);
 // حساب عدد الايام المتبقية للمشروع
 const Numberofdaysremainingfortheproject = async (id) => {
   const DataProject = await SELECTTablecompanySubProject(id, 0, "difference");
-  let Total = 0;
+  let TotalDay = 0;
+  let ratematchtime = 0
 
+  const days = await SELECTTablecompanySubProjectStageCUST(
+    id,
+    "all",
+    "SUM(Days)"
+  );
   if (!isNaN(DataProject[0]?.ProjectStartdate)) {
-    const dataAllstage = await SELECTTablecompanySubProjectStageCUST(
-      id,
-      "all",
-      "SUM(Days)"
-    );
-    Total = dataAllstage[0]["SUM(Days)"];
+    TotalDay = days[0]["SUM(Days)"];
   } else {
-    // const dataAllstage = await SELECTTablecompanySubProjectStageCUST(
-    //   id,
-    //   "all",
-    //   "max(StageCustID) ,EndDate  "
-    // );
-    const days = await SELECTTablecompanySubProjectStageCUST(
-      id,
-      "all",
-      "SUM(Days)"
-    );
     const DAYSOFStage = days[0]["SUM(Days)"];
     const currentDate = new Date();
     const startDate = new Date(DataProject[0]?.ProjectStartdate);
     startDate.setDate(startDate.getDate() + DAYSOFStage); // إضافة الأيام
 
+
     const timeDiff = startDate - currentDate; // الفرق بين التواريخ بالمللي ثانية
     const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24)); // تحويل الفرق إلى أيام
 
-    // let StartDate = new Date(DataProject[0].ProjectStartdate);
-    // const daysDifference = await differenceInDays(
-    //   StartDate,
-    //   new Date(dataAllstage[0].EndDate)
-    // );
-    Total = dayDiff;
+    TotalDay = dayDiff;
   }
-  return Total;
+  ratematchtime = ((TotalDay + days[0]['SUM(Days)']) / days[0]['SUM(Days)']) * 100;
+  // ratematchtime = (TotalDay / days[0]['SUM(Days)']) * 100;
+
+  return {TotalDay,ratematchtime};
 };
 
 // حساب فارق الايام
@@ -1283,6 +1295,11 @@ const BringCountRequstsV2 = async (req, res) => {
 
 const BringReportforProject = async (req, res) => {
   try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
     const ProjectID = req.query.ProjectID;
 
     const result = await SELECTTablecompanySubProjectStageCUST(ProjectID);
@@ -1338,6 +1355,29 @@ const BringReportforProject = async (req, res) => {
     // المتأخرة
     //  عدد المراحل المتأخرة
     const LateStages = arrayDelay.length;
+
+
+    const DelayProject = await SELECTTableStageNotesAllproject(ProjectID);
+
+    // حساب الايام المتبقية 
+    const {TotalDay,ratematchtime} = await Numberofdaysremainingfortheproject(ProjectID);
+
+
+    // استخراج تاخري نهاية اخر مرحلة رئيسية في المشروع
+    const dataStage =  await SELECTTablecompanySubProjectStageCUSTONe(ProjectID,0,'notifcation','cu.ProjectID=?');
+    const EndDateProject = dataStage?.EndDate;
+
+
+    // استخراج تاريخ بداية المشروع
+    const DataProject = await SELECTTablecompanySubProject(ProjectID, 0, "difference");
+    const startDateProject = new Date(DataProject[0]?.ProjectStartdate);
+
+
+
+    // اجمالي المالية
+    const Amount = await SELECTSUMAmountandBring(ProjectID);
+
+
     // الطلبات
     const countallRequests = await SELECTDataAndTaketDonefromTableRequests(
       ProjectID,
@@ -1369,6 +1409,12 @@ const BringReportforProject = async (req, res) => {
       itemProject.id,
       itemProject.ConstCompany
     );
+
+// استخراج مدير الفرع 
+const userdata = await SELECTTableusersCompanyboss(userSession?.IDCompany);
+
+const boss = await Extract_Reporting_Section_Manager(userdata,DataProject[0]?.IDcompanySub);
+
     let data = {
       countSTageTrue: countTrue,
       countStageall: countall,
@@ -1382,6 +1428,20 @@ const BringReportforProject = async (req, res) => {
       MostAccomplished: userMostAccomplished,
       DaysUntiltoday: daysDifference,
       TotalcosttothCompany: Total,
+
+      Nameproject: DataProject[0].Nameproject,
+      TypeOFContract: DataProject[0].TypeOFContract,
+      Daysremaining:TotalDay,
+      ratematchtime:ratematchtime,
+      EndDateProject:EndDateProject,
+      startDateProject: startDateProject,
+      TotalRevenue: Amount?.TotalRevenue,
+      TotalExpense: Amount?.TotalExpense,
+      TotalReturns: Amount?.TotalReturns,
+      TotalDelayDay:DelayProject.length > 0 ? DelayProject.map(item => item.countdayDelay).reduce((item,r) => item + r):0,
+      DelayProject: DelayProject,
+      boss:boss,
+      NameCompany:userdata[0].NameCompany
     };
     res.send({ success: "تمت العملية بنجاح", data: data }).status(200);
   } catch (error) {

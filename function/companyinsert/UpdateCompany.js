@@ -67,7 +67,7 @@ const UpdateApiCompany = async (req,res) => {
   res.send({success:'لاتوجد الشركه المطلوبه'}).status(402);
 }
 }
-
+// قبول تسجيل الشركة
 const AgreedRegistrationCompany = async (req,res) => {
   try{
   const id= req.query.id;
@@ -109,6 +109,23 @@ const AgreedRegistrationCompany = async (req,res) => {
   res.send({success:'فشل تنفيذ العملية'}).status(402);
 }
 }
+
+
+
+
+
+// حذف بيانات الشركة قيد التسجيل
+const DeleteCompanyRegistration = async (req, res) => {
+  try { 
+    const id = req.query.id;
+    await DeleteTablecompanySubProjectall("companyRegistration","id",id);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  }catch (error) {
+    res.send({success: "فشل تنفيذ العملية" }).status(400);
+    console.log(error);   
+  }
+}
+
 
 const UpdatedataRegistration =  async (req,res) =>{
   try{
@@ -257,7 +274,6 @@ const Deletecovenantrequests = async (req, res) => {
       res.send({ success: "تمت العملية بنجاح" }).status(200);
     }else{
       res.send({ success: "لايمكنك  القيام بالحذف" }).status(200);
-
     }
   } catch (error) {
     console.log(error);
@@ -271,7 +287,7 @@ const Deletecovenantrequests = async (req, res) => {
 
 
 // const OperationMoveingdataProjectfromBranshtoBransh = async (fromId,toId,IDCompany) => {
-//   // const {fromId,toId,IDCompany} = req.query;
+// const {fromId,toId,IDCompany} = req.query;
 //   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'companySubprojects');
 //   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'FinancialCustody',"IDCompanySub");
 //   const resultuser = await SELECTTableusersCompany(IDCompany);
@@ -329,4 +345,5 @@ module.exports = {
   UpdateApiCompany,
   AgreedRegistrationCompany,
   UpdatedataRegistration,
+  DeleteCompanyRegistration
 };

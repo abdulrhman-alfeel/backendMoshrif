@@ -165,7 +165,6 @@ const KnowuserpermissioninCovenant = (Validity, IDCompanySub, userName) => {
         parseInt(items.idBrinsh) === parseInt(IDCompanySub) && items.Acceptingcovenant === true
     );
     if (findBrinsh) {
-
       return `IDCompanySub=${IDCompanySub}`;
     } else {
       return `IDCompanySub=${IDCompanySub} AND Requestby=${userName}`;

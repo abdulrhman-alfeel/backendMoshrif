@@ -1,9 +1,9 @@
-// ChatJobsClass.js
-// index.js 
-// uploads.js
-// chatroute.js
-// companySub.js
-// Fsfile.js
+// bringProjec.js  in change BringReportforProject 
+// userCompanyselect.js
+// insertCompany.js
+// UpdateCompany.js
+// company.js
+
 const { express, app,  server,io} = require("./importMIn");
 
 const cors = require("cors");
@@ -13,7 +13,6 @@ const session = require("express-session");
 const helmet = require('helmet');
 const errorHandler = require("./middleware/errorHandler");
 const { deleteFilesInFolder } = require("./middleware/Fsfile");
-const limiter = require("./middleware/loginLimiter");
 const { CreateTable } = require("./sql/createteble");
 const { ChatOpration, ChatOprationView } = require("./function/chate/ChatJobs");
 const {uploads,handleUploadErrors} = require("./middleware/uploads");
@@ -25,14 +24,21 @@ const { ExpressAdapter } = require("@bull-board/express");
 const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter.js");
 const { createBullBoard } = require("@bull-board/api");
 const  config  = require("./config.js");
-const {uploadRoutes} = require('./routes/upload.js')
+const {uploadRoutes} = require('./routes/upload.js');
+const { performCleanup } = require("./function/chate/workersUpload/cleanUpController.js");
 
-
+require('dotenv').config();
 
 // Set up middlewares
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
+
+app.use(cookieparser());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use("/upload", express.static("upload"));
+
 
 // Initialize upload queue
 const uploadQueue = new Queue('fileUploads', {
@@ -55,19 +61,13 @@ createBullBoard({
   serverAdapter
 });
 serverAdapter.setBasePath('/admin/queues');
+app.use('/admin/queues', serverAdapter.getRouter());
 
-
-
-app.use(cookieparser());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use("/upload", express.static("upload"));
 
 
 app.use(
   session({
-    secret:
-    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzYWN0aW9uIjoi2LPZhNin2K0g2K7ZgdmK2YEiLCJwcmljZSI6Ijc1MDAiLCJkZXNjcmlwdGlvbiI6ImFzZGZhc2Rmc2RmIGRmIHMgc2Rmc2RmIGRnZGcgc2RkZmFzZGRmc2QgZWYgZ3NhZ2FzZGZzZGZkcyBkc3NkIGRzZmYgZHMgc2ZkIiwiaWF0IjoxNjc3ODUyNTAzLCJleHAiOjE2Nzc5Mzg5MDN9.QeCWuUg1CEW0W-4nTCQ1AYVf8vBlC50jUnI_n6u3vD5h8rIZ7gJ9Uz7db8VL1ODG0M7_RIYi40HYpWQBmalzOqlKQAyqetphOHs2qhSRghu_LzOIkxeEjLh-QXmGVrqz4ybyqN",
+    secret:process.env.SECRET,
     cookie: { httpOnly: true },
     resave: false,
     saveUninitialized: false,
@@ -91,7 +91,8 @@ app.use("/api/Chate", require("./routes/chatroute"));
 app.use("/api//videos", require("./routes/vedio"));
 app.use("/api/Files", require("./routes/Files"));
 
-app.use('/admin/queues', serverAdapter.getRouter());
+
+
 
 // Initialize route handlers
 app.use('/api', uploadRoutes({ uploadQueue }));
@@ -161,12 +162,16 @@ app.post(
 );
 
 
+// Cleanup tmp files
+setInterval(() => {
+  performCleanup();
+}, 60 * 1000);
 
 
 
 CreateTable();
 
-app.use(limiter);
+// app.use(limiter);
 
 app.use(errorHandler);
 
@@ -241,25 +246,6 @@ app.all("*", (req, res) => {
   }
 });
 
-
-
-
-// const { GoogleAuth } = require('google-auth-library');
-// async function getAccessToken() {
-//   // قراءة بيانات الاعتماد من ملف JSON
-//   const auth = new GoogleAuth({
-//     keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
-//     scopes: ['https://www.googleapis.com/auth/cloud-platform'], // نطاقات الوصول المطلوبة
-//   });
-
-//   const client = await auth.getClient();
-//   const accessToken = await client.getAccessToken();
-
-//   console.log('Access Token:', accessToken);
-//   return accessToken;
-// }
-
-// getAccessToken().catch(console.error);
 
 
 

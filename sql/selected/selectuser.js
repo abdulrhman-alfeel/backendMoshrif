@@ -58,6 +58,26 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
     });
   });
 };
+
+//  استخراج مدير الفرع 
+const SELECTTableusersCompanyboss = (IDCompany) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.all(
+        `SELECT Validity,userName,NameCompany FROM usersCompany LEFT JOIN company WHERE job="مدير الفرع" AND IDCompany=?`,
+        [IDCompany],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTTableusersCompanyVerificationIDUpdate = (PhoneNumber, id) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
@@ -224,4 +244,5 @@ module.exports = {
   SELECTTableusersCompanyVerificationID,
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompanyVerificationIDUpdate,
+  SELECTTableusersCompanyboss
 };

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --watch index.js",
-    "devStart": "nodemon --watch index.js",
+    "devStart": "nodemon  index.js",
     "Startworker": "node --watch worker.js"
   },
   "keywords": [
