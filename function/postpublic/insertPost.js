@@ -1,4 +1,6 @@
 const { DeleteTableLikesPostPublic } = require("../../sql/delete");
+const { insertTablePostPublic } = require("../../sql/INsertteble");
+
 const {
   insertTableLikesPostPublic,
   insertTableCommentPostPublic,
