@@ -24,10 +24,12 @@ subClient.on('error', (error) => {
 });
 // const io = require("socket.io")(server);
 
-const io = require("socket.io")(server,{cors: {
-    origin: config.corsOrigins,
-    methods: ['GET', 'POST']
-  },
+const io = require("socket.io")(server,
+  {
+  //   cors: {
+  //   origin: config.corsOrigins,
+  //   methods: ['GET', 'POST']
+  // },
   adapter: createAdapter(pubClient, subClient)});
 
 app.set('trust proxy', 'loopback');

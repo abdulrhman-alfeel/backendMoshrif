@@ -2,7 +2,7 @@
 const path = require('path');
 const fs = require('fs').promises;
 const TEMP_UPLOAD_DIR = path.join(process.cwd(), 'tmp', 'uploads');
-const MAX_TEMP_STORAGE = 100 * 1024 * 1024 * 1024; // 100GB
+const MAX_TEMP_STORAGE = 50 * 1024 * 1024 * 1024; // 100GB
 
 // Helper for creating file paths
 const getChunkPath = (fileId, chunkIndex) => path.join(TEMP_UPLOAD_DIR, `${fileId}_${chunkIndex}`);

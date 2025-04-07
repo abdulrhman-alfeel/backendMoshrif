@@ -1,11 +1,11 @@
 const config = {
   port: 8080,
-  corsOrigins: ["https://mushrf.com"],
+  corsOrigins: ["http://34.168.80.7:8080"],
   redis: {
     host: "127.0.0.1",
     port: 6379,
   },
-  apiBaseUrl: "https://mushrf.com",
+  apiBaseUrl: "http://34.168.80.7:8080",
   worker: { concurrency: 2 },
   storage: { path: "upload" },
   cleanupTempFiles: true,
