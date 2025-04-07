@@ -10,29 +10,7 @@ const {
   SELECTTablecompanySub,
 } = require("../../sql/selected/selected");
 const { SELECTTableusersCompanyonObject } = require("../../sql/selected/selectuser");
-const insertPostURL = async (items) => {
-  try {
-    if (Object.entries(items.File).length > 0) {
-      if (String(items.File.type).includes("video") ) {
-        const result = await SELECTTableIDcompanytoPost(items.ProjectID);
-        const data = [
-          items.Sender,
-          items.File.name,
-          items.File.type,
-          items.message,
-          `${new Date().toUTCString()}`,
-          items.StageID,
-          items.ProjectID,
-          result.IDcompanySub,
-          result.NumberCompany,
-        ];
-        await insertTablePostPublic(data);
-      }
-    }
-  } catch (err) {
-    console.log(err.message);
-  }
-};
+
 
 const BringPost = async (req, res) => {
   try {
@@ -262,7 +240,6 @@ const BringDatabrachCompany = async (req, res) => {
   }
 };
 module.exports = {
-  insertPostURL,
   BringPost,
   BringCommentinsert,
   SearchPosts,

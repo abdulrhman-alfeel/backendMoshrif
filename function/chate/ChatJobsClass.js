@@ -22,7 +22,7 @@ const {
   ChateNotfication,
   ChateNotficationdelete,
 } = require("../notifcation/NotifcationProject");
-const { insertPostURL } = require("../postpublic/post");
+const { insertPostURL } = require("../postpublic/insertPost");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 const { uploaddata, bucket } = require("../../bucketClooud");
 const { fFmpegFunction, processFile } = require("../../middleware/ffmpeg");

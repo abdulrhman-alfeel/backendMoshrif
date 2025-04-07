@@ -8,6 +8,32 @@ const {
 } = require("../../sql/selected/selected");
 const { Postsnotification } = require("../notifcation/NotifcationProject");
 
+
+
+
+const insertPostURL = async (items) => {
+  try {
+    if (Object.entries(items.File).length > 0) {
+      if (String(items.File.type).includes("video") ) {
+        const result = await SELECTTableIDcompanytoPost(items.ProjectID);
+        const data = [
+          items.Sender,
+          items.File.name,
+          items.File.type,
+          items.message,
+          `${new Date().toUTCString()}`,
+          items.StageID,
+          items.ProjectID,
+          result.IDcompanySub,
+          result.NumberCompany,
+        ];
+        await insertTablePostPublic(data);
+      }
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+};
 const Likesinsert = async (req, res) => {
   try {
     const PostId = req.query.PostID;
@@ -48,4 +74,4 @@ const Commentinsert = async (req, res) => {
   }
 };
 
-module.exports = { Likesinsert, Commentinsert };
+module.exports = { Likesinsert, Commentinsert ,  insertPostURL};
