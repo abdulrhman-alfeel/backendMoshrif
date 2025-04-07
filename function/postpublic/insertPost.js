@@ -7,6 +7,7 @@ const {
 } = require("../../sql/INsertteble");
 const {
   SELECTTableLikesPostPublicotherroad,
+  SELECTTableIDcompanytoPost,
 } = require("../../sql/selected/selected");
 const { Postsnotification } = require("../notifcation/NotifcationProject");
 

@@ -1,6 +1,4 @@
-const { insertTablePostPublic } = require("../../sql/INsertteble");
 const {
-  SELECTTableIDcompanytoPost,
   SELECTTablePostPublic,
   SELECTCOUNTCOMMENTANDLIKPOST,
   SELECTTableLikesPostPublicotherroad,
