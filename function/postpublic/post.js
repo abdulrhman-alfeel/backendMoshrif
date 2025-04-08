@@ -58,11 +58,12 @@ const BringCommentinsert = async (req, res) => {
     let arraynew = [];
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
-      const user = SELECTusersCompany(element?.userName,userSession?.IDCompany)
+      const user = await SELECTusersCompany(element?.userName,userSession?.IDCompany)
       let data = {
         ...element,
         job: user.job,
       };
+      console.log(user.job);
       arraynew.push(data);
     }
 

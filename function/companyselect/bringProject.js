@@ -215,7 +215,6 @@ const BringDataprojectClosed = async (req, res) => {
       "all",
       "false"
     );
-
     res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
   } catch (error) {
     res.send({ success: "فشل تنفيذ العملية" }).status(401);

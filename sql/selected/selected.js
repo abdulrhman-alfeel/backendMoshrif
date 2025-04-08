@@ -378,7 +378,7 @@ const SELECTTablecompanySubProjectFilter = (search, IDcompanySub) => {
       db.all(
         "SELECT * FROM companySubprojects WHERE Nameproject LIKE '%" +
           search +
-          "%' AND IDcompanySub=?",
+          "%' AND IDcompanySub=? AND Disabled = 'true'",
         [IDcompanySub],
         function (err, result) {
           if (err) {
