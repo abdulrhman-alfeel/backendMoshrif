@@ -653,18 +653,18 @@ const Postsnotification = async (
       PostID: PostID,
       count: Count["COUNT(userName)"],
     };
-    // const idmax = await InsertNotifcation(
-    //   arraynameuser,
-    //   notification,
-    //   notification_type,
-    //   navigationId,
-    //   data,
-    //   result.ProjectID
-    // );
-    // data = {
-    //   ...data,
-    //   id: idmax,
-    // };
+    const idmax = await InsertNotifcation(
+      arraynameuser,
+      notification,
+      notification_type,
+      navigationId,
+      data,
+      result.ProjectID
+    );
+    data = {
+      ...data,
+      id: idmax,
+    };
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);

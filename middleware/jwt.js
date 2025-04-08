@@ -17,7 +17,6 @@ const verifyJWT = (req, res, next) => {
   if (token === process.env.ADMIN) {
     next();
   } else {  
-
     verify(token, process.env.JWT_KEY , (error, decoded) => {
       if (error) return res.status(403).json({ message: "Forbidden" });
       // console.log(error);

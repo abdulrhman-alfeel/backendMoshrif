@@ -7,7 +7,7 @@ const {
   SELECTTablePostPublicOneObject,
   SELECTTablecompanySub,
 } = require("../../sql/selected/selected");
-const { SELECTTableusersCompanyonObject } = require("../../sql/selected/selectuser");
+const { SELECTTableusersCompanyonObject, SELECTusersCompany } = require("../../sql/selected/selectuser");
 
 
 const BringPost = async (req, res) => {
@@ -36,7 +36,6 @@ const BringPost = async (req, res) => {
     where = `AND PR.id= ${arrayes}`
     }
 
-
     const arrayPosts = await BringPostforEmploaysCompany(id, formattedDate, PostID,user,where);
     res.send({ success: "تمت العملية بنجاح", data: arrayPosts }).status(200);
     // console.log(arrayPosts);
@@ -50,9 +49,24 @@ const BringCommentinsert = async (req, res) => {
   try {
     const PostId = req.query.PostID;
     const count = req.query.count;
-
+    const userSession = req.session.user;
+  if (!userSession) {
+    res.status(401).send("Invalid session");
+    console.log("Invalid session");
+  }
     const result = await SELECTTableCommentPostPublic(PostId, count);
-    res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
+    let arraynew = [];
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      const user = SELECTusersCompany(element?.userName,userSession?.IDCompany)
+      let data = {
+        ...element,
+        job: user.job,
+      };
+      arraynew.push(data);
+    }
+
+    res.send({ success: "تمت العملية بنجاح", data: arraynew }).status(200);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ المهمة" }).status(404);

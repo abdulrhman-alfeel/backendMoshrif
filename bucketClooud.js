@@ -1,5 +1,5 @@
 const { Storage } = require("@google-cloud/storage");
-
+const fs = require("fs");
 const storage = new Storage({
   keyFilename: "backendMoshrif.json",
 });
@@ -17,10 +17,44 @@ async function uploaddata(file) {
 
 }
 
+   const uploadFile = async (filePath, destination) => {
+
+        return new Promise((resolve, reject) => {
+        
+        const fileStream = fs.createReadStream(filePath);
+        
+        const file = bucket.file(destination);
+        
+        fileStream.pipe(file.createWriteStream())
+        
+        .on('finish', () => {
+        
+        console.log(`Upload complete: ${destination}`);
+        
+        fs.unlinkSync(filePath, (err) => {
+        
+        if (err) console.error('File deletion error:', err);
+        
+        });
+        
+        resolve();
+        
+        })
+        
+        .on('error', (err) => {
+        
+        console.error('Upload error:', err);
+        
+        reject(err);
+        
+        });
+        
+        });
+        
+        };
 async function DeleteBucket (nameOld){
   try {
     const file = bucket.file(nameOld);
-
     await file
     .delete()
     .then(() => {
@@ -67,4 +101,4 @@ async function checkIfFileExists(fileName) {
   });
 }
 
-module.exports = { uploaddata, bucket, checkIfFileExists,DeleteBucket,RenameBucket };
+module.exports = { uploaddata, bucket,uploadFile, checkIfFileExists,DeleteBucket,RenameBucket };

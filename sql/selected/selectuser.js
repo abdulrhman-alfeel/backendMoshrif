@@ -40,6 +40,25 @@ const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
   });
 };
 //  التحقق من دخول المستخدم
+const SELECTusersCompany = (userName,IDCompany) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.get(
+        `SELECT job FROM usersCompany WHERE userName=? AND IDCompany=?`,
+        [userName,IDCompany],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+//  التحقق من دخول المستخدم
 const SELECTTableusersCompanyVerification = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
@@ -244,5 +263,6 @@ module.exports = {
   SELECTTableusersCompanyVerificationID,
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompanyVerificationIDUpdate,
-  SELECTTableusersCompanyboss
+  SELECTTableusersCompanyboss,
+  SELECTusersCompany
 };

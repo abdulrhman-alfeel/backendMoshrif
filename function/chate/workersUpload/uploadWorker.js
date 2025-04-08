@@ -3,7 +3,7 @@ const {Worker} = require('bullmq');
 const fs = require('fs');
 const path = require('path');
 const {Redis} = require('ioredis');
-const { bucket } = require('../../../bucketClooud');
+const { bucket, uploadFile } = require('../../../bucketClooud');
 const { OpreactionSend_message } = require('../ChatJobsClass');
 const { io } = require('../../../importMIn');
 const { fFmpegFunction } = require('../../../middleware/ffmpeg');
@@ -114,11 +114,7 @@ const initializeWorker = (config) => {
     // Determine the final path for the file
     const fileName = manifest.fileName;
     const contentType = manifest.contentType;
-    const userId = manifest.userId;
-    const dateFolder = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    // Create appropriate folder structure
-    // const storagePath = `${userId}/${dateFolder}/${fileId}_${fileName}`;
+
     const storagePath = `/${fileName}`;
 
     const finalFilePath = path.join(config.storage.path, storagePath);
@@ -163,11 +159,15 @@ const initializeWorker = (config) => {
         
         readStream.pipe(writeStream, { end: false });
       });
-      
+      console.log(fileName);
       // Optionally delete the chunk after processing
       if (config.cleanupTempFiles) {
         fs.unlinkSync(chunkPath);
       }
+
+   
+        
+        
     }
     
     // Close the file
@@ -213,10 +213,9 @@ const initializeWorker = (config) => {
       await bucket.upload(tempFilePathtimp);
       fs.unlinkSync(tempFilePathtimp);
     }
-    await bucket.upload(finalFilePath);
-    fs.unlinkSync(finalFilePath);
-    // Update final progress
-    
+    await uploadFile(finalFilePath, fileName);
+
+
     return {
       success: true,
       url: finalUrl,
