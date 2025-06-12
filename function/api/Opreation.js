@@ -9,6 +9,7 @@ const {
 const {
   SELECTTableFinanceapi,
   SELECTProjectStartdateapis,
+  SELECTTablearchivesNamefolder,
 } = require("../../sql/selected/selected");
 const {
   UPDATETablecompanySubProjectexpenseapi,
@@ -17,6 +18,7 @@ const {
   UPDATETablecompanySubProjectFinancial,
   UpdateTablecompanySubProjectapi,
   UPDATETablecompanySubProjectexpenseInvoiceNoapi,
+  UPDATETablecompanySubProjectarchivesFolderinChildern,
 } = require("../../sql/update");
 const { OpreationProjectInsertv2 } = require("../companyinsert/insertProject");
 const {
@@ -28,7 +30,8 @@ const {
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
 
-const ProjectOpreationsinsert = async (req, res) => {
+const ProjectOpreationsinsert =  () => {
+  return async (req, res) => {
   try {
     const {
       IDcompanySub,
@@ -62,9 +65,11 @@ const ProjectOpreationsinsert = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
-const ProjectOpreationsUpdate = async (req, res) => {
+const ProjectOpreationsUpdate =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -106,10 +111,12 @@ const ProjectOpreationsUpdate = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
 // ادخال المالية
-const FinancialOperationsDatainsert = async (req, res) => {
+const FinancialOperationsDatainsert =  () => {
+  return async (req, res) => {
   try {
     const {
       IDcompanySub,
@@ -122,9 +129,9 @@ const FinancialOperationsDatainsert = async (req, res) => {
       userName,
       notifcation,
       Taxable,
-      InvoiceNo
+      InvoiceNo,
     } = req.body;
-    let Taxables = Taxable ? 1: 0
+    let Taxables = Taxable ? 1 : 0;
     const dataCampny = req.session.data;
     const NumberCompany = dataCampny.id;
 
@@ -135,15 +142,14 @@ const FinancialOperationsDatainsert = async (req, res) => {
       parseInt(IDcompanySub),
       Referencenumber
     );
-    if(!Boolean(result)){
-      const Amountconvert = `${Amount}`.toString().replace(/,/g,'');
+    if (!Boolean(result)) {
+      const Amountconvert = `${Amount}`.toString().replace(/,/g, "");
       const dataProject = await SELECTProjectStartdateapis(
         Referencenumber,
         IDcompanySub
       );
       const projectID = dataProject?.id;
-      if(Boolean(dataProject)){
-
+      if (Boolean(dataProject)) {
         switch (SectionType) {
           case "Expense":
             const ClassificationName = req.body.ClassificationName;
@@ -173,7 +179,7 @@ const FinancialOperationsDatainsert = async (req, res) => {
               Amountconvert,
               Data,
               Bank,
-              Date
+              Date,
             ]);
             notifcation === true &&
               (await Financeinsertnotification(
@@ -189,7 +195,7 @@ const FinancialOperationsDatainsert = async (req, res) => {
               projectID,
               Amountconvert,
               Data,
-              Date
+              Date,
             ]);
             notifcation === true &&
               (await Financeinsertnotification(
@@ -205,29 +211,30 @@ const FinancialOperationsDatainsert = async (req, res) => {
             success: "تم اضافة البيانات  بنجاح",
           })
           .status(200);
-      }else{
+      } else {
         res
-        .send({
-          success: "المشروع غير موجود",
-        })
-        .status(200);
+          .send({
+            success: "المشروع غير موجود",
+          })
+          .status(200);
       }
       // Expense
-    }else{
+    } else {
       res
-      .send({
-        success: "البيانات موجودة بالفعل",
-      })
-      .status(200);
+        .send({
+          success: "البيانات موجودة بالفعل",
+        })
+        .status(200);
     }
   } catch (error) {
     res
-    .send({
-      success: "فشل تنفيذ العملية",
-    })
-    .status(402);
+      .send({
+        success: "فشل تنفيذ العملية",
+      })
+      .status(402);
     console.log(error);
   }
+}
 };
 
 const OpreationExpensedatainsert = async (
@@ -240,7 +247,6 @@ const OpreationExpensedatainsert = async (
   Taxables,
   InvoiceNo
 ) => {
-
   if (Boolean(Amount) && Boolean(Data)) {
     // const totaldataproject = await SELECTTablecompanySubProjectexpenseObjectOne(
     //   projectID,
@@ -255,13 +261,14 @@ const OpreationExpensedatainsert = async (
       ClassificationName,
       InvoiceNo,
       Taxables,
-      Date
+      Date,
     ]);
   }
 };
 
 // تعديل الملية
-const FinancialOperationsDataUpdate = async (req, res) => {
+const FinancialOperationsDataUpdate =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -273,11 +280,11 @@ const FinancialOperationsDataUpdate = async (req, res) => {
       Referencenumberfinanc,
       Date,
       Taxable,
-      InvoiceNo
+      InvoiceNo,
     } = req.body;
-    let Taxables = Taxable ? 1: 0
+    let Taxables = Taxable ? 1 : 0;
 
-    const Amountconvert = `${Amount}`.toString().replace(/,/g,'');
+    const Amountconvert = `${Amount}`.toString().replace(/,/g, "");
     // Expense
     switch (SectionType) {
       case "Expense":
@@ -333,16 +340,14 @@ const FinancialOperationsDataUpdate = async (req, res) => {
       })
       .status(402);
   }
+}
 };
-const FinancialUpdateInvoiceNo = async (req, res) => {
+const FinancialUpdateInvoiceNo =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
-    const {
-      IDcompanySub,
-      Referencenumber,
-      Referencenumberfinanc,
-      InvoiceNo
-    } = req.body;
+    const { IDcompanySub, Referencenumber, Referencenumberfinanc, InvoiceNo } =
+      req.body;
 
     // Expense
     await UPDATETablecompanySubProjectexpenseInvoiceNoapi([
@@ -365,10 +370,12 @@ const FinancialUpdateInvoiceNo = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 
 // ادخال الملفات
-const FinancialOperationsFile = async (req, res) => {
+const FinancialOperationsFile =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -386,38 +393,42 @@ const FinancialOperationsFile = async (req, res) => {
       parseInt(IDcompanySub),
       Referencenumber
     );
-      let arrayImage = SectionType === 'Revenue'? []: Boolean(result?.Image) ? JSON.parse(result?.Image) : [];
-      if (req.files && req.files.length > 0) {
-        for (let index = 0; index < req.files.length; index++) {
-          const element = req.files[index];
-          await uploaddata(element);
-          deleteFileSingle(element.filename, "upload");
-          arrayImage?.push(element.filename);
-        }
+    let arrayImage =
+      SectionType === "Revenue"
+        ? []
+        : Boolean(result?.Image)
+        ? JSON.parse(result?.Image)
+        : [];
+    if (req.files && req.files.length > 0) {
+      for (let index = 0; index < req.files.length; index++) {
+        const element = req.files[index];
+        await uploaddata(element);
+        deleteFileSingle(element.filename, "upload");
+        arrayImage?.push(element.filename);
       }
-      if (Boolean(SectionType) && req.files.length > 0) {
-        await UPDATETablecompanySubProjectFinancial(
-          [
-            JSON.stringify(arrayImage),
-            Referencenumberfinanc,
-            dataCampny?.id,
-            IDcompanySub,
-            Referencenumber,
-          ],
-          SectionType
-        );
-        res
-          .send({
-            success: "تم اضافة الملفات  بنجاح",
-          })
-          .status(200);
-
-    }else{
+    }
+    if (Boolean(SectionType) && req.files.length > 0) {
+      await UPDATETablecompanySubProjectFinancial(
+        [
+          JSON.stringify(arrayImage),
+          Referencenumberfinanc,
+          dataCampny?.id,
+          IDcompanySub,
+          Referencenumber,
+        ],
+        SectionType
+      );
       res
-      .send({
-        success: "فشل تنفيذ العملية",
-      })
-      .status(402);
+        .send({
+          success: "تم اضافة الملفات  بنجاح",
+        })
+        .status(200);
+    } else {
+      res
+        .send({
+          success: "فشل تنفيذ العملية",
+        })
+        .status(402);
     }
   } catch (error) {
     res
@@ -426,42 +437,46 @@ const FinancialOperationsFile = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 // جلب بيانات الملفات للمالية
-const BringDatafileFinancial = async (req,res) => {
-try {
+const BringDatafileFinancial =  () => {
+  return async (req, res) => {
+  try {
     const dataCampny = req.session.data;
     const {
-    IDcompanySub,
-    Referencenumber,
-    Referencenumberfinanc,
-    SectionType,
+      IDcompanySub,
+      Referencenumber,
+      Referencenumberfinanc,
+      SectionType,
     } = req.query;
     const NumberCompany = dataCampny.id;
     const result = await SELECTTableFinanceapi(
-    SectionType,
-    parseInt(Referencenumberfinanc),
-    parseInt(NumberCompany),
-    parseInt(IDcompanySub),
-    parseInt(Referencenumber)
+      SectionType,
+      parseInt(Referencenumberfinanc),
+      parseInt(NumberCompany),
+      parseInt(IDcompanySub),
+      parseInt(Referencenumber)
     );
     let arrayImage = Boolean(result?.Image) ? JSON.parse(result?.Image) : [];
     let arraynew = [];
     for (const item of arrayImage) {
-    const data = {
-    url: `https://storage.googleapis.com/demo_backendmoshrif_bucket-1`,
-    nameFile: item,
-    };
-    arraynew.push(data);
+      const data = {
+        url: `https://storage.googleapis.com/demo_backendmoshrif_bucket-1`,
+        nameFile: item,
+      };
+      arraynew.push(data);
     }
-    res.send({success:'تمت العملية بنجاح',data:arraynew}).status(200);
-} catch (error) {
-    res.send({success:'فشل تنفيذ العملية'}).status(402);
+    res.send({ success: "تمت العملية بنجاح", data: arraynew }).status(200);
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(402);
     console.log(error);
+  }
 }
 };
 // حذف الملفات
-const DeleteFileinFinancialOperationse = async (req, res) => {
+const DeleteFileinFinancialOperationse =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -493,14 +508,13 @@ const DeleteFileinFinancialOperationse = async (req, res) => {
     }
 
     if (Boolean(SectionType)) {
-
       await UPDATETablecompanySubProjectFinancial(
         [
           JSON.stringify(arraynew),
           Referencenumberfinanc,
           parseInt(NumberCompany),
           parseInt(IDcompanySub),
-          parseInt(Referencenumber)
+          parseInt(Referencenumber),
         ],
         SectionType
       );
@@ -524,10 +538,11 @@ const DeleteFileinFinancialOperationse = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 
-
-const DeleteOperationsFinancial = async (req, res) => {
+const DeleteOperationsFinancial =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -560,6 +575,52 @@ const DeleteOperationsFinancial = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: "Something went wrong" });
   }
+}
+};
+
+const AddfilesinArchives =  () => {
+  return async (req, res) => {
+  try {
+    const { IDcompanySub, Referencenumber } = req.body;
+    const project = await SELECTProjectStartdateapis(
+      Referencenumber,
+      IDcompanySub
+    );
+    if (Boolean(project)) {
+      const ProjectID = project?.id;
+      await uploaddata(req.file);
+      const dataFolder = await SELECTTablearchivesNamefolder(
+        "العقود والضمانات",
+        ProjectID
+      );
+      if(Boolean(dataFolder)){
+        let Children =
+          dataFolder?.children !== null ? JSON.parse(dataFolder?.children) : [];
+        Children.push(
+          {
+            id: Math.floor(100000 + Math.random() * 900000),
+            Date: new Date().toISOString(),
+            name: req.file?.filename,
+            type: req.file?.mimetype,
+            size: req.file?.size,
+          }
+        );
+  
+        await UPDATETablecompanySubProjectarchivesFolderinChildern([
+          JSON.stringify(Children),
+          dataFolder?.ArchivesID,
+        ]);
+      }
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+    }else{
+    res.send({ success: "المشروع غير موجود" }).status(200);
+    }
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+  }
+}
 };
 
 module.exports = {
@@ -571,5 +632,6 @@ module.exports = {
   DeleteOperationsFinancial,
   DeleteFileinFinancialOperationse,
   BringDatafileFinancial,
-  FinancialUpdateInvoiceNo
+  FinancialUpdateInvoiceNo,
+  AddfilesinArchives
 };

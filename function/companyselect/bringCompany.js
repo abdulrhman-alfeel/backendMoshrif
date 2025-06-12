@@ -1,107 +1,212 @@
+const redis = require("../../middleware/cache");
 const {
   SELECTTablecompanySub,
   SELECTTablecompanyName,
-  SELECTTablecompanySubAnotherway,
   SELECTTablecompanySubProject,
   SELECTTablecompany,
   SELECTTablecompanySubLinkevaluation,
   SELECTTableFinancialCustody,
   SELECTTableMaxFinancialCustody,
   SELECTTablecompanyRegistrationall,
+  SELECTTableUsernameBrinsh,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyonObject,
 } = require("../../sql/selected/selectuser");
 
-const bringDataCompanyRegistration = async (req, res) => {
-  try {
-    const {type,LastID} = req.query;
-    const company = await SELECTTablecompanyRegistrationall(type,LastID);
-    res.send({ masseg: "sucssfuly", data: company }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ masseg: "sucssfuly" }).status(400);
-  }
+const bringDataCompanyRegistration =  () => {
+  return async (req, res) => {
+    try {
+      const { type, LastID } = req.query;
+      const company = await SELECTTablecompanyRegistrationall(type, LastID);
+      res.send({ masseg: "sucssfuly", data: company }).status(200);
+    } catch (err) {
+      console.log(err);
+      res.send({ masseg: "sucssfuly" }).status(400);
+    }
+  };
 };
-const bringDataCompany = async (req, res) => {
+const bringDataCompany =  () => {
+  return async (req, res) => {
+    try {
+      // console.log(req.query);
+      const idCompany = req.query.idCompany;
+      const company = await SELECTTablecompany(idCompany);
+      res.send({ masseg: "sucssfuly", data: company }).status(200);
+    } catch (err) {
+      console.log(err);
+      res.send({ masseg: "فشل تنفيذ العملية" }).status(402);
+    }
+  };
+};
+
+const BringNameCompany =  () => {
+  return async (req, res) => {
   try {
-    // console.log(req.query);
-    const idCompany = req.query.idCompany;
-    const company = await SELECTTablecompany(idCompany);
-    res.send({ masseg: "sucssfuly", data: company }).status(200);
+    const IDCompany = req.query.IDCompany;
+    const result = await SELECTTableUsernameBrinsh(IDCompany);
+
+    res.send({ success: "successfuly", data: result }).status(200);
   } catch (err) {
     console.log(err);
-    res.send({ masseg: "فشل تنفيذ العملية" }).status(402);
+    res.send({ success: false }).status(400);
   }
+}
 };
 
 // طلب بيانات الشركة والفروع
-const biringDatabrinshCompany = async (req, res) => {
-  // console.log(req.body)
-  try {
-    const IDCompany = req.body.IDCompany;
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const job = userSession.job;
-
-    const Datausere = await SELECTTableusersCompanyonObject(
-      userSession.PhoneNumber
-    );
-    const validity = Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];;
-    const company = await SELECTTablecompanyName(IDCompany);
-    let arrayBrinsh = [];
-    if (job !== "Admin") {
-      for (let index = 0; index < validity?.length; index++) {
-        const element = validity[index];
-        const dataBRinsh = await SELECTTablecompanySubAnotherway(
-          element?.idBrinsh
-        );
-        arrayBrinsh.push(dataBRinsh);
+const biringDatabrinshCompany = () => {
+  return async (req, res) => {
+    try {
+      const IDCompany = req.body.IDCompany;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-    } else {
-      const dataCompany = await SELECTTablecompanySub(IDCompany);
-      arrayBrinsh = dataCompany;
-    }
 
-    let ObjectData = [];
-    for (let index = 0; index < arrayBrinsh.length; index++) {
-      const element = arrayBrinsh[index];
-      const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
-      const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
-      if (element !== undefined) {
-        ObjectBrinsh = {
-          ...element,
-          CountProject: Count[0]["COUNT(*)"],
-          Linkevaluation: Boolean(evaluation?.urlLink)
-            ? evaluation?.urlLink
-            : "",
-        };
-
-        ObjectData.push(ObjectBrinsh);
+         const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
+      
+      const cached = await redis.get(key);
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        // console.log("Data fetched from cache");
+        return res.send({ success: true, ...cachedData }).status(200);
       }
+
+    const result = await getCompanyBranchesForUser(IDCompany, userSession);
+
+    await redis.set(key, JSON.stringify(result), 'EX', 5 * 60 );
+      res
+        .send({
+          masseg: "succfuly",
+          ...result,
+        })
+        .status(200);
+    } catch (error) {
+      console.log(error);
     }
-    const Covenantnumber = await SELECTTableMaxFinancialCustody(IDCompany,'count',"COUNT(idOrder) AS count");
-    res
-      .send({
-        masseg: "succfuly",
-        data: ObjectData,
-        nameCompany: company.NameCompany,
-        CommercialRegistrationNumber: company.CommercialRegistrationNumber,
-        Country: company.Country,
-        Covenantnumber:Covenantnumber.count
-      })
-      .status(200);
-  } catch (error) {
-    console.log(error);
-  }
+  };
 };
 
+// Standalone function to get company branches and related data for a user
+async function getCompanyBranchesForUser(IDCompany, userSession) {
+  const Datausere = await SELECTTableusersCompanyonObject(
+    userSession.PhoneNumber
+  );
+  const validity =
+    Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
+  const company = await SELECTTablecompanyName(IDCompany);
+  let arrayBrinsh = [];
+  if (userSession.job !== "Admin") {
+    const where = validity
+      .map((items) => items?.idBrinsh)
+      .reduce((item, r) => `${String(item) + " , " + r}`);
+    const typeproject = `id IN (${where})`;
+    const dataCompany = await SELECTTablecompanySub(
+      IDCompany,
+      "*",
+      typeproject
+    );
+    arrayBrinsh = dataCompany;
+  } else {
+    const dataCompany = await SELECTTablecompanySub(IDCompany);
+    arrayBrinsh = dataCompany;
+  }
+
+  let ObjectData = [];
+  for (let index = 0; index < arrayBrinsh.length; index++) {
+    const element = arrayBrinsh[index];
+    const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
+    const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
+    if (element !== undefined) {
+      const ObjectBrinsh = {
+        ...element,
+        CountProject: Count[0]["COUNT(*)"],
+        Linkevaluation: Boolean(evaluation?.urlLink) ? evaluation?.urlLink : "",
+      };
+      ObjectData.push(ObjectBrinsh);
+    }
+  }
+  const Covenantnumber = await SELECTTableMaxFinancialCustody(
+    IDCompany,
+    "count",
+    "COUNT(idOrder) AS count"
+  );
+
+  return {
+    data: ObjectData,
+    nameCompany: company.NameCompany,
+    CommercialRegistrationNumber: company.CommercialRegistrationNumber,
+    Country: company.Country,
+    Covenantnumber: Covenantnumber.count,
+  };
+}
+
+
+
+// Standalone function to get company branches and related data for a user
+async function getCompanyBranchesForUser(IDCompany, userSession) {
+  const Datausere = await SELECTTableusersCompanyonObject(userSession.PhoneNumber);
+  const validity = Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
+  const company = await SELECTTablecompanyName(IDCompany);
+  let arrayBrinsh = [];
+  if (userSession.job !== "Admin") {
+    const where = validity
+      .map((items) => items?.idBrinsh)
+      .reduce((item, r) => `${String(item) + " , " + r}`);
+    const typeproject = `id IN (${where})`;
+    const dataCompany = await SELECTTablecompanySub(
+      IDCompany,
+      "*",
+      typeproject
+    );
+    arrayBrinsh = dataCompany;
+  } else {
+    const dataCompany = await SELECTTablecompanySub(IDCompany);
+    arrayBrinsh = dataCompany;
+  }
+
+  let ObjectData = [];
+  for (let index = 0; index < arrayBrinsh.length; index++) {
+    const element = arrayBrinsh[index];
+    const Count = await SELECTTablecompanySubProject(
+      element?.id,
+      0,
+      "Count"
+    );
+    const evaluation = await SELECTTablecompanySubLinkevaluation(
+      element?.id
+    );
+    if (element !== undefined) {
+      const ObjectBrinsh = {
+        ...element,
+        CountProject: Count[0]["COUNT(*)"],
+        Linkevaluation: Boolean(evaluation?.urlLink)
+          ? evaluation?.urlLink
+          : "",
+      };
+      ObjectData.push(ObjectBrinsh);
+    }
+  }
+  const Covenantnumber = await SELECTTableMaxFinancialCustody(
+    IDCompany,
+    "count",
+    "COUNT(idOrder) AS count"
+  );
+
+  return {
+    data: ObjectData,
+    nameCompany: company.NameCompany,
+    CommercialRegistrationNumber: company.CommercialRegistrationNumber,
+    Country: company.Country,
+    Covenantnumber: Covenantnumber.count,
+  };
+}
 //  طلبات بيانات العهد
 
-const BringDataFinancialCustody = async (req, res) => {
+const BringDataFinancialCustody =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -129,7 +234,7 @@ const BringDataFinancialCustody = async (req, res) => {
             userSession.PhoneNumber
           )
         : "";
-        let plase = parseInt(LastID)  === 0 ? ">" :"<" ;
+    let plase = parseInt(LastID) === 0 ? ">" : "<";
     switch (kindRequest) {
       case "معلقة":
         Bringaway =
@@ -156,13 +261,15 @@ const BringDataFinancialCustody = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(500);
   }
+}
 };
 
 const KnowuserpermissioninCovenant = (Validity, IDCompanySub, userName) => {
   try {
     const findBrinsh = Validity.find(
       (items) =>
-        parseInt(items.idBrinsh) === parseInt(IDCompanySub) && items.Acceptingcovenant === true
+        parseInt(items.idBrinsh) === parseInt(IDCompanySub) &&
+        items.Acceptingcovenant === true
     );
     if (findBrinsh) {
       return `IDCompanySub=${IDCompanySub}`;
@@ -178,5 +285,6 @@ module.exports = {
   biringDatabrinshCompany,
   bringDataCompany,
   BringDataFinancialCustody,
-  bringDataCompanyRegistration
+  bringDataCompanyRegistration,
+  BringNameCompany
 };

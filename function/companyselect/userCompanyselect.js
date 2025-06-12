@@ -13,17 +13,14 @@ const {
   SELECTTableLoginActivatActivatyall,
 } = require("../../sql/selected/selectuser");
 
-const Loginuser = async (req, res) => {
-  const PhoneNumber = req.query.PhoneNumber;
-  const token = req.query.token;
-  //    bring data from table user origin
-  // console.log(PhoneNumber, token);
+const Loginuser =  () => {
+  return async (req, res) => {
+  const {PhoneNumber,token} = req.query;
+  // bring data from table user origin
+
   const result = await SELECTTableusersCompanyVerification(PhoneNumber);
-  // console.log(result);
   await DELETETableLoginActivaty([PhoneNumber]);
-
   // bring validity users from table user table
-
   //   send operation login to table loginActivaty
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
@@ -59,12 +56,15 @@ const Loginuser = async (req, res) => {
       })
       .status(201);
   }
+}
 };
 const axios = require("axios");
 
-const verificationSend = (number, chack=null,title=null) => {
+const verificationSend = (number, chack = null, title = null) => {
   try {
-    let title1 = Boolean(chack)? `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`: title;
+    let title1 = Boolean(chack)
+      ? `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`
+      : title;
     const url = "https://el.cloud.unifonic.com/rest/Messages/SendBulk";
     const params = {
       AppSid: "ll3noHmCZwsFLD7B6ysdm2Vmhh3U0p",
@@ -88,10 +88,10 @@ const verificationSend = (number, chack=null,title=null) => {
   }
 };
 
-const LoginVerification = async (req, res) => {
+const LoginVerification =  () => {
+  return async (req, res) => {
   try {
-    const output = req.query.output;
-    const PhoneNumber = req.query.PhoneNumber;
+    const {output,PhoneNumber} = req.query;
     const result = await SELECTTableLoginActivaty(
       output,
       parseInt(PhoneNumber)
@@ -138,8 +138,10 @@ const LoginVerification = async (req, res) => {
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
+}
 };
-const LoginVerificationv2 = async (req, res) => {
+const LoginVerificationv2 =  () => {
+  return async (req, res) => {
   try {
     const output = req.query.output;
     const PhoneNumber = req.query.PhoneNumber;
@@ -188,46 +190,58 @@ const LoginVerificationv2 = async (req, res) => {
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
+}
 };
 
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
 
-const BringUserCompany = async (req, res) => {
+const BringUserCompany =  () => {
+  return async (req, res) => {
   try {
-    const IDCompany = req.query.IDCompany;
-    const result = await SELECTTableusersCompany(IDCompany);
-    res.send({ success: "successfuly", data: result }).status(200);
+    const {IDCompany,number,kind_request} = req.query;
+    let count = number || 0;
+    let kindrequest = kind_request === 'all' ? `AND id > ${count}` : `AND userName LIKE '%${kind_request}%'`;
+    const result = await SELECTTableusersCompany(IDCompany,kindrequest);
+    let array = [];
+    for (const pic of result) {
+      const validity = JSON.parse(pic.Validity) ?? [];
+
+      const validityextrct = await extractdataValidity(validity);
+      array.push({
+        id: pic.id,
+        userName: pic.userName,
+        job: pic.job,
+        jobHOM: pic.jobHOM,
+        jobdiscrption:pic.jobdiscrption,
+        PhoneNumber: pic.PhoneNumber,
+        IDNumber: pic.IDNumber,
+        image: pic.image,
+        Validity: validityextrct,
+      });
+    }
+
+    res.send({ success: "successfuly", data: array }).status(200);
   } catch (err) {
     console.log(err);
   }
+}
 };
-const BringNameCompany = async (req, res) => {
-  try {
-    const IDCompany = req.query.IDCompany;
-    const result = await SELECTTableUsernameBrinsh(IDCompany);
-    res.send({ success: "successfuly", data: result }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(400);
-  }
-};
+
 
 // جلب بيانات الاعضاء داخل الفرع
-const BringUserCompanyinBrinsh = async (req, res) => {
+const BringUserCompanyinBrinsh =  () => {
+  return async (req, res) => {
   try {
-    const IDCompany = req.query.IDCompany;
-    const idBrinsh = req.query.idBrinsh;
-    const type = req.query.type;
-    let CountID = 0;
-    const result = await SELECTTableusersCompany(IDCompany);
+    const { IDCompany, idBrinsh, type } = req.query;
 
+    const result = await SELECTTableusersCompany(IDCompany);
     const arrayvalidityuser = [];
-    for (let index = 0; index < result.length; index++) {
-      const element = result[index];
-      // console.log(element.Validity)
+    let CountID = 0;
+
+    for (const element of result) {
       const validity = JSON.parse(element.Validity) || [];
+
       if (validity.length > 0) {
-        // console.log(type, "mmmmmmmm");
         if (Number(type)) {
           const datanew = await BringUserinProject(
             validity,
@@ -239,25 +253,20 @@ const BringUserCompanyinBrinsh = async (req, res) => {
             arrayvalidityuser.push(datanew);
           }
         } else {
-          let resultdata;
-          if (type === "justuser" || type === "Acceptingcovenant") {
-            resultdata = validity?.find(
-              (item) => parseInt(item.idBrinsh) === parseInt(idBrinsh)
-            );
-          } else {
-            resultdata = validity?.find(
-              (item) =>
-                parseInt(item.idBrinsh) === parseInt(idBrinsh) &&
-                item.job === type
-            );
-          }
-          // console.log(resultdata, "hhhhhhhhhhhhhhhhhhhhh");
+          const resultdata = validity.find((item) => {
+            const isMatchingBranch =
+              parseInt(item.idBrinsh) === parseInt(idBrinsh);
+            return type === "justuser" || type === "Acceptingcovenant"
+              ? isMatchingBranch
+              : isMatchingBranch && item.job === type;
+          });
+
           if (resultdata) {
             arrayvalidityuser.push(element);
           }
 
           if (type !== "مدير الفرع") {
-            const Admin = validity?.find(
+            const Admin = validity.find(
               (item) =>
                 parseInt(item.idBrinsh) === parseInt(idBrinsh) &&
                 item.job === "مدير الفرع"
@@ -271,29 +280,279 @@ const BringUserCompanyinBrinsh = async (req, res) => {
       }
     }
 
-  
-    if (arrayvalidityuser.length > 0) {
-      res
-        .send({
-          success: "successfuly",
-          data: arrayvalidityuser,
-          idAdmin: CountID,
-        })
-        .status(200);
-    } else {
-      res
-        .send({
-          success: "notsuccessfuly",
-          data: arrayvalidityuser,
-          idAdmin: CountID,
-        })
-        .status(400);
-    }
+    const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
+    const responseMessage =
+      arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
+
+    res.status(responseStatus).send({
+      success: responseMessage,
+      data: arrayvalidityuser,
+      idAdmin: CountID,
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res
+      .status(500)
+      .send({ success: "error", message: "Internal Server Error" });
   }
+}
 };
 
+// بعد التعديل لعملية جلب بيانات الاعضاء
+const BringUserCompanyinv2 =  () => {
+  return async (req, res) => {
+  try {
+    const { IDCompany, idBrinsh, type,number ,kind_request} = req.query;
+    let checkGloble = {};
+    let arrayvalidityuser = [];
+    let bosss;
+    let kindrequest = kind_request === 'all' ? `AND id > ${number}` : `AND userName LIKE '%${kind_request}%'`;
+    const result = await SELECTTableusersCompany(IDCompany,kindrequest);
+    let CountID = 0;
+    for (const element of result) {
+      const validity = JSON.parse(element.Validity) || [];
+      if (Number(type)) {
+        const { checkGlobleuser, arrayvalidity } = await select_user_project(
+          result,
+          idBrinsh,
+          type
+        );
+        checkGloble = checkGlobleuser;
+        arrayvalidityuser = arrayvalidity;
+      } else {
+        const { checkGlobleuser, arrayvalidity, boss } =
+          await AcceptingcovenantAndbransh(type, result, idBrinsh);
+        checkGloble = checkGlobleuser;
+        arrayvalidityuser = arrayvalidity;
+        bosss = boss;
+
+        if (type !== "مدير الفرع") {
+          const Admin = validity.find(
+            (item) =>
+              parseInt(item.idBrinsh) === parseInt(idBrinsh) &&
+              item.job === "مدير الفرع"
+          );
+
+          if (Admin) {
+            CountID = element.id;
+          }
+        }
+      }
+    }
+    // const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
+    const responseMessage =
+      arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
+
+    res.status(200).send({
+      success: responseMessage,
+      data: arrayvalidityuser,
+      checkGloble: checkGloble,
+      idAdmin: CountID,
+      boss: bosss,
+    });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .send({ success: "error", message: "Internal Server Error" });
+  }
+}
+};
+
+
+
+// const BringUserCompanyinv2 = async (req, res) => {
+//   try {
+//     const { IDCompany, idBrinsh, type, select } = req.query;
+//     let checkGloble = {};
+//     let arrayvalidityuser = [];
+//     const result = await SELECTTableusersCompany(IDCompany);
+
+//     let CountID = 0;
+//     if (!Boolean(select)) {
+//       for (const element of result) {
+//         const validity = JSON.parse(element.Validity) || [];
+//         if (Number(type)) {
+//           const datanew = await BringUserinProject(
+//             validity,
+//             idBrinsh,
+//             type,
+//             element
+//           );
+
+//           if (Object.entries(datanew).length > 0) {
+//             arrayvalidityuser.push(datanew);
+//           }
+//         } else {
+//           const resultdata = validity.find((item) => {
+//             const isMatchingBranch =
+//               parseInt(item.idBrinsh) === parseInt(idBrinsh);
+//             return type === "justuser" || type === "Acceptingcovenant"
+//               ? isMatchingBranch
+//               : isMatchingBranch && item.job === type;
+//           });
+
+//           if (resultdata) {
+//             arrayvalidityuser.push({
+//               ...element,
+//               Validity: [],
+//             });
+//           }
+
+//           if (type !== "مدير الفرع") {
+//             const Admin = validity.find(
+//               (item) =>
+//                 parseInt(item.idBrinsh) === parseInt(idBrinsh) &&
+//                 item.job === "مدير الفرع"
+//             );
+
+//             if (Admin) {
+//               CountID = element.id;
+//             }
+//           }
+//         }
+//       }
+//     } else {
+//       if (select === "select_user_project") {
+//         const { checkGlobleuser, arrayvalidity } = await select_user_project(
+//           result,
+//           idBrinsh,
+//           type
+//         );
+//         checkGloble = checkGlobleuser;
+//         arrayvalidityuser = arrayvalidity;
+//       } else if (select === "select_user_bransh") {
+//         const { checkGlobleuser, arrayvalidity } =
+//           await AcceptingcovenantAndbransh(select, result, idBrinsh);
+//         checkGloble = checkGlobleuser;
+//         arrayvalidityuser = arrayvalidity;
+//       } else {
+//         const { checkGlobleuser, arrayvalidity } =
+//           await AcceptingcovenantAndbransh(select, result, idBrinsh);
+//         checkGloble = checkGlobleuser;
+//         arrayvalidityuser = arrayvalidity;
+//       }
+//     }
+
+//     const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
+//     const responseMessage =
+//       arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
+
+//     res.status(responseStatus).send({
+//       success: responseMessage,
+//       data: arrayvalidityuser,
+//       checkGloble: checkGloble,
+//       idAdmin: CountID,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res
+//       .status(500)
+//       .send({ success: "error", message: "Internal Server Error" });
+//   }
+// };
+const select_user_project = async (result, idBrinsh, type) => {
+  let checkGlobleuser = {};
+  let arrayvalidity = [];
+
+  for (const pic of result) {
+    const ValidityHom = JSON.parse(pic?.Validity) || [];
+
+    const findBrinsh = ValidityHom.find(
+      (item) => parseInt(item.idBrinsh) === parseInt(idBrinsh)
+    );
+
+    if (findBrinsh) {
+      const findProject = findBrinsh.project.find(
+        (items) => parseInt(items.idProject) === parseInt(type)
+      );
+      if (findProject) {
+        checkGlobleuser[pic.id] = {
+          id: pic.id,
+          Validity: findProject?.ValidityProject || [],
+        };
+      }
+      const validityextrct = await extractdataValidity(
+        JSON.parse(pic?.Validity)
+      );
+
+      arrayvalidity.push({
+        id: pic.id,
+        userName: pic.userName,
+        job: pic.job,
+        jobHOM: pic.jobHOM,
+        jobdiscrption:pic.jobdiscrption,
+        PhoneNumber: pic.PhoneNumber,
+        IDNumber: pic.IDNumber,
+        image: pic.image,
+        Validity: validityextrct,
+      });
+    }
+  }
+
+  return { checkGlobleuser, arrayvalidity };
+};
+
+const AcceptingcovenantAndbransh = async (kind, result, idBrinsh) => {
+  let checkGlobleuser = {};
+  let arrayvalidity = [];
+  let boss;
+  for (const pic of result) {
+    const findBrinsh = JSON.parse(pic?.Validity).find((i) => {
+      const verfiyBransh = parseInt(i.idBrinsh) === parseInt(idBrinsh);
+      return kind === "Acceptingcovenant"
+        ? verfiyBransh && i.Acceptingcovenant === true
+        : kind === "AdminSub"
+        ? verfiyBransh && i.job === "مدير الفرع"
+        : verfiyBransh;
+    });
+    if (findBrinsh) {
+      if (
+        findBrinsh.job === "مدير الفرع" &&
+        parseInt(findBrinsh.idBrinsh) === parseInt(idBrinsh)
+      ) {
+        boss = pic.id;
+      }
+      checkGlobleuser = {
+        ...checkGlobleuser,
+        [pic.id]: {
+          id: pic.id,
+        },
+      };
+    }
+    const validityextrct = await extractdataValidity(JSON.parse(pic?.Validity));
+    arrayvalidity.push({
+      id: pic.id,
+      userName: pic.userName,
+      job: pic.job,
+      jobHOM: pic.jobHOM,
+      jobdiscrption:pic.jobdiscrption,
+      PhoneNumber: pic.PhoneNumber,
+      IDNumber: pic.IDNumber,
+      image: pic.image,
+      Validity: validityextrct,
+    });
+  }
+
+  return { checkGlobleuser, arrayvalidity, boss };
+};
+
+const extractdataValidity = async (validity) => {
+  try {
+    let array = [];
+    for (const pic of validity) {
+      const result = await SELECTTableUsernameBrinsh(pic.idBrinsh);
+      array.push({
+        NameBransh: result?.NameSub,
+        job: pic?.job,
+        idBrinsh: pic?.idBrinsh,
+      });
+    }
+    return array;
+  } catch (error) {
+    console.log(error);
+  }
+};
 // استيراد المستخدمين حسب المشروع
 
 // const Validity = [
@@ -332,45 +591,45 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   return arrayUser;
 };
 
-const BringAllLoginActvity = async (req, res) => {
+const BringAllLoginActvity =  () => {
+  return async (req, res) => {
   const resultall = await SELECTTableLoginActivatActivatyall();
   res.send({ success: "تمت العملية بنجاح", data: resultall }).status(200);
+  }
 };
 
+// حلب صلاحيات المستخدم داخل الفرع
+const BringvalidityuserinBransh =  () => {
+  return async (req, res) => {
+  try {
+    const { PhoneNumber, idBrinsh } = req.query;
 
-// حلب صلاحيات المستخدم داخل الفرع 
-const BringvalidityuserinBransh = async(req,res) => {
-try{
-  const {PhoneNumber,idBrinsh} = req.query;
+    const resultuser = await SELECTTableusersCompanyVerification(PhoneNumber);
+    let arrayid = [];
 
-  const resultuser = await SELECTTableusersCompanyVerification(
-    PhoneNumber
-  );
-  let arrayid= [];
+    if (resultuser.length > 0) {
+      const validity = JSON.parse(resultuser[0].Validity);
 
-  if(resultuser.length > 0){
-    const validity = JSON.parse(resultuser[0].Validity);
-
-    validity.forEach((pic) => {
-      //  للتحقق من وجود المستخدم بداخل الفرع
-      if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
-        //  للتحقق من وجود تحديد عدد المشاريع
-        if (pic?.project.length > 0) {
-          arrayid = pic?.project.map(item => item?.idProject)
-        } 
-      }
-    });
+      validity.forEach((pic) => {
+        //  للتحقق من وجود المستخدم بداخل الفرع
+        if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
+          //  للتحقق من وجود تحديد عدد المشاريع
+          if (pic?.project.length > 0) {
+            arrayid = pic?.project.map((item) => item?.idProject);
+          }
+        }
+      });
+    }
+    res.send({ success: "تمت العملية بنجاح", data: arrayid }).status(200);
+  } catch (error) {
+    console.log(error);
   }
-  res.send({ success: "تمت العملية بنجاح", data: arrayid }).status(200);
-
-}catch(error){
-  console.log(error)
 }
-}
+};
 
-
-// فحص وجود المستخدم من عدم وجودة 
-const CheckUserispresentornot=async(req,res) =>{
+// فحص وجود المستخدم من عدم وجودة
+const CheckUserispresentornot =  () => {
+  return async (req, res) => {
   const userSession = req.session.user;
   if (!userSession) {
     res.status(401).send("Invalid session");
@@ -380,22 +639,22 @@ const CheckUserispresentornot=async(req,res) =>{
   const verificationFinduser = await SELECTTableusersCompanyVerification(
     PhoneNumber
   );
-  if(verificationFinduser.length <= 0){
-    res.status(200).send({success:false})
-  }else{
-    res.status(200).send({success:true})
-
+  if (verificationFinduser.length <= 0) {
+    res.status(200).send({ success: false });
+  } else {
+    res.status(200).send({ success: true });
   }
 }
+};
 module.exports = {
   BringAllLoginActvity,
   Loginuser,
   LoginVerification,
   BringUserCompany,
   BringUserCompanyinBrinsh,
-  BringNameCompany,
   CheckUserispresentornot,
   LoginVerificationv2,
   BringvalidityuserinBransh,
-  verificationSend
+  verificationSend,
+  BringUserCompanyinv2,
 };

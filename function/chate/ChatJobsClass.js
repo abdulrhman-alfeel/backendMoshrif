@@ -17,6 +17,7 @@ const {
   SELECTLastTableChateID,
   SELECTTableViewChateUser,
   SELECTLastmassgeuserinchat,
+  SELECTfilterTableChate,
 } = require("../../sql/selected/selected");
 const {
   ChateNotfication,
@@ -28,16 +29,17 @@ const { uploaddata, bucket } = require("../../bucketClooud");
 const { fFmpegFunction } = require("../../middleware/ffmpeg");
 const { io } = require("../../importMIn");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
 
 // عملية ارسال واستقبال لشات المراحل
 const ClassChatOpration = async (Socket, io) => {
   try {
-    
     Socket.on("send_message", async (data) => {
       // console.log("user connected", data);
-     const result = await OpreactionSend_message(data)
+      const result = await OpreactionSend_message(data);
+
       io.to(`${data.ProjectID}:${data?.StageID}`)
         .timeout(50)
         .emit("received_message", result);
@@ -47,23 +49,21 @@ const ClassChatOpration = async (Socket, io) => {
   }
 };
 
-
-const OpreactionSend_message = async(data)=>{
+const OpreactionSend_message = async (data) => {
   let result;
 
   const chackdata = Number(data?.StageID)
     ? await SELECTTableChateStageOtherroad(
         data.idSendr,
         data.Sender,
-        "idSendr=? AND Sender=?"
+        "trim(idSendr)=trim(?) AND trim(Sender)=trim(?)"
       )
     : await SELECTTableChateStageOtherroad(
         data.idSendr,
         data.Sender,
-        "idSendr=? AND Sender=?",
+        "trim(idSendr)=trim(?) AND trim(Sender)=trim(?)",
         "Chat"
       );
-
   if (!chackdata) {
     if (data.kind === "new") {
       const newData = Datadistribution(data);
@@ -75,7 +75,6 @@ const OpreactionSend_message = async(data)=>{
         await insertTableChate(newData);
         result = await SELECTTableChateotherroad(data.idSendr);
       }
-
 
       // "./upload"
 
@@ -116,14 +115,13 @@ const OpreactionSend_message = async(data)=>{
     };
   }
 
-  return result
-}
+  return result;
+};
 
-
-
-const Chackarrivedmassage = async (req,res) =>{
+const Chackarrivedmassage =  () => {
+  return async (req, res) => {
   const userSession = req.session.user;
-  const {StageID,idSendr} = req.query;
+  const { StageID, idSendr } = req.query;
   if (!userSession) {
     res.status(401).send("Invalid session");
     console.log("Invalid session");
@@ -142,65 +140,52 @@ const Chackarrivedmassage = async (req,res) =>{
         "Chat"
       );
 
-      res.send({success:chackdata}).status(200)
+  res.send({ success: chackdata }).status(200);
+    }
+};
 
-}
+const PostFilemassage =  () => {
+  return async (req, res) => {
+  try {
+    const videofile = req.file;
 
+    if (!videofile) {
+      return res.status(400).send("No video file uploaded");
+    }
 
-  const PostFilemassage = async (req, res) => {
-    try {
-      const videofile = req.file;
-  
-      if (!videofile) {
-        return res.status(400).send('No video file uploaded');
-      }
-  
-      const data = JSON.parse(req.body.data);
-      const result = await OpreactionSend_message(data);
-      
-      res.status(200).send({ success: "Full request" ,chatID:result.chatID});
+    const data = JSON.parse(req.body.data);
+    const result = await OpreactionSend_message(data);
 
-      io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
+    res.status(200).send({ success: "Full request", chatID: result.chatID });
+
+    io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
       .timeout(50)
       .emit("received_message", result);
 
-      await uploaddata(videofile);
-      // Check if the uploaded file is a video
-      if (videofile.mimetype === "video/mp4" || videofile.mimetype === "video/quicktime") {
-        const timePosition = "00:00:00.100";
-        let matchvideo = videofile.filename.match(/\.([^.]+)$/)[1];
-        let filename = String(videofile.filename).replace(matchvideo, "png");
-  
-        const pathdir = path.dirname(videofile.path);
-        const tempFilePathtimp = `${pathdir}/${filename}`;
-  
-        await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
-        await bucket.upload(tempFilePathtimp);
-      }
-      // حذف الملف
-      await deleteFileSingle(data.File.name, "upload", data.File.type);
-      
-    } catch (error) {
-      res.status(402).send({ success: "فشلة عملية رفع الملف" });
+    await uploaddata(videofile);
+    // Check if the uploaded file is a video
+    if (
+      videofile.mimetype === "video/mp4" ||
+      videofile.mimetype === "video/quicktime"
+    ) {
+      const timePosition = "00:00:00.100";
+      let matchvideo = videofile.filename.match(/\.([^.]+)$/)[1];
+      let filename = String(videofile.filename).replace(matchvideo, "png");
+
+      const pathdir = path.dirname(videofile.path);
+      const tempFilePathtimp = `${pathdir}/${filename}`;
+
+      await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
+      await bucket.upload(tempFilePathtimp);
     }
-  };
-const Oprationditals = async (data) => {
-  let result;
-  const newData = Datadistribution(data);
-  if (Number(data?.StageID)) {
-    await insertTableChateStage(newData);
-    result = await SELECTTableChateStageOtherroad(data.idSendr);
-    //  ادخال البيانات جدول البوستات
-    insertPostURL(data);
-  } else {
-    await insertTableChate(newData);
-    result = await SELECTTableChateotherroad(data.idSendr);
+    // حذف الملف
+    await deleteFileSingle(data.File.name, "upload", data.File.type);
+  } catch (error) {
+    res.status(402).send({ success: "فشلة عملية رفع الملف" });
   }
-  result.File = JSON.parse(result.File);
-  result.Reply = JSON.parse(result.Reply);
-  result.arrived = true;
-  return result;
+}
 };
+
 const Datadistribution = (data) => {
   try {
     let newData = [
@@ -249,67 +234,95 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
 
 // **************
 // جلب الرسائل الناقصة
-const ClassChackTableChat = async (req, res) => {
-  try {
-    const ProjectID = req.query.ProjectID;
-    const StageID = req.query.StageID;
-    const lengthChat = req.query.lengthChat;
-    const userSession = req.session.user;
+const ClassChackTableChat = () => {
+  return async (req, res) => {
+    try {
+      const { ProjectID, StageID, lengthChat } = req.query;
 
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    let arrayResult = [];
-    //  جلب طول البيانات
-    const Listchat = Number(StageID)
-      ? await SELECTLastmassgeuserinchat(
-          ProjectID,
-          StageID,
-          userSession.userName
-        )
-      : await SELECTLastmassgeuserinchat(
-          ProjectID,
-          StageID,
-          userSession.userName,
-          "Chat"
-        );
-    // جلب البيانات
-    let result;
-    if (Listchat.last_id !== null && lengthChat > 0) {
-      result = Number(StageID)
-        ? await SELECTLastTableChateStageDontEmpty(
-            ProjectID,
-            StageID,
-            Listchat?.last_id
-          )
-        : await SELECTLastTableChateTypeDontEmpty(
-            ProjectID,
-            StageID,
-            Listchat?.last_id
-          );
-    } else {
-      result = Number(StageID)
-        ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
-        : await SELECTLastTableChate(ProjectID, StageID, 80);
-    }
-    // فرز البيانات
-    if (result?.length > 0 && result !== undefined) {
-      for (let index = 0; index < result.length; index++) {
-        const element = result[index];
-        element.File = JSON.parse(element.File);
-        element.Reply = JSON.parse(element.Reply);
-        arrayResult.push(element);
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
+      let arrayResult = [];
+      //  جلب طول البيانات
+      const Listchat = Number(StageID)
+        ? await SELECTLastmassgeuserinchat(
+            ProjectID,
+            StageID,
+            userSession.userName
+          )
+        : await SELECTLastmassgeuserinchat(
+            ProjectID,
+            StageID,
+            userSession.userName,
+            "Chat"
+          );
+      // جلب البيانات
+      let result;
+      if (Listchat.last_id !== null && lengthChat > 0) {
+        result = Number(StageID)
+          ? await SELECTLastTableChateStageDontEmpty(
+              ProjectID,
+              StageID,
+              Listchat?.last_id
+            )
+          : await SELECTLastTableChateTypeDontEmpty(
+              ProjectID,
+              StageID,
+              Listchat?.last_id
+            );
+      } else {
+        result = Number(StageID)
+          ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
+          : await SELECTLastTableChate(ProjectID, StageID, 80);
+      }
+      // فرز البيانات
+      if (result?.length > 0 && result !== undefined) {
+        for (let index = 0; index < result.length; index++) {
+          const element = result[index];
+          element.File = JSON.parse(element.File);
+          element.Reply = JSON.parse(element.Reply);
+          arrayResult.push(element);
+        }
+      }
+      // ارسال البيانات
+      res.send({ success: true, data: arrayResult }).status(200);
+    } catch (err) {
+      console.log(err);
+      res.send({ success: false }).status(400);
     }
-    // ارسال البيانات
-    res.send({ success: true, data: arrayResult }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(400);
-  }
+  };
 };
 
+const filterTableChat = () => {
+  return async (req, res) => {
+    try {
+      const { userName, count, ProjectID, Type } = req.query;
+      let array = [];
+      const Count = Boolean(count) ? count : 0;
+      if (Boolean(count)) {
+        const result = await SELECTfilterTableChate(
+          ProjectID,
+          Type,
+          userName,
+          Count
+        );
+        for (const pic of result) {
+          array.push({
+            ...pic,
+            File: JSON.parse(pic.File),
+            Reply: JSON.parse(pic.Reply),
+          });
+        }
+      }
+      res.send({ success: "تمت العملية بنجاح", data: array }).status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ المهمة", data: [] }).status(200);
+    }
+  };
+};
 // عملية مشاهدة لرسائل شات
 const ClassChatOprationView = async (data) => {
   return new Promise(async (resolve, reject) => {
@@ -338,40 +351,51 @@ const ClassChatOprationView = async (data) => {
   });
 };
 //  لطلب المشاهدات الناقسة للرسالة
-const ClassViewChat = async (req, res) => {
-  const type = req.query.type;
-  const chatID = req.query.chatID;
-  const data = { chatID: chatID, type: type };
+const ClassViewChat = () => {
+  return async (req, res) => {
+    const { type, chatID } = req.query;
+    const data = { chatID: chatID, type: type };
 
-  const result = await verification(data);
+    const result = await verification(data);
 
-  res.send({ success: true, data: result }).status(200);
+    res.send({ success: true, data: result }).status(200);
+  };
 };
 
 //  لاستقبال مشاهدات الرسائل
-const ClassreceiveMessageViews = async (req, res) => {
-  const userName = req.body.userName;
-  const ProjectID = req.body.ProjectID;
-  const type = req.body.type;
-  const result = await SELECTLastTableChateID(ProjectID, type, userName);
+const ClassreceiveMessageViews =  () => {
+  return async (req, res) => {
+    try {
+      const { userName, ProjectID, type } = req.body;
 
-  for (let index = 0; index < result.length; index++) {
-    const element = result[index];
-    const data = await SELECTTableViewChateUser(element.chatID, userName, type);
+      const result = await SELECTLastTableChateID(ProjectID, type, userName);
 
-    if (data?.length === 0) {
-      const viewSend = {
-        ProjectID: ProjectID,
-        chatID: element.chatID,
-        userName: userName,
-        Date: new Date(),
-        type: type,
-      };
+      for (let index = 0; index < result.length; index++) {
+        const element = result[index];
+        const data = await SELECTTableViewChateUser(
+          element.chatID,
+          userName,
+          type
+        );
 
-      await ClassChatOprationView(viewSend);
+        if (data?.length === 0) {
+          const viewSend = {
+            ProjectID: ProjectID,
+            chatID: element.chatID,
+            userName: userName,
+            Date: new Date(),
+            type: type,
+          };
+
+          await ClassChatOprationView(viewSend);
+        }
+      }
+      res.status(200).send("Message views updated successfully");
+    } catch (error) {
+      console.error("Error updating message views:", error);
+      res.status(500).send("Failed to update message views");
     }
-  }
-  res.status(200).send("Message views updated successfully");
+  };
 };
 
 const verification = async (data) => {
@@ -389,15 +413,93 @@ const verification = async (data) => {
   }
 };
 
+const { GoogleAuth } = require("google-auth-library");
+const initializeUpload =  () => {
+  return async (req, res) => {
+  // قراءة بيانات الاعتماد من ملف JSON
+  const auth = new GoogleAuth({
+    keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
+    scopes: ["https://www.googleapis.com/auth/cloud-platform"], // نطاقات الوصول المطلوبة
+  });
+
+  const client = await auth.getClient();
+  const accessToken = await client.getAccessToken();
+  const { fileName } = req.query;
+
+  const uniqueFileName = `${uuidv4()}-${fileName}`;
+
+  res.send({ token: accessToken.token, nameFile: uniqueFileName }).status(200);
+}
+};
+
+const generateResumableUrl =  () => {
+  return async (req, res) => {
+  try {
+    const { fileName, fileType } = req.body;
+
+    const uniqueFileName = `${uuidv4()}-${fileName}`;
+    const file = bucket.file(uniqueFileName);
+
+    // Generate resumable upload URL
+    const [uri] = await file.createResumableUpload({
+      origin: "*",
+      metadata: {
+        contentType: fileType,
+      },
+    });
+
+    // قراءة بيانات الاعتماد من ملف JSON
+    const auth = new GoogleAuth({
+      keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
+      scopes: ["https://www.googleapis.com/auth/cloud-platform"], // نطاقات الوصول المطلوبة
+    });
+
+    const client = await auth.getClient();
+    const accessToken = await client.getAccessToken();
+
+    res.status(200).json({
+      fileId: file.id,
+      nameFile: uniqueFileName,
+      token: accessToken.token,
+      uri,
+    });
+
+    console.log(uri);
+  } catch (error) {
+    console.error("Error generating resumable upload URL:", error);
+    res.status(500).json({ error: "Failed to generate resumable upload URL" });
+  }
+}
+};
+
+const insertdatafile =  () => {
+  return async (req, res) => {
+  try {
+    const result = await OpreactionSend_message(req.body);
+    res.send({ chatID: result?.chatID }).status(200);
+
+    io.to(`${result.ProjectID}:${result?.StageID}`)
+      .timeout(50)
+      .emit("received_message", result);
+  } catch (err) {
+    res.send({ success: "فشل تنفيذ المهمة" }).status(401);
+
+    // console.log(err.message);
+  }
+}
+};
+
 module.exports = {
   ClassChatOpration,
   ClassChatOprationView,
   ClassChackTableChat,
-  Oprationditals,
   ClassViewChat,
   ClassreceiveMessageViews,
   PostFilemassage,
   Chackarrivedmassage,
-  OpreactionSend_message
-
+  OpreactionSend_message,
+  initializeUpload,
+  insertdatafile,
+  generateResumableUrl,
+  filterTableChat,
 };

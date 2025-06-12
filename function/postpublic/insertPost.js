@@ -37,10 +37,10 @@ const insertPostURL = async (items) => {
     console.log(err.message);
   }
 };
-const Likesinsert = async (req, res) => {
+const Likesinsert =  () => {
+  return async (req, res) => {
   try {
-    const PostId = req.query.PostID;
-    const userName = req.query.userName;
+    const {PostId,userName} = req.query;
 
     const result = await SELECTTableLikesPostPublicotherroad(PostId, userName);
     if (result === undefined || result === false) {
@@ -53,14 +53,14 @@ const Likesinsert = async (req, res) => {
     console.log(err);
     res.send({ success: false }).status(400);
   }
+}
 };
 
-const Commentinsert = async (req, res) => {
+const Commentinsert =  () => {
+  return async (req, res) => {
   try {
     
-    const PostId = req.body.PostId;
-    const commentText = req.body.commentText;
-    const userName = req.body.userName;
+    const {PostId,commentText,userName} = req.body;
 
     await insertTableCommentPostPublic([
       PostId,
@@ -75,6 +75,7 @@ const Commentinsert = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
 module.exports = { Likesinsert, Commentinsert ,  insertPostURL};

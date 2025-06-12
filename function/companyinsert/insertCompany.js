@@ -23,10 +23,10 @@ const { verificationSend } = require("../companyselect/userCompanyselect");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
-const bcrypt = require('bcrypt');
 
 // اضافة شركة جديدة
-const insertDataCompany = async (req, res) => {
+const insertDataCompany =  () => {
+  return async (req,res) => {
   try {
     const {CommercialRegistrationNumber,NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName} = req.body;
     const checkVerifction = await SelectVerifycompanyexistence(
@@ -67,11 +67,12 @@ const insertDataCompany = async (req, res) => {
         ]);
         res
           .send({
-            success: "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات ",
+            success: "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات",
           })
           .status(200);
       
-      }
+      };
+    await sendNotificationCompany(NameCompany);
     }else{
       res
       .send({
@@ -80,7 +81,6 @@ const insertDataCompany = async (req, res) => {
       .status(200);
     }
 
-    await sendNotificationCompany(NameCompany);
   } catch (error) {
     // console.log(error);
     res
@@ -90,7 +90,9 @@ const insertDataCompany = async (req, res) => {
     .status(402);
 
   }
+}
 };
+
 
 
 
@@ -109,16 +111,11 @@ const sendNotificationCompany = async (name) =>{
 }
 
 //  اضافة فرع جديد
-const inseertCompanybrinsh = async (req, res) => {
+const inseertCompanybrinsh =  () => {
+  return async (req, res) => {
   try {
-    const NumberCompany = req.body.NumberCompany;
-    const NameSub = req.body.NameSub;
-    const BranchAddress = req.body.BranchAddress;
-    const Email = req.body.Email;
-    const PhoneNumber = req.body.PhoneNumber;
-    const check = req.body.check;
-    const checkGloble = req.body.checkGloble;
-
+    const {NumberCompany,NameSub,BranchAddress,Email,PhoneNumber,check,checkGloble} = req.body;
+    console.log(Boolean(NameSub) && Boolean(BranchAddress),req.body);
     if (Boolean(NameSub) && Boolean(BranchAddress)) {
       const chackfromCompany = await SELECTTablecompanyName(NumberCompany);
       if (chackfromCompany !== undefined) {
@@ -189,13 +186,14 @@ const inseertCompanybrinsh = async (req, res) => {
       })
       .status(400);
   }
+}
 };
 
 // اضافة رابط تقييم الجودة
-const InsertLinkevaluation = async (req, res) => {
+const InsertLinkevaluation =  () => {
+  return async (req, res) => {
   try {
-    const IDcompanySub = req.body.IDcompanySub;
-    const Linkevaluation = req.body.Linkevaluation;
+    const {IDcompanySub,Linkevaluation } = req.body;
 
     const result = await SELECTTablecompanySubLinkevaluation(IDcompanySub);
     if (Boolean(result)) {
@@ -208,10 +206,12 @@ const InsertLinkevaluation = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(500);
   }
+}
 };
 
 // اغلاق عمليات المالية يدوياً
-const OpenOrCloseopreationStopfinance = async (req, res) => {
+const OpenOrCloseopreationStopfinance =  () => {
+  return async (req, res) => {
   try {
     const id = req.query.idCompany;
     let DisabledFinance;
@@ -230,12 +230,13 @@ const OpenOrCloseopreationStopfinance = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
 
-
 //  طلبات العهد
-const insertRequestFinancialCustody = async (req,res) => {
+const insertRequestFinancialCustody =  () => {
+  return async (req, res) => {
   try{
     const userSession = req.session.user;
     if (!userSession) {
@@ -263,8 +264,8 @@ const insertRequestFinancialCustody = async (req,res) => {
   }catch(error){
     console.log(error);
     res.send({success:'فشل تنفيذ العملية'}).status(501)
-
   }
+}
 }
 module.exports = {
   insertDataCompany,

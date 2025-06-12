@@ -1,0 +1,1 @@
+20250519	13:34:27	f11ec23b-3c31-4ca3-aba6-6a5fea5739dd	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompanyinv2?IDCompany=1&idBrinsh=1&type=1&select=%22select_user_project%22	undefined

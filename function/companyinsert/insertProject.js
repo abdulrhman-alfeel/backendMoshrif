@@ -46,8 +46,18 @@ const {
 } = require("../notifcation/NotifcationProject");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 
-const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,Contractsigningdate) =>{
-  try{
+const OpreationProjectInsertv2 = async (
+  IDcompanySub,
+  Nameproject,
+  Note,
+  TypeOFContract,
+  GuardNumber,
+  LocationProject,
+  numberBuilding,
+  Referencenumber,
+  Contractsigningdate
+) => {
+  try {
     await insertTablecompanySubProjectv2([
       IDcompanySub,
       Nameproject,
@@ -56,7 +66,7 @@ const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFCont
       GuardNumber,
       LocationProject,
       numberBuilding,
-      Referencenumber
+      Referencenumber,
     ]);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
     let dataStages = await StageTempletXsl(TypeOFContract);
@@ -90,46 +100,78 @@ const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFCont
     await Stage(table, Contractsigningdate);
     await StageSub(tablesub);
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-
-  }catch(error){console.log(error)}
-} 
-const projectBrinshv2 = async (req, res) => {
-  //
-  const userSession = req.session.user;
-  if (!userSession) {
-    res.status(401).send("Invalid session");
-    console.log("Invalid session");
-  }
-  try {
-    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber}= req.body;
-    const Contractsigningdate = new Date();
-    if (Boolean(Nameproject)) {
-      const locationsstring = String(LocationProject).startsWith('https')? LocationProject : null;
-      await OpreationProjectInsertv2(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,locationsstring,numberBuilding,Referencenumber,Contractsigningdate);
-      res
-        .send({
-          success: "تم انشاء مشروع بنجاح",
-        })
-        .status(200);
-      await Projectinsert(IDcompanySub, userSession.userName);
-    } else {
-      res
-        .send({
-          success: "يجب اضافة اسم للمشروع ",
-        })
-        .status(200);
-    }
-  } catch (err) {
-    console.log(err);
-    res
-      .send({
-        success: "فشل تنفيذ العملية",
-      })
-      .status(401);
+  } catch (error) {
+    console.log(error);
   }
 };
-const OpreationProjectInsert = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate) =>{
-  try{
+const projectBrinshv2 = (uploadQueue) => {
+  return async (req, res) => {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    try {
+      const {
+        IDcompanySub,
+        Nameproject,
+        Note,
+        TypeOFContract,
+        GuardNumber,
+        LocationProject,
+        numberBuilding,
+        Referencenumber,
+      } = req.body;
+      const Contractsigningdate = new Date();
+      if (Boolean(Nameproject)) {
+        const locationsstring = String(LocationProject).startsWith("https")
+          ? LocationProject
+          : null;
+        await OpreationProjectInsertv2(
+          IDcompanySub,
+          Nameproject,
+          Note,
+          TypeOFContract,
+          GuardNumber,
+          locationsstring,
+          numberBuilding,
+          Referencenumber,
+          Contractsigningdate
+        );
+        res
+          .send({
+            success: "تم انشاء مشروع بنجاح",
+          })
+          .status(200);
+        await Projectinsert(IDcompanySub, userSession.userName);
+      } else {
+        res
+          .send({
+            success: "يجب اضافة اسم للمشروع ",
+          })
+          .status(200);
+      }
+    } catch (err) {
+      console.log(err);
+      res
+        .send({
+          success: "فشل تنفيذ العملية",
+        })
+        .status(401);
+    }
+  };
+};
+const OpreationProjectInsert = async (
+  IDcompanySub,
+  Nameproject,
+  Note,
+  TypeOFContract,
+  GuardNumber,
+  LocationProject,
+  numberBuilding,
+  Contractsigningdate
+) => {
+  try {
     await insertTablecompanySubProject([
       IDcompanySub,
       Nameproject,
@@ -170,42 +212,56 @@ const OpreationProjectInsert = async (IDcompanySub,Nameproject,Note,TypeOFContra
     await Stage(table, Contractsigningdate);
     await StageSub(tablesub);
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-
-  }catch(error){console.log(error)}
-} 
-const projectBrinsh = async (req, res) => {
+  } catch (error) {
+    console.log(error);
+  }
+};
+const projectBrinsh = (uploadQueue) => {
   //
-  const userSession = req.session.user;
-  if (!userSession) {
-    res.status(401).send("Invalid session");
-    console.log("Invalid session");
-  }
-  try {
-    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding}= req.body;
-    const Contractsigningdate = new Date();
-    if (Boolean(Nameproject)) {
-      await OpreationProjectInsert(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate);
-      res
-        .send({
-          success: "تم انشاء مشروع بنجاح",
-        })
-        .status(200);
-      await Projectinsert(IDcompanySub, userSession.userName);
-    } else {
-      res
-        .send({
-          success: "يجب اضافة اسم للمشروع ",
-        })
-        .status(200);
+  return async (req, res) => {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
     }
-  } catch (err) {
-    console.log(err);
-    res
-      .send({
+    try {
+      const {
+        IDcompanySub,
+        Nameproject,
+        Note,
+        TypeOFContract,
+        GuardNumber,
+        LocationProject,
+        numberBuilding,
+      } = req.body;
+      const Contractsigningdate = new Date();
+      if (Boolean(Nameproject)) {
+        await OpreationProjectInsert(
+          IDcompanySub,
+          Nameproject,
+          Note,
+          TypeOFContract,
+          GuardNumber,
+          LocationProject,
+          numberBuilding,
+          Contractsigningdate
+        );
+        res.status(200).send({
+          success: "تم انشاء مشروع بنجاح",
+        });
+        await Projectinsert(IDcompanySub, userSession.userName);
+      } else {
+        res.status(200).send({
+          success: "يجب اضافة اسم للمشروع ",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(401).send({
         success: "فشل تنفيذ العملية",
-      })
-      .status(401);
-  }
+      });
+    }
+  };
 };
 
 // حساب الايام للمراحل المشروع
@@ -335,66 +391,69 @@ const StageSubTempletXlsx = async (StageID) => {
 };
 
 // وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
-const StageTemplet = async (req, res) => {
-  try {
-    // const Type = req.body.Type;
-    // const StageName = req.body.StageName;
-    // const OrderBy = req.body.OrderBy;
-    // const Days = req.body.Days;
-    // const Difference = req.body.Difference;
-    const teble = req.body.teble;
-    for (let index = 0; index < teble.length; index++) {
-      const item = teble[index];
-      // console.log(item);
-      await insertTablecompanySubProjectStagetemplet([
-        item.id,
-        item.Type,
-        item.StageName,
-        item.Days,
-        item.OrderBy,
-      ]);
+const StageTemplet = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      // const Type = req.body.Type;
+      // const StageName = req.body.StageName;
+      // const OrderBy = req.body.OrderBy;
+      // const Days = req.body.Days;
+      // const Difference = req.body.Difference;
+      const teble = req.body.teble;
+      for (let index = 0; index < teble.length; index++) {
+        const item = teble[index];
+        // console.log(item);
+        await insertTablecompanySubProjectStagetemplet([
+          item.id,
+          item.Type,
+          item.StageName,
+          item.Days,
+          item.OrderBy,
+        ]);
+      }
+      res
+        .send({
+          success: true,
+        })
+        .status(200);
+    } catch (err) {
+      console.log(err);
+      res
+        .send({
+          success: false,
+        })
+        .status(401);
     }
-    res
-      .send({
-        success: true,
-      })
-      .status(200);
-  } catch (err) {
-    console.log(err);
-    res
-      .send({
-        success: false,
-      })
-      .status(401);
-  }
+  };
 };
 
 // وظيف ادخال بييانات المراحلة الفرعية السنبل
-const StageSubTemplet = async (req, res) => {
-  // console.log(req.body);
-  try {
-    const teble = req.body.teble;
-    for (let index = 0; index < teble.length; index++) {
-      const item = teble[index];
-      // console.log(item);
-      await insertTablecompanySubProjectStageSubtemplet([
-        item.StageID,
-        item.StageSubName,
-      ]);
+const StageSubTemplet = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const teble = req.body.teble;
+      for (let index = 0; index < teble.length; index++) {
+        const item = teble[index];
+        // console.log(item);
+        await insertTablecompanySubProjectStageSubtemplet([
+          item.StageID,
+          item.StageSubName,
+        ]);
+      }
+      res
+        .send({
+          success: true,
+        })
+        .status(200);
+    } catch (err) {
+      console.log(err);
+      res
+        .send({
+          success: false,
+        })
+        .status(401);
     }
-    res
-      .send({
-        success: true,
-      })
-      .status(200);
-  } catch (err) {
-    console.log(err);
-    res
-      .send({
-        success: false,
-      })
-      .status(401);
-  }
+  };
 };
 
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
@@ -457,6 +516,7 @@ const StageSub = async (teble) => {
   try {
     for (let index = 0; index < teble.length; index++) {
       const item = teble[index];
+
       await insertTablecompanySubProjectStagesSub([
         item.StageID,
         item.ProjectID,
@@ -470,215 +530,230 @@ const StageSub = async (teble) => {
 //
 
 // إضافة مرحلة جديدة إلى المشروع
-const InsertStage = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const StageName = req.body.StageName;
-    const ProjectID = req.body.ProjectID;
-    const TypeOFContract = req.body.TypeOFContract;
-    const Days = req.body.Days;
-    if (ProjectID > 0 && Boolean(StageName)) {
-      const findName = await SELECTTablecompanySubProjectStageCUST(
-        ProjectID,
-        StageName
-      );
-      // console.log(findName);
-      if (findName.length <= 0) {
-        const result =
-          await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
-            ProjectID
-          );
-        // console.log(result);
-
-        let StartDate;
-        let EndDate;
-        let OrderBy;
-        Time = new Date(result.EndDate);
-        StartDate = Time.toDateString();
-        const dataend = new Date(Time.setDate(Time.getDate() + Days));
-        EndDate = dataend.toDateString();
-        OrderBy = parseInt(result.OrderBy) + 1;
-        // console.log(result);
-        await insertTablecompanySubProjectStageCUST([
-          result.StageID + 1,
-          ProjectID,
-          TypeOFContract,
-          StageName,
-          Days,
-          StartDate,
-          EndDate,
-          OrderBy,
-        ]);
-
-        res.send({ success: "تمت العملية بنجاح" }).status(200);
-        await Stageinsert(ProjectID, 0, userSession.userName);
-      } else {
-        res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
+const InsertStage = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-    } else {
-      res.send({ success: "يجب ادخال اسم للمرحلة الجديدة" }).status(200);
+      const StageName = req.body.StageName;
+      const ProjectID = req.body.ProjectID;
+      const TypeOFContract = req.body.TypeOFContract;
+      const Days = req.body.Days;
+      if (ProjectID > 0 && Boolean(StageName)) {
+        const findName = await SELECTTablecompanySubProjectStageCUST(
+          ProjectID,
+          StageName
+        );
+        let Daye = Boolean(Days) ? Days : 0;
+        // console.log(findName);
+        if (findName.length <= 0) {
+          const result =
+            await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
+              ProjectID
+            );
+          // console.log(result);
+
+          let StartDate;
+          let EndDate;
+          let OrderBy;
+          Time = new Date(result.EndDate);
+          StartDate = Time.toDateString();
+          const dataend = new Date(Time.setDate(Time.getDate() + Daye));
+          EndDate = dataend.toDateString();
+          OrderBy = parseInt(result.OrderBy) + 1;
+          // console.log(result);
+
+          await insertTablecompanySubProjectStageCUST([
+            result.StageID + 1,
+            ProjectID,
+            TypeOFContract,
+            `${StageName} ${OrderBy}`,
+            Daye,
+            StartDate,
+            EndDate,
+            OrderBy,
+          ]);
+
+          res.send({ success: "تمت العملية بنجاح" }).status(200);
+          await Stageinsert(ProjectID, 0, userSession.userName);
+        } else {
+          res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
+        }
+      } else {
+        res.send({ success: "يجب ادخال اسم للمرحلة الجديدة" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: " فشل العملية" }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-    res.send({ success: " فشل العملية" }).status(401);
-  }
+  };
 };
 
 //  إضافة مرحلة فرعية جديدة
 
-const insertStageSub = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const StageID = req.body.StageID;
-    const ProjectID = req.body.ProjectID;
-    const StageSubName = req.body.StageSubName;
-    if (Boolean(StageSubName)) {
-      const VerifyName = await SELECTTablecompanySubProjectStagesSub(
-        ProjectID,
-        StageID,
-        StageSubName
-      );
-      // console.log(VerifyName);
-      if (VerifyName.length <= 0) {
-        await insertTablecompanySubProjectStagesSub([
-          StageID,
-          ProjectID,
-          StageSubName,
-        ]);
-        res.send({ success: "تمت العملية بنجاح" }).status(200);
-        await StageSubinsert(ProjectID, StageID, userSession.userName);
-      } else {
-        res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
+const insertStageSub = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-    } else {
-      res.send({ success: "يرجى ادخال اسم الخطوة" }).status(200);
+      const StageID = req.body.StageID;
+      const ProjectID = req.body.ProjectID;
+      const StageSubName = req.body.StageSubName;
+      if (Boolean(StageSubName)) {
+        const VerifyName = await SELECTTablecompanySubProjectStagesSub(
+          ProjectID,
+          StageID,
+          StageSubName
+        );
+        // console.log(VerifyName);
+        if (VerifyName.length <= 0) {
+          await insertTablecompanySubProjectStagesSub([
+            StageID,
+            ProjectID,
+            StageSubName,
+          ]);
+          res.send({ success: "تمت العملية بنجاح" }).status(200);
+          await StageSubinsert(ProjectID, StageID, userSession.userName);
+        } else {
+          res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
+        }
+      } else {
+        res.send({ success: "يرجى ادخال اسم الخطوة" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: false }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-    res.send({ success: false }).status(401);
-  }
+  };
 };
 // وظيفة ادخال ملاحظات المرحلة الرئيسية
-const NotesStage = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    if (req.file) {
-      await uploaddata(req.file);
-      deleteFileSingle(req.file.filename, "upload");
-    }
-    const StagHOMID = req.body.StagHOMID;
-    const ProjectID = req.body.ProjectID;
-    const Type = req.body.Type;
-    const Note = req.body.Note;
-    const RecordedBy = req.body.RecordedBy;
-    const countdayDelay = req.body.countdayDelay;
-    const ImageAttachment = req.file ? req.file?.filename : null;
-    if (Boolean(Type) && Boolean(Note)) {
-      await insertTablecompanySubProjectStageNotes([
-        StagHOMID,
-        ProjectID,
-        Type,
-        Note,
-        RecordedBy,
-        countdayDelay,
-        ImageAttachment,
-      ]);
+const NotesStage = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      if (req.file) {
+        await uploaddata(req.file);
+        deleteFileSingle(req.file.filename, "upload");
+      }
+      const StagHOMID = req.body.StagHOMID;
+      const ProjectID = req.body.ProjectID;
+      const Type = req.body.Type;
+      const Note = req.body.Note;
+      const RecordedBy = req.body.RecordedBy;
+      const countdayDelay = req.body.countdayDelay;
+      const ImageAttachment = req.file ? req.file?.filename : null;
+      if (Boolean(Type) && Boolean(Note)) {
+        await insertTablecompanySubProjectStageNotes([
+          StagHOMID,
+          ProjectID,
+          Type,
+          Note,
+          RecordedBy,
+          countdayDelay,
+          ImageAttachment,
+        ]);
 
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Delayinsert(ProjectID, StagHOMID, userSession.userName);
-    } else {
-      res.send({ success: "يرجى اكمال البيانات" }).status(200);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Delayinsert(ProjectID, StagHOMID, userSession.userName);
+      } else {
+        res.send({ success: "يرجى اكمال البيانات" }).status(200);
+      }
+    } catch (err) {
+      console.log(err);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
-  } catch (err) {
-    console.log(err);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
-  }
+  };
 };
+
 // وظيفة تجمع بين اضافة وتعديل ملاحظات فرعية
-const NotesStageSub = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const StageSubID = req.body.StageSubID;
-    const Note = req.body.Note;
-    const userName = userSession.userName;
-    const PhoneNumber = userSession.PhoneNumber;
-    const type = req.body.type;
-    let NoteArry;
-    let kind;
-    if (Note !== "null" && type === 'AddNote' || type === "DeletNote" || type === "EditNote") {
-      const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
-        StageSubID
-      );
-
-      if (type === "AddNote") {
-        NoteArry = await AddNote(
-          Note,
-          userName,
-          PhoneNumber,
-          bringData,
-          req.files
-        );
-        kind = "Note";
-      } else if (type === "EditNote") {
-        const idNote = req.body.idNote;
-        const Imageolddelete = req.body.Imageolddelete;
-        NoteArry = await EditNote(
-          idNote,
-          Note,
-          userName,
-          PhoneNumber,
-          bringData,
-          Imageolddelete,
-          req.files
-        );
-        kind = "Note";
-      } else if (type === "DeletNote") {
-        const idNote = req.body.idNote;
-        const dataNote = JSON.parse(bringData.Note);
-        NoteArry = dataNote.filter(
-          (item) => parseInt(item.id) !== parseInt(idNote)
-        );
-        kind = "Note";
+const NotesStageSub = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-      if (NoteArry !== undefined) {
-        await UPDATETablecompanySubProjectStagesSub(
-          [JSON.stringify(NoteArry), StageSubID],
-          kind
+      const StageSubID = req.body.StageSubID;
+      const Note = req.body.Note;
+      const userName = userSession.userName;
+      const PhoneNumber = userSession.PhoneNumber;
+      const type = req.body.type;
+      let NoteArry;
+      let kind;
+      if (
+        (Note !== "null" && type === "AddNote") ||
+        type === "DeletNote" ||
+        type === "EditNote"
+      ) {
+        const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+          StageSubID
         );
-      }
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
 
-      // await StageSubNote(
-      //   bringData.ProjectID,
-      //   bringData.StagHOMID,
-      //   StageSubID,
-      //   Note,
-      //   userSession.userName,
-      //   type === "AddNote" ? "اضاف" : "تعديل"
-      // );
-    } else {
-      res.send({ success: "يجب اكمال البيانات" }).status(200);
+        if (type === "AddNote") {
+          NoteArry = await AddNote(
+            Note,
+            userName,
+            PhoneNumber,
+            bringData,
+            req.files
+          );
+          kind = "Note";
+        } else if (type === "EditNote") {
+          const idNote = req.body.idNote;
+          const Imageolddelete = req.body.Imageolddelete;
+          NoteArry = await EditNote(
+            idNote,
+            Note,
+            userName,
+            PhoneNumber,
+            bringData,
+            Imageolddelete,
+            req.files
+          );
+          kind = "Note";
+        } else if (type === "DeletNote") {
+          const idNote = req.body.idNote;
+          const dataNote = JSON.parse(bringData.Note);
+          NoteArry = dataNote.filter(
+            (item) => parseInt(item.id) !== parseInt(idNote)
+          );
+          kind = "Note";
+        }
+        if (NoteArry !== undefined) {
+          await UPDATETablecompanySubProjectStagesSub(
+            [JSON.stringify(NoteArry), StageSubID],
+            kind
+          );
+        }
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+        // await StageSubNote(
+        //   bringData.ProjectID,
+        //   bringData.StagHOMID,
+        //   StageSubID,
+        //   Note,
+        //   userSession.userName,
+        //   type === "AddNote" ? "اضاف" : "تعديل"
+        // );
+      } else {
+        res.send({ success: "يجب اكمال البيانات" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية" }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل تنفيذ العملية" }).status(401);
-  }
+  };
 };
 
 // وظيفة ادخال ملاحظات المرحلة الفرعية
@@ -792,46 +867,65 @@ const EditNote = async (
 
 // وظيفة تقوم باضافة الانجازات او إلغائها
 
-const AddORCanselAchievment = async (req, res) => {
-  const userSession = req.session.user;
-  if (!userSession) {
-    res.status(401).send("Invalid session");
-    console.log("Invalid session");
-  }
-  const StageSubID = req.body.StageSubID;
-  const userName = userSession.userName;
-  const PhoneNumber = userSession.PhoneNumber;
-  await opreationAddAchivevment(StageSubID,userName,PhoneNumber);
-  res.send({ success: "تمت العملية بنجاح" }).status(200);
-
-
+const AddORCanselAchievment = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const StageSubID = req.body.StageSubID;
+      const userName = userSession.userName;
+      const PhoneNumber = userSession.PhoneNumber;
+      await opreationAddAchivevment(StageSubID, userName, PhoneNumber);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
+      return;
+    }
+  };
 };
 
 // const cansles = [1,2,3,4];
 // const arrays =[1,4,5,3];
 // console.log(cansles.filter(item => !arrays.includes(item)))
-const AddORCanselAchievmentarrayall = async (req,res) =>{
-  const userSession = req.session.user;
-  if (!userSession) {
-    res.status(401).send("Invalid session");
-    console.log("Invalid session");
-  }
-  const selectAllarray = req.body.selectAllarray;
-  const selectAllarraycansle = req.body.selectAllarraycansle;
+const AddORCanselAchievmentarrayall = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const selectAllarray = req.body.selectAllarray;
+      const selectAllarraycansle = req.body.selectAllarraycansle;
 
-  const userName = userSession.userName;
-  const PhoneNumber = userSession.PhoneNumber;
-  const arraycansle = selectAllarraycansle?.filter(item => !selectAllarray.includes(item));
-  for (const element of arraycansle) {
-    await opreationAddAchivevment(element,userName,PhoneNumber);
-  }
-  for (const element of selectAllarray) {
-    await opreationAddAchivevment(element,userName,PhoneNumber,'alladd');
-  }
-  res.send({ success: "تمت العملية بنجاح" }).status(200);
-}
+      const userName = userSession.userName;
+      const PhoneNumber = userSession.PhoneNumber;
+      const arraycansle = selectAllarraycansle?.filter(
+        (item) => !selectAllarray.includes(item)
+      );
+      for (const element of arraycansle) {
+        await opreationAddAchivevment(element, userName, PhoneNumber);
+      }
+      for (const element of selectAllarray) {
+        await opreationAddAchivevment(element, userName, PhoneNumber, "alladd");
+      }
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+    } catch (error) {
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
+    }
+  };
+};
 
-const opreationAddAchivevment = async  (StageSubID,userName,PhoneNumber,type='single')=>{
+const opreationAddAchivevment = async (
+  StageSubID,
+  userName,
+  PhoneNumber,
+  type = "single"
+) => {
   try {
     let data = {
       id: Math.floor(1000 + Math.random() * 9000),
@@ -842,26 +936,28 @@ const opreationAddAchivevment = async  (StageSubID,userName,PhoneNumber,type='si
     const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
       StageSubID
     );
-    if(type === 'single'){
-      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
-    }else{
-      if ( type === 'alladd' && bringData.Done === "true")
-        return;
-      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
-      }
+    if (type === "single") {
+      await opreationpartoneAchivement(data, bringData, StageSubID, userName);
+    } else {
+      if (type === "alladd" && bringData.Done === "true") return;
+      await opreationpartoneAchivement(data, bringData, StageSubID, userName);
+    }
   } catch (error) {
     console.log(error);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
-}
+};
 
-
-const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
+const opreationpartoneAchivement = async (
+  data,
+  bringData,
+  StageSubID,
+  userName
+) => {
   let Done;
   let CloseDate;
   let Operations = [];
   let types;
-  if (bringData.Done === "true") {
+  if (bringData?.Done === "true") {
     types = "إلغاء الانجاز";
     data = {
       ...data,
@@ -879,8 +975,11 @@ const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
     CloseDate = new Date().toDateString();
   }
 
-    Operations = bringData.closingoperations !== null? JSON.parse(bringData.closingoperations): [];
-    Operations.push(data);
+  Operations =
+    bringData.closingoperations !== null
+      ? JSON.parse(bringData.closingoperations)
+      : [];
+  Operations.push(data);
   await UPDATETablecompanySubProjectStagesSub(
     [JSON.stringify(Operations), CloseDate, Done, StageSubID],
     "Closingoperations"
@@ -890,61 +989,55 @@ const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
     userName,
     types === "تم الانجاز" ? "إنجاز" : types
   );
-}
-
-
-
-
-
-
-
-
+};
 
 //  إغلاق او التراجع عن اغلاق  المراحل
-const ClassCloaseOROpenStage = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const StageID = req.body.StageID;
-    const ProjectID = req.body.ProjectID;
-    const Note = req.body.Note;
-    const RecordedBy = req.body.RecordedBy;
-    const bringData = await SELECTTablecompanySubProjectStageCUSTONe(
-      ProjectID,
-      StageID
-    );
-    let masseges = "تمت العملية بنجاح";
-    if (bringData.Done === "false") {
-      const result = await CloaseOROpenStage(
-        Note,
-        RecordedBy,
-        StageID,
-        ProjectID
-      );
-      if (result !== "true") {
-        masseges = result;
+const ClassCloaseOROpenStage = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-    } else {
-      // console.log(bringData.Done, "hhhh");
-      await UPDATEStopeProjectStageCUST(
-        [null, null, "false", Note, RecordedBy, StageID, ProjectID],
-        "Opean"
+      const StageID = req.body.StageID;
+      const ProjectID = req.body.ProjectID;
+      const Note = req.body.Note;
+      const RecordedBy = req.body.RecordedBy;
+      const bringData = await SELECTTablecompanySubProjectStageCUSTONe(
+        ProjectID,
+        StageID
       );
+      let masseges = "تمت العملية بنجاح";
+      if (bringData.Done === "false") {
+        const result = await CloaseOROpenStage(
+          Note,
+          RecordedBy,
+          StageID,
+          ProjectID
+        );
+        if (result !== "true") {
+          masseges = result;
+        }
+      } else {
+        // console.log(bringData.Done, "hhhh");
+        await UPDATEStopeProjectStageCUST(
+          [null, null, "false", Note, RecordedBy, StageID, ProjectID],
+          "Opean"
+        );
+      }
+      await CloseOROpenStagenotifcation(
+        ProjectID,
+        StageID,
+        userSession.userName,
+        bringData.Done === "false" ? "اغلاق" : "فتح"
+      );
+      res.send({ success: masseges }).status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
-    await CloseOROpenStagenotifcation(
-      ProjectID,
-      StageID,
-      userSession.userName,
-      bringData.Done === "false" ? "اغلاق" : "فتح"
-    );
-    res.send({ success: masseges }).status(200);
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
-  }
+  };
 };
 //  حساب فارق الايام والتاخيرات
 const CloaseOROpenStage = async (Note, RecordedBy, StageID, ProjectID) => {
@@ -981,7 +1074,8 @@ const CloaseOROpenStage = async (Note, RecordedBy, StageID, ProjectID) => {
   }
 };
 // ادخال بيانات المصروفات
-const ExpenseInsert = async (req, res) => {
+const ExpenseInsert =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -1035,10 +1129,12 @@ const ExpenseInsert = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // ادخال بييانات العهد
-const RevenuesInsert = async (req, res) => {
+const RevenuesInsert =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -1083,10 +1179,12 @@ const RevenuesInsert = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // ادخال بيانات المرتجع
-const ReturnsInsert = async (req, res) => {
+const ReturnsInsert =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -1130,6 +1228,7 @@ const ReturnsInsert = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // ************************************************************************************************
@@ -1138,7 +1237,8 @@ const ReturnsInsert = async (req, res) => {
 
 // اضافة مجلد جديد في ارشيف ملف المشروع
 
-const AddFolderArchivesnew = async (req, res) => {
+const AddFolderArchivesnew =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const ProjectID = req.body.ProjectID;
     const FolderName = req.body.FolderName;
@@ -1152,11 +1252,12 @@ const AddFolderArchivesnew = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية " }).status(400);
   }
+}
 };
 
 //  إضافة ملف فرعي داخل الملف الرئيسي
-
-const AddfileinFolderHomeinArchive = async (req, res) => {
+const AddfileinFolderHomeinArchive =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const ArchivesID = req.body.ArchivesID;
     const idsub = req.body.id;
@@ -1198,6 +1299,7 @@ const AddfileinFolderHomeinArchive = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
   }
+}
 };
 
 const handlerOpreation = async (
@@ -1293,7 +1395,8 @@ const CreatChild = (updates, children, idsub) => {
 // ******************************************************************
 // ********************* الطلبيات **********************************
 
-const InsertDatainTableRequests = async (req, res) => {
+const InsertDatainTableRequests =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -1321,7 +1424,7 @@ const InsertDatainTableRequests = async (req, res) => {
         Data,
         user,
         arrayImage !== null ? JSON.stringify(arrayImage) : null,
-        `${new Date()}`
+        `${new Date()}`,
       ]);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       await Financeinsertnotification(
@@ -1337,6 +1440,7 @@ const InsertDatainTableRequests = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 //  updatechild folder
@@ -1365,5 +1469,5 @@ module.exports = {
   OpreationProjectInsert,
   OpreationProjectInsertv2,
   projectBrinshv2,
-  AddORCanselAchievmentarrayall
+  AddORCanselAchievmentarrayall,
 };

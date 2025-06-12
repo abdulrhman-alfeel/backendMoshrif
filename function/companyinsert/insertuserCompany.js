@@ -8,16 +8,12 @@ const {
 } = require("../../sql/selected/selectuser");
 const { UpdateTableuserComppany } = require("../../sql/update");
 
-const userCompany = async (req, res) => {
+const userCompany =  () => {
+  return async (req, res) => {
   try {
     // console.log(req.body);
-    const IDCompany = req.body.IDCompany;
-    const userName = req.body.userName;
-    const IDNumber = req.body.IDNumber;
-    const PhoneNumber = req.body.PhoneNumber;
-    const jobdiscrption = req.body.jobdiscrption;
-    const job = req.body.job;
-    const Validity = req.body.Validity;
+    const {IDCompany,userName,IDNumber,PhoneNumber,jobdiscrption,job,Validity} = req.body;
+   
     let number = String(PhoneNumber);
     if (number.startsWith(0)) {
       number = number.slice(1);
@@ -57,6 +53,7 @@ const userCompany = async (req, res) => {
       })
       .status(400);
   }
+}
 };
 // const Validity = [
 //   {
@@ -74,6 +71,7 @@ const userCompany = async (req, res) => {
 const CheckAdmin = async (check, resultSend, IDCompany) => {
   await UpdatDtatuser(check, resultSend, "مدير الفرع", IDCompany);
   // console.log(check,resultSend,'adminsub')
+  
 };
 
 // اخراج بيانات الاعضاء

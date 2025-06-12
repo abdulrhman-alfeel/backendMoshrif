@@ -1,5 +1,4 @@
-const { massges } = require("../../middleware/sendNotification");
-const { DeleteTableNotifcation } = require("../../sql/delete");
+
 const { insertTableNavigation } = require("../../sql/INsertteble");
 const {
   SELECTTableIDcompanytoPost,
@@ -39,7 +38,9 @@ const InsertNotifcation = async (
       new Date().toUTCString(),
     ];
     await insertTableNavigation(endData);
-    const maxData = await SELECTTableNavigationObjectOne(id);
+    const maxData = await SELECTTableNavigationObjectOne(
+      parseInt(type === true ? result?.id : result?.NumberCompany)
+    );
     return maxData?.id;
   } catch (error) {
     console.log(error);
@@ -47,7 +48,8 @@ const InsertNotifcation = async (
 };
 
 // جلب بيانات الاشعارات لليوم
-const BringDataNotifcation = async (req, res) => {
+const BringDataNotifcation =  () => {
+  return async (req, res) => {
   try {
     const LastID = req.query.LastID;
     const userSession = req.session.user;
@@ -55,9 +57,15 @@ const BringDataNotifcation = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const result = await SELECTTableNavigation([parseInt(LastID)]);
-    
-    const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
+    const result = await SELECTTableNavigation([
+      parseInt(LastID),
+      parseInt(userSession.IDCompany),
+    ]);
+
+    const arrayNotifcation = await Sortdatauserfromnotification(
+      result,
+      userSession.userName
+    );
     res
       .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
       .status(200);
@@ -65,21 +73,29 @@ const BringDataNotifcation = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
   }
+}
 };
 
-
 // جلب بيانات الاشعارات حسب الفلتر
-const FilterNotifcation = async (req, res) =>{
-  try{
+const FilterNotifcation =  () => {
+  return async (req, res) => {
+  try {
     try {
-      const {LastID,from,to} = req.query;
+      const { LastID, from, to } = req.query;
       const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      const result = await SELECTTableNavigation([parseInt(LastID),from,to],`Date(DateDay) BETWEEN ?  AND ?`);
-      const arrayNotifcation = await Sortdatauserfromnotification(result,userSession.userName);
+      const result = await SELECTTableNavigation(
+        [parseInt(LastID), parseInt(userSession.IDCompany), from, to],
+        `AND Date(DateDay) BETWEEN ?  AND ?`
+      );
+      const arrayNotifcation = await Sortdatauserfromnotificationv2(
+        result,
+        userSession.userName
+      );
+
       res
         .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
         .status(200);
@@ -87,15 +103,72 @@ const FilterNotifcation = async (req, res) =>{
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
   }
 }
+};
+const BringDataNotifcationv2 =  () => {
+  return async (req, res) => {
+  try {
+    const LastID = req.query.LastID;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+        console.log(LastID,'hhhhh');
 
-const Sortdatauserfromnotification = (result,userName) =>{
+    const result = await SELECTTableNavigation([
+      parseInt(LastID),
+      parseInt(userSession.IDCompany),
+    ]);
+    const arrayNotifcation = await Sortdatauserfromnotificationv2(
+      result,
+      userSession.userName
+    );
+    res
+      .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
+      .status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
+  }
+}
+};
+
+// جلب بيانات الاشعارات حسب الفلتر
+const FilterNotifcationv2 =  () => {
+  return async (req, res) => {
+    try {
+      const { LastID, from, to } = req.query;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const result = await SELECTTableNavigation(
+        [parseInt(LastID), parseInt(userSession.IDCompany), from, to],
+        `AND Date(DateDay) BETWEEN ?  AND ?`
+      );
+      const arrayNotifcation = await Sortdatauserfromnotificationv2(
+        result,
+        userSession.userName
+      );
+      res
+        .send({ success: "تمت العملية بنجاح", data: arrayNotifcation })
+        .status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
+    }
+
+}
+};
+
+const Sortdatauserfromnotification = (result, userName) => {
   let arrayNotifcation = [];
   if (result.length > 0) {
-    
     result.forEach(async (pic) => {
       // console.log(pic.tokens, userSession?.IDCompany);
 
@@ -104,6 +177,7 @@ const Sortdatauserfromnotification = (result,userName) =>{
       Token.forEach(async (item) => {
         if (item === userName) {
           const dataNotifction = JSON.parse(pic.data);
+
           arrayNotifcation.push({
             notification: JSON.parse(pic.notification),
             data: {
@@ -118,7 +192,51 @@ const Sortdatauserfromnotification = (result,userName) =>{
       });
     });
   }
-  return arrayNotifcation
-}
+  return arrayNotifcation;
+};
+const Sortdatauserfromnotificationv2 = (result, userName) => {
+  let arrayNotifcation = [];
+  if (result.length > 0) {
+    result.forEach(async (pic) => {
 
-module.exports = { InsertNotifcation, BringDataNotifcation , FilterNotifcation };
+      let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
+      Token.forEach(async (item) => {
+        if (item === userName) {
+        const dataNotifction = JSON.parse(pic.data);
+        const data = JSON.parse(dataNotifction?.data);
+        const color = await switchColor(JSON.parse(dataNotifction?.data)?.jobUser);
+        arrayNotifcation.push({
+          id: pic.id,
+          ...data,
+          title: JSON.parse(pic.notification)?.title,
+          discrption: JSON.parse(pic.notification)?.body,
+          navigationId: dataNotifction?.navigationId,
+          page: dataNotifction?.notification_type,
+          color: color,
+          IDcompanySub:
+            dataNotifction?.notification_type === "CovenantBrinsh"
+              ? dataNotifction?.navigationId
+              : JSON.parse(dataNotifction?.data)?.IDcompanySub,
+          Date: pic.Date,
+          view: false,
+        });
+        }
+      });
+    });
+  }
+  return arrayNotifcation;
+};
+
+const switchColor = (job) => {
+  const arrayRed = ["مالك", "Admin", "مدير عام"];
+  if (arrayRed.includes(job)) return "#FF0F0F";
+  if (job === "مدير الفرع") return "#10B982";
+  return "#f6f8fe";
+};
+module.exports = {
+  InsertNotifcation,
+  BringDataNotifcation,
+  FilterNotifcation,
+  BringDataNotifcationv2,
+  FilterNotifcationv2,
+};
