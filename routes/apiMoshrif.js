@@ -10,17 +10,18 @@ const {
   DeleteFileinFinancialOperationse,
   BringDatafileFinancial,
   FinancialUpdateInvoiceNo,
+  AddfilesinArchives,
 } = require("../function/api/Opreation");
 const uploadsapis = require("../middleware/uploadsapis");
-const limiter = require("../middleware/loginLimiter");
 
 const router = express.Router();
 
 router.use(verifyJWTapi);
-router.use(limiter);
 
 router.route("/ProjectOpreations").post(ProjectOpreationsinsert);
 router.route("/ProjectOpreations").put(ProjectOpreationsUpdate);
+
+router.route("/AddfilesinArchives").post(uploadsapis.single("image"),AddfilesinArchives);
 
 router.route("/FinancialOperatios").post(FinancialOperationsDatainsert);
 router.route("/FinancialOperatios").put(FinancialOperationsDataUpdate);

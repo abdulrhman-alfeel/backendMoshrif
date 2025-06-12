@@ -59,7 +59,7 @@ const BringDataprojectAndStages = async (req, res) => {
     }
     // طلب بيانات المشاريع والمراحل
     const ListData = await BringStageforfilterProject(PhoneNumber, numberData);
-    // console.log(ListData);
+    console.log(ListData[0].arrayStage);
     res.send({ success: "تمت العملية بنجاح", data: ListData }).status(200);
     // جلب بيانات المشاريع
     // جلب بيانات المراحل الخاص بكل مشروع

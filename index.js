@@ -1,16 +1,27 @@
-// bringProjec.js  in change BringReportforProject 
-// userCompanyselect.js
-// insertCompany.js
-// UpdateCompany.js
-// company.js
-// post.js
-// insertPost.js
-// selected.js
+// useerCompanyselect.js 
+// ChatJobsClass.js
+// NotifcationProject.js
+// insertNotifcation.js
+// Opreation.js
+// insertCompany.js 
+// UpdatuserCompany.js
+// chatroute.js
+// usersCompany.js 
+// apiMoshrif.js
 
+// selected.js
+// INsertteble.js
+// createteble.js
+// UpdateCompany.js
+// UpdateProject.js
+// company.js
 
 // redis-server.exe
+// PS D:\ppp\aldy\Purebred_horses\38\backend> Set-ExecutionPolicy -ExecutionPolicy
+//  Bypass -Scope Process
 
 
+// {"uri":"file:///data/user/0/com.musharaf/cache/639fdb6a-cb9d-4b3f-8fc2-588e8dbb6fd2.mp4","uriImage":"","name":"5024645301744614590110-mrousavy894299404789797299.mov","type":"video/quicktime","size":"142.91 MB","location":{"latitude":24.8704664,"longitude":46.6504611}}
 
 const { express, app,  server,io} = require("./importMIn");
 
@@ -34,6 +45,7 @@ const { createBullBoard } = require("@bull-board/api");
 const  config  = require("./config.js");
 const {uploadRoutes} = require('./routes/upload.js');
 const { performCleanup } = require("./function/chate/workersUpload/cleanUpController.js");
+const limiter = require("./middleware/loginLimiter.js");
 
 require('dotenv').config();
 
@@ -179,7 +191,7 @@ setInterval(() => {
 
 CreateTable();
 
-// app.use(limiter);
+app.use(limiter);
 
 app.use(errorHandler);
 

@@ -2,39 +2,39 @@ const db = require("./sqlite");
 // already
 const insertTablecompanycompanyRegistration = async (data) => {
   return new Promise((resolve, reject) => {
-      db.serialize(function () {
-    db.run(
-      `INSERT INTO companyRegistration (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-      data,
-      function (err) {
-        if (err) {
-          resolve(false);
-          console.error(err.message);
-        } else {
-          resolve(true);
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO companyRegistration (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            resolve(false);
+            console.error(err.message);
+          } else {
+            resolve(true);
+          }
         }
-      }
-    );
+      );
+    });
   });
-});
 };
 const insertTablecompany = async (data) => {
   return new Promise((resolve, reject) => {
-      db.serialize(function () {
-    db.run(
-      `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?,0,0)`,
-      data,
-      function (err) {
-        if (err) {
-          resolve(false);
-          console.error(err.message);
-        } else {
-          resolve(true);
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO company (CommercialRegistrationNumber,NameCompany, BuildingNumber, StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,NumberOFbranchesAllowed,NumberOFcurrentBranches) VALUES (?,?,?,?,?,?,?,?,?,?,0,0)`,
+        data,
+        function (err) {
+          if (err) {
+            resolve(false);
+            console.error(err.message);
+          } else {
+            resolve(true);
+          }
         }
-      }
-    );
+      );
+    });
   });
-});
 };
 const insertTablecompanySub = async (data) => {
   return new Promise((resolve, reject) => {
@@ -324,11 +324,6 @@ const insertTablecompanySubProjectReturnedapi = (data) => {
   });
 };
 
-
-
-
-
-
 const insertTableSabepdf = (
   data,
   typename = "namefileall",
@@ -568,6 +563,25 @@ const insertTableFinancialCustody = (data) => {
   }
 };
 
+// عمليات طلب حذف الفرع
+const insertTableBranchdeletionRequests = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO BranchdeletionRequests (IDBranch,IDCompany,check,PhoneNumber) VALUES (?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //
 module.exports = {
   insertTablecompany,
@@ -602,6 +616,7 @@ module.exports = {
   insertTableFinancialCustody,
   insertTablecompanySubProjectexpenseapi,
   insertTablecompanySubProjectREVENUEapi,
-  insertTablecompanySubProjectReturnedapi,insertTablecompanycompanyRegistration
-
+  insertTablecompanySubProjectReturnedapi,
+  insertTablecompanycompanyRegistration,
+  insertTableBranchdeletionRequests,
 };

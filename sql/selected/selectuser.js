@@ -137,6 +137,7 @@ const SELECTTableusersCompanyVerificationID = (id) => {
 
 //  التحقق من صلاحيات المستخدم
 const SELECTTableusersCompanySub = (
+  IDCompany,
   IDcompanySub,
   type = "all",
   wheretype = "PR.id =?"
@@ -145,7 +146,7 @@ const SELECTTableusersCompanySub = (
     db.serialize(async () => {
       db.all(
         type === "all" && wheretype !== "RE.CommercialRegistrationNumber=?"
-          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, Su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE  Su.id=? AND Activation="true"`
+          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, Su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE ca.IDCompany=? AND Su.id=? AND Activation="true"`
           : wheretype === "RE.CommercialRegistrationNumber=?"
           ? ` SELECT 
         ca.token, 
@@ -154,14 +155,16 @@ const SELECTTableusersCompanySub = (
         ca.job, 
         ca.jobdiscrption,
         RE.id AS IDcompany
-    FROM 
+        FROM 
         LoginActivaty ca 
-    LEFT JOIN 
+        LEFT JOIN 
         company RE ON RE.id = ca.IDCompany 
-  
-    WHERE  
-      ${wheretype}  `
-          : ` SELECT 
+        WHERE  
+        ca.IDCompany =? 
+        AND
+        ${wheretype}  `
+      :
+        `SELECT 
         ca.token, 
         ca.userName, 
         ca.Validity, 
@@ -169,16 +172,18 @@ const SELECTTableusersCompanySub = (
         ca.jobdiscrption,
         RE.id AS IDcompany,
         PR.IDcompanySub
-    FROM 
+        FROM 
         LoginActivaty ca 
-    LEFT JOIN 
+        LEFT JOIN 
         company RE ON RE.id = ca.IDCompany 
-    LEFT JOIN 
+        LEFT JOIN 
         companySubprojects PR 
-    WHERE  
-      ${wheretype}  `,
+        WHERE  
+        ca.IDCompany =? 
+        AND
+        ${wheretype}`,
         // `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
-        [IDcompanySub],
+        [IDCompany,IDcompanySub],
         function (err, result) {
           if (err) {
             reject(err);

@@ -7,13 +7,12 @@ const {
   insertRequestFinancialCustody,
 } = require("../function/companyinsert/insertCompany");
 const {biringDatabrinshCompany, bringDataCompany, BringDataFinancialCustody, bringDataCompanyRegistration} = require('../function/companyselect/bringCompany');
-const { UpdateCompanybrinsh, UpdateDataCompany, Acceptandrejectrequests, Updatecovenantrequests, Deletecovenantrequests, UpdateApiCompany, AgreedRegistrationCompany, UpdatedataRegistration, DeleteCompanyRegistration } = require("../function/companyinsert/UpdateCompany");
+const { UpdateCompanybrinsh, UpdateDataCompany, Acceptandrejectrequests, Updatecovenantrequests, Deletecovenantrequests, UpdateApiCompany, AgreedRegistrationCompany, UpdatedataRegistration, DeleteCompanyRegistration ,  Branchdeletionprocedures,
+  Implementedbyopreation} = require("../function/companyinsert/UpdateCompany");
 const { BringNameCompany } = require("../function/companyselect/userCompanyselect");
 const { verifyJWT } = require("../middleware/jwt");
-const limiter = require("../middleware/loginLimiter");
 const router = express.Router();
 router.use(verifyJWT);
-router.use(limiter);
 
 
 router.route("/").post(insertDataCompany);
@@ -46,4 +45,12 @@ router.route("/brinsh/Acceptandrejectrequests").put(Acceptandrejectrequests);
 router.route("/brinsh/Deletecovenantrequests").get(Deletecovenantrequests);
 router.route("/brinsh/Updatecovenantrequests").put(Updatecovenantrequests);
 
+
+// حذف فرع
+router.route("/brinsh/Branchdeletionprocedures").get(Branchdeletionprocedures);
+router.route("/brinsh/Implementedbyopreation").get(Implementedbyopreation);
+
+
+
+  
 module.exports = router;

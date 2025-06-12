@@ -12,6 +12,7 @@ const {
   SELECTCOUNTCOMMENTANDLIKPOST,
   SELECTDataPrivatPostonObject,
   SELECTTableMaxFinancialCustody,
+  SelectVerifycompanyexistence,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanySub,
@@ -28,7 +29,8 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
       type === "إنشاء" ? "RE.id" : "ca.id"
     );
 
-    const { token, users, arraynameuser } = await BringtokenuserCustom(
+    const { token, users, arraynameuser,jobUser } = await BringtokenuserCustom(
+      result.NumberCompany,
       IDcompanySub,
       userName,
       "all",
@@ -53,6 +55,7 @@ const Projectinsert = async (IDcompanySub, userName, type = "إنشاء") => {
       IDcompanySub: IDcompanySub,
       PhoneNumber: users[0].PhoneNumber,
       Email: users[0].Email,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -98,7 +101,8 @@ const Stageinsert = async (
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+      result.NumberCompany,
       ProjectID,
       userName,
       "Stage"
@@ -122,6 +126,7 @@ const Stageinsert = async (
       data: resultObject,
       IDcompanySub: result.IDcompanySub,
       Project: Project,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -174,7 +179,8 @@ const StageSubinsert = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+      ProjecHome.NumberCompany,
       ProjectID,
       userName,
       "Stage"
@@ -198,6 +204,7 @@ const StageSubinsert = async (
       type: `StagesSub ${type}`,
       data: resultObject,
       IDcompanySub: result.IDcompanySub,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -251,7 +258,8 @@ const StageSubNote = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, jobUser } = await BringtokenuserCustom(
+      ProjecHome.NumberCompany, 
       ProjectID,
       userName,
       "Stage"
@@ -269,6 +277,7 @@ const StageSubNote = async (
       type: `StagesSub ${type}`,
       data: resultObject,
       IDcompanySub: result[0].IDcompanySub,
+      jobUser:jobUser
     };
     // const idmax = await InsertNotifcation(
     //   arraynameuser,
@@ -299,7 +308,8 @@ const CloseOROpenStagenotifcation = async (
       StageID
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+      ProjecHome.NumberCompany,
       ProjectID,
       userName,
       "Stage"
@@ -318,6 +328,7 @@ const CloseOROpenStagenotifcation = async (
       ProjectID: ProjectID,
       type: `StagesCUST ${type}`,
       IDcompanySub: ProjecHome.IDcompanySub,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -361,7 +372,8 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token } = await BringtokenuserCustom(
+      ProjecHome.NumberCompany,
       result[0].ProjectID,
       userName,
       "Stage"
@@ -401,7 +413,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
   try {
     let resultObject = {};
     let result = await SELECTTablecompanySubProjectStageNotesOneObject(
-      type === "إضافة" ? [StageID, idProject] : [idProject],
+      type === "إضافة" ? [parseInt(StageID), parseInt(idProject)] : [parseInt(idProject)],
       type === "تعديل"
         ? "sn.StageNoteID=?"
         : "sn.StagHOMID=? AND sn.ProjectID=?"
@@ -419,7 +431,8 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser ,jobUser} = await BringtokenuserCustom(
+      result.NumberCompany,
       idProject,
       userName,
       "Delay"
@@ -444,6 +457,7 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
       data: resultObject,
       StageID: resultObject.StagHOMID,
       IDcompanySub: result,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -480,7 +494,8 @@ const RearrangeStageProject = async (idProject, userName) => {
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser ,jobUser} = await BringtokenuserCustom(
+      result.NumberCompany,
       idProject,
       userName,
       "Delay"
@@ -496,6 +511,7 @@ const RearrangeStageProject = async (idProject, userName) => {
       ProjectID: idProject,
       type: `RearrangeStageProject`,
       IDcompanySub: result.IDcompanySub,
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -558,7 +574,8 @@ const Financeinsertnotification = async (
       })
     );
 
-    const { token, arraynameuser } = await BringtokenuserCustom(
+    const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+      result.NumberCompany,
       result.projectID,
       userName,
       kind === "طلب" ? "chate" : "Finance",
@@ -580,6 +597,7 @@ const Financeinsertnotification = async (
       type: type,
       data: resultObject,
       IDcompanySub: result.IDcompanySub,
+      jobUser:jobUser
     };
     // console.log(token, notification, notification_type, navigationId, data);
     const idmax = await InsertNotifcation(
@@ -620,7 +638,8 @@ const Postsnotification = async (
         resultObject[item[0]] = item[1];
       })
     );
-    const { token, arraynameuser } = await Bringtokenuser(
+    const { token, arraynameuser,jobUser } = await Bringtokenuser(
+      result.CommpanyID,
       result.ProjectID,
       result.userName,
       "PublicationsBransh"
@@ -652,6 +671,7 @@ const Postsnotification = async (
       data: resultObject,
       PostID: PostID,
       count: Count["COUNT(userName)"],
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -665,6 +685,7 @@ const Postsnotification = async (
       ...data,
       id: idmax,
     };
+
     await massges(token, notification, notification_type, navigationId, data);
   } catch (error) {
     console.log(error);
@@ -680,7 +701,8 @@ const PostsnotificationCansle = async (
     const result = await SELECTDataPrivatPostonObject(PostID);
     const Count = await SELECTCOUNTCOMMENTANDLIKPOST(PostID, "Likes");
 
-    const { token, arraynameuser } = await Bringtokenuser(
+    const { token, arraynameuser ,jobUser} = await Bringtokenuser(
+      result.CommpanyID,
       result.ProjectID,
       userName,
       "PublicationsBransh"
@@ -701,6 +723,7 @@ const PostsnotificationCansle = async (
       data: [],
       PostID: PostID,
       count: Count["COUNT(userName)"],
+      jobUser:jobUser
     };
     const idmax = await InsertNotifcation(
       arraynameuser,
@@ -737,32 +760,43 @@ const ChateNotfication = async (
     let tokenuser;
     let bodymassge;
     let insertnavigation = "pr.id";
-    const Project = await SELECTProjectStartdate(idProject);
+    let IDCompanySub= 0;
+    let Nameproject = "";
+    let job ;
     if (
       StageID !== "قرارات" &&
       StageID !== "استشارات" &&
       StageID !== "اعتمادات" &&
       StageID !== "تحضير"
     ) {
+      const Project = await SELECTProjectStartdate(idProject);
+      IDCompanySub = Project?.IDCompanySub;
+      Nameproject = Project?.Nameproject;
+
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
         const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
-          idProject,
-          StageID
+        idProject,
+        StageID
         );
         nameChate = Stage.StageName;
       } else {
         nameChate = StageID;
       }
-      const { token, arraynameuser } = await BringtokenuserCustom(
+    
+      const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+        Project.NumberCompany,
         idProject,
         userName,
         "chate"
       );
       arrayuser = arraynameuser;
       tokenuser = token;
+      job = jobUser;
       bodymassge = `دردشة مشروع ${Project?.Nameproject} قسم ${nameChate}`;
     } else {
-      const { token, arraynameuser } = await Bringtokenuser(
+      const company = await SelectVerifycompanyexistence(idProject);
+      const { token, arraynameuser,jobUser } = await Bringtokenuser(
+        company.id,
         idProject,
         userName,
         StageID,
@@ -773,6 +807,8 @@ const ChateNotfication = async (
       nameChate = StageID;
       bodymassge = `دردشة ${nameChate}`;
       insertnavigation = true;
+      job = jobUser;
+
     }
 
     let title =
@@ -785,18 +821,12 @@ const ChateNotfication = async (
     let typfile = null;
     // استخراج الصورة الذي ارسلت إذا وجدت
     if (Object.entries(File).length > 0) {
-      if (File.type === "video/mp4") {
-        image = String(File.name).replace("mp4", "png");
-        image = `http://34.168.80.7:8080/upload/${image}`;
-      } else {
-        image = File.name;
-        if (File.type === "image/jpeg") {
-          image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${image}`;
-        }
-      }
-      if (File.type === "video/mp4") {
+        image = String(File.type).includes("video") ?  String(File.name).replace("mp4", "png") : File.name;
+        image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${image}`;
+     
+      if (String(File.type).includes("video")) {
         typfile = "ارفق فديو";
-      } else if (File.type === "image/jpeg") {
+      } else if (String(File.type).includes("image")) {
         typfile = "ارفق صورة";
       } else {
         typfile = "ارفق ملف";
@@ -816,9 +846,10 @@ const ChateNotfication = async (
       type: `chate`,
       kind: "new",
       nameRoom: nameChate,
-      Nameproject: Project?.Nameproject,
+      Nameproject: Nameproject,
       StageID: StageID,
-      IDcompanySub: Project?.IDCompanySub,
+      IDcompanySub: IDCompanySub,
+      jobUser:job
     };
     const idmax = await InsertNotifcation(
       arrayuser,
@@ -858,22 +889,24 @@ const ChateNotficationdelete = async (
     let tokenuser;
     let bodymassge;
     let insertnavigation = "pr.id";
+ 
     if (
-      StageID !== "قرارات" &&
-      StageID !== "استشارات" &&
+      StageID !== "قرارات"    &&
+      StageID !== "استشارات"  &&
       StageID !== "اعتمادات"
     ) {
+         const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+      idProject,
+      StageID
+    );
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
-        const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
-          idProject,
-          StageID
-        );
         nameChate = Stage.StageName;
       } else {
         nameChate = StageID;
       }
       const Project = await SELECTProjectStartdate(idProject);
       const { token, arraynameuser } = await BringtokenuserCustom(
+        Stage.NumberCompany,
         idProject,
         userName,
         "chate"
@@ -882,7 +915,9 @@ const ChateNotficationdelete = async (
       tokenuser = token;
       bodymassge = `دردشة مشروع ${Project?.Nameproject} قسم ${nameChate}`;
     } else {
+      const company = await SelectVerifycompanyexistence(idProject);
       const { token, arraynameuser } = await Bringtokenuser(
+        company.id,
         idProject,
         userName,
         StageID,
@@ -990,10 +1025,12 @@ const CovenantNotfication = async (
     let tokens;
     let arraynameusers;
     let IDCompanySubs = IDCompanySub;
+    let job = '';
     if (type === "request") {
       result = await SELECTTableLoginActivatActivaty(PhoneNumber);
 
-      const { token, arraynameuser } = await BringtokenuserCustom(
+      const { token, arraynameuser,jobUser } = await BringtokenuserCustom(
+        result.IDCompany,
         IDCompanySubs,
         result.userName,
         "all",
@@ -1001,6 +1038,7 @@ const CovenantNotfication = async (
       );
       tokens = token;
       arraynameusers = arraynameuser;
+      job = jobUser
     } else {
       const datacovenent = await SELECTTableMaxFinancialCustody(id, "all");
       result = await SELECTTableLoginActivatActivaty(datacovenent.Requestby);
@@ -1033,6 +1071,7 @@ const CovenantNotfication = async (
           : type === "acceptance"
           ? "arrayClosed"
           : `arrayReject`,
+      jobUser:job
     };
     const endData = [
       IDCompanySubs,
@@ -1056,6 +1095,7 @@ const CovenantNotfication = async (
 
 // bring token all users
 const Bringtokenuser = async (
+  IDCompany,
   ProjectID,
   userName,
   type = "all",
@@ -1063,12 +1103,13 @@ const Bringtokenuser = async (
 ) => {
   let token = [];
   let arraynameuser = [];
+  let jobUser ;
 
-  const users = await SELECTTableusersCompanySub(ProjectID, type, wheretype);
+  const users = await SELECTTableusersCompanySub(IDCompany,ProjectID, type, wheretype);
   await Promise.all(
     users
-      .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
+      if(item.userName !== userName){
         if(type === 'PublicationsBransh' || wheretype === "RE.CommercialRegistrationNumber=?"){
           if (item.jobdiscrption === "موظف") {
             token.push(item.token);
@@ -1083,13 +1124,17 @@ const Bringtokenuser = async (
             arraynameuser.push(item.userName);
           }
         }
+      }else{
+        jobUser = item.job
+      }
       })
   );
-  return { token, users, arraynameuser };
+  return { token, users, arraynameuser ,jobUser};
 };
 
 // bring token custom users
 const BringtokenuserCustom = async (
+  IDCompany,
   ProjectID,
   userName,
   type = "all",
@@ -1097,63 +1142,67 @@ const BringtokenuserCustom = async (
 ) => {
   let token = [];
   let arraynameuser = [];
-  const users = await SELECTTableusersCompanySub(ProjectID, type);
+  let jobUser ;
+  const users = await SELECTTableusersCompanySub(IDCompany,ProjectID, type);
   await Promise.all(
     users
-      .filter((pic) => pic.userName !== userName)
       .map((item, index) => {
-        if (item.job === "Admin" || item.job === "مالية") {
-          token.push(item.token);
-          arraynameuser.push(item.userName);
-        } else {
-          const Validity =
-            item.Validity !== null ? JSON.parse(item.Validity) : [];
-          for (let index = 0; index < Validity.length; index++) {
-            const element = Validity[index];
-            if (parseInt(element.idBrinsh) === parseInt(item.IDcompanySub)) {
-              if (
-                kind === "CovenantBrinsh" &&
-                element.Acceptingcovenant === true
-              ) {
-                token.push(item.token);
-                arraynameuser.push(item.userName);
-              } else if (element.job === "مدير الفرع" || kind !== "sub") {
-                if (kind !== "sub") {
-                  if (element.jobdiscrption === "موظف") {
+        if(item.userName !== userName){
+          if (item.job === "Admin" || item.job === "مالية") {
+            token.push(item.token);
+            arraynameuser.push(item.userName);
+          } else {
+            const Validity =
+              item.Validity !== null ? JSON.parse(item.Validity) : [];
+            for (let index = 0; index < Validity.length; index++) {
+              const element = Validity[index];
+              if (parseInt(element.idBrinsh) === parseInt(item.IDcompanySub)) {
+                if (
+                  kind === "CovenantBrinsh" &&
+                  element.Acceptingcovenant === true
+                ) {
+                  token.push(item.token);
+                  arraynameuser.push(item.userName);
+                } else if (element.job === "مدير الفرع" || kind !== "sub") {
+                  if (kind !== "sub") {
+                    if (element.jobdiscrption === "موظف") {
+                      token.push(item.token);
+                      arraynameuser.push(item.userName);
+                    }
+                  } else {
                     token.push(item.token);
                     arraynameuser.push(item.userName);
                   }
                 } else {
-                  token.push(item.token);
-                  arraynameuser.push(item.userName);
-                }
-              } else {
-                for (let P = 0; P < element?.project?.length; P++) {
-                  const elementProject = element?.project[P];
-                  if (elementProject.idProject === ProjectID) {
-                    if (type === "Finance") {
-                      const findValidityProject =
-                        elementProject?.ValidityProject?.find(
-                          (V) => V === "إشعارات المالية"
-                        );
-                      if (findValidityProject) {
+                  for (let P = 0; P < element?.project?.length; P++) {
+                    const elementProject = element?.project[P];
+                    if (elementProject.idProject === ProjectID) {
+                      if (type === "Finance") {
+                        const findValidityProject =
+                          elementProject?.ValidityProject?.find(
+                            (V) => V === "إشعارات المالية"
+                          );
+                        if (findValidityProject) {
+                          token.push(item.token);
+                          arraynameuser.push(item.userName);
+                        }
+                      } else {
                         token.push(item.token);
                         arraynameuser.push(item.userName);
                       }
-                    } else {
-                      token.push(item.token);
-                      arraynameuser.push(item.userName);
                     }
                   }
                 }
               }
             }
           }
+        }else{
+          jobUser = item.job
         }
       })
   );
   // console.log(token);
-  return { token, users, arraynameuser };
+  return { token, users, arraynameuser,jobUser };
 };
 
 // Projectinsert(1);

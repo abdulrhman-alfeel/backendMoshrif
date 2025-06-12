@@ -264,6 +264,23 @@ const SELECTTablecompanySubLinkevaluation = (id) => {
 
 
 // مشاريع الفرع
+// من اجل حذف الفرع جلب جميع مشاريع الفرع
+const SELECTTABLEcompanyProjectall = (id) =>{
+  return new Promise((resolve,reject)=>{
+       db.serialize(function () {
+      db.all('SELECT id FROM companySubprojects WHERE IDcompanySub=?', [id], function (err, result) {
+        if (err) {
+          reject(err);
+          // console.log(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  })
+}
+
+// جلب المشاريع للمنصة
 const SELECTTablecompanySubProject = (
   id,
   IDfinlty,
@@ -336,7 +353,7 @@ const SELECTTablecompanySubProjectLast_id = (
       kind === "all"
         ? `SELECT MAX(id) AS last_id,numberBuilding FROM companySubprojects WHERE  Disabled ='true' AND IDcompanySub=?`
         : kind === "max"
-        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ${type}=?`
+        ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation,RE.NumberCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ${type}=?`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca WHERE ca.Disabled="true" AND ca.id=?`
         : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation ,ca.Referencenumber FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
@@ -398,7 +415,7 @@ const SELECTProjectStartdate = (id, kind = "all",type="id") => {
     db.serialize(function () {
       db.get(
         kind === "all"
-          ? `SELECT ProjectStartdate,Contractsigningdate,Nameproject,numberBuilding,id,IDcompanySub FROM companySubprojects WHERE ${type}=? `
+          ? `SELECT pr.ProjectStartdate,pr.Contractsigningdate,pr.Nameproject,pr.numberBuilding,pr.id,pr.IDcompanySub, RE.NumberCompany FROM companySubprojects pr LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub  WHERE pr.${type}=? `
           : "SELECT ca.id,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?",
         [id],
         function (err, result) {
@@ -425,6 +442,7 @@ const SELECTProjectStartdateapis = (id, idSub) => {
             
             // console.error(err.message);
             // reject(err);
+            resolve(false)
           } else {
             resolve(result);
           }
@@ -587,12 +605,12 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
 ) => {
   const stringSql =
     kind === "all"
-      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed  FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE ProjectID=? AND StageID=?`
+      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE  cu.ProjectID=? AND cu.StageID=? `
       : kind === "notifcation"
-      ? `SELECT max(cu.StageID) AS StageID,pr.Nameproject,pr.IDcompanySub, cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID WHERE cu.StageID != 'A1' AND ${type} `
+      ? `SELECT max(cu.StageID) AS StageID,pr.Nameproject,pr.IDcompanySub, cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed ,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE cu.StageID != 'A1' AND ${type} `
       :`SELECT Done,Days FROM StagesCUST WHERE ProjectID=? AND Done = "true"`;
   const data =
-    kind === "all" || kind ===  "cu.projectID=? AND cu.StageID=?"
+    kind === "all" || type ===  "cu.projectID=? AND cu.StageID=?"
       ? [ProjectID, StageID]
       : [ProjectID];
   return new Promise((resolve, reject) => {
@@ -600,7 +618,7 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
       db.get(stringSql, data, function (err, result) {
         if (err) {
           reject(err);
-          // console.error(err.message);
+          console.error(err.message);
         } else {
           resolve(result);
         }
@@ -744,7 +762,7 @@ const SELECTTablecompanySubProjectStageNotesOneObject = (
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT cu.StageName,pr.Nameproject,sn.StageNoteID,sn.StagHOMID,sn.ProjectID,sn.Type,sn.Note,sn.DateNote,sn.RecordedBy,sn.UpdatedDate,sn.countdayDelay,sn.ImageAttachment,pr.IDcompanySub, MAX(sn.StageNoteID) AS last_id  FROM StageNotes sn LEFT JOIN companySubprojects pr ON pr.id = sn.ProjectID LEFT JOIN StagesCUST cu ON cu.StageID = sn.StagHOMID AND cu.ProjectID = sn.ProjectID  WHERE ${type}`,
+        `SELECT cu.StageName,pr.Nameproject,sn.StageNoteID,sn.StagHOMID,sn.ProjectID,sn.Type,sn.Note,sn.DateNote,sn.RecordedBy,sn.UpdatedDate,sn.countdayDelay,sn.ImageAttachment,pr.IDcompanySub, MAX(sn.StageNoteID) AS last_id ,RE.NumberCompany FROM StageNotes sn LEFT JOIN companySubprojects pr ON pr.id = sn.ProjectID  LEFT JOIN StagesCUST cu ON cu.StageID = sn.StagHOMID AND cu.ProjectID = sn.ProjectID  LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE ${type}`,
         data,
         function (err, result) {
           if (err) {
@@ -911,7 +929,7 @@ const SELECTTablecompanySubProjectfornotification = (
         : `max(RequestsID) AS RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
     db.serialize(function () {
       db.get(
-        `SELECT PR.Nameproject,PR.IDcompanySub,${SqlString} ex 
+        `SELECT PR.Nameproject,PR.IDcompanySub,RE.NumberCompany,${SqlString} ex 
           LEFT JOIN companySubprojects PR ON PR.id = ${projecttype} 
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
           WHERE  ${project}=?`,
@@ -947,7 +965,7 @@ const SELECTTablecompanySubProjectfornotificationEdit = (
         : `RequestsID, ProjectID AS projectID,Type,Data,Date,InsertBy,Implementedby,Image FROM Requests`;
     db.serialize(function () {
       db.get(
-        `SELECT PR.Nameproject,PR.IDcompanySub,${SqlString} ex 
+        `SELECT PR.Nameproject,PR.IDcompanySub,RE.NumberCompany,${SqlString} ex 
           LEFT JOIN companySubprojects PR ON PR.id = ${project}
           LEFT JOIN companySub RE ON RE.id = PR.IDcompanySub
           WHERE ${kind}=?`,
@@ -1156,6 +1174,26 @@ const SELECTTablecompanySubProjectarchives = (idproject) => {
           if (err) {
             reject(err);
             // console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTablearchivesNamefolder = (FolderName,idproject) => {
+  // console.log(idproject);
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT ArchivesID,children FROM Archives WHERE trim(FolderName) = trim(?) AND ProjectID=?`,
+        [FolderName,idproject],
+        function (err, result) {
+          if (err) {
+            // reject(err);
+            // console.error(err.message);
+            resolve(false)
           } else {
             resolve(result);
           }
@@ -1397,52 +1435,51 @@ const SELECTTablePostPublicSearch = (
   where=''
 ) => {
   return new Promise((resolve, reject) => {
-    let plus = parseInt(PostID) === 0 ? ">" : "<";
-
-    let SearchSub =
+        let SearchSub =
       type === "بحسب المشروع والتاريخ"
         ? "PR.Nameproject"
         : type === "بحسب الفرع"
         ? "RE.NameSub"
         : "ca.postBy";
+    let plus = parseInt(PostID) === 0 ? ">" : "<";
     let SqlStringOne =
-      type === "بحسب المشروع والمستخدم والتاريخ"
-        ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
-          FROM Post ca
-          LEFT JOIN company EX ON EX.id = ca.CommpanyID
-          LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
-          LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
-          WHERE ca.CommpanyID = ?
-           AND Date(Date) BETWEEN ? AND ?  AND trim(PR.Nameproject) = trim(?) AND trim(ca.postBy) = trim(?) AND (ca.PostID) ${plus} ?
-          ORDER BY ca.PostID ASC  `
-        : type === "بحسب التاريخ"
-        ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
-          FROM Post ca
-          LEFT JOIN company EX ON EX.id = ca.CommpanyID
-          LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
-          LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
-          WHERE ca.CommpanyID = ?
-           AND Date(Date) BETWEEN ? AND ?   AND (ca.PostID) ${plus} ? ${where}
-          ORDER BY ca.PostID ASC  `
-        : `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
-          FROM Post ca
-          LEFT JOIN company EX ON EX.id = ca.CommpanyID
-          LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
-          LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
-          WHERE ca.CommpanyID = ?
-           AND Date(Date) BETWEEN ? AND ?  AND trim(${SearchSub}) = trim(?) AND (ca.PostID) ${plus} ?
-          ORDER BY ca.PostID ASC  `;
+    type === "بحسب المشروع والمستخدم والتاريخ"
+      ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+        FROM Post ca
+        LEFT JOIN company EX ON EX.id = ca.CommpanyID
+        LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+        LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+        WHERE ca.CommpanyID = ?
+         AND Date(Date) BETWEEN ? AND ?  AND  PR.Nameproject LIKE ?  AND ca.postBy LIKE ? AND (ca.PostID) ${plus} ?
+        ORDER BY ca.PostID ASC  `
+      : type === "بحسب التاريخ"
+      ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+        FROM Post ca
+        LEFT JOIN company EX ON EX.id = ca.CommpanyID
+        LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+        LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+        WHERE ca.CommpanyID = ?
+         AND Date(Date) BETWEEN ? AND ?   AND (ca.PostID) ${plus} ? ${where}
+        ORDER BY ca.PostID ASC  `
+      : `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+        FROM Post ca
+        LEFT JOIN company EX ON EX.id = ca.CommpanyID
+        LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+        LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+        WHERE ca.CommpanyID = ?
+         AND Date(Date) BETWEEN ? AND ?  AND ${SearchSub} LIKE ?  AND (ca.PostID) ${plus} ?
+        ORDER BY ca.PostID ASC  `;
+  let data =
+    type === "بحسب التاريخ"
+      ? [id, DateStart, DateEnd, PostID]
+      : type === "بحسب المشروع والمستخدم والتاريخ"
+      ? [id, DateStart, DateEnd, `%${nameProject}%`, `%${userName}%`, PostID]
+      : type === "بحسب المشروع والتاريخ"
+      ? [id, DateStart, DateEnd, `%${nameProject}%`, PostID]
+      : type === "بحسب الفرع"
+      ? [id, DateStart, DateEnd, `%${branch}%`, PostID]
+      : [id, DateStart, DateEnd, `%${userName}%`, PostID];
 
-    let data =
-      type === "بحسب التاريخ"
-        ? [id, DateStart, DateEnd, PostID]
-        : type === "بحسب المشروع والمستخدم والتاريخ"
-        ? [id, DateStart, DateEnd, nameProject, userName, PostID]
-        : type === "بحسب المشروع والتاريخ"
-        ? [id, DateStart, DateEnd, nameProject, PostID]
-        : type === "بحسب الفرع"
-        ? [id, DateStart, DateEnd, branch, PostID]
-        : [id, DateStart, DateEnd, userName, PostID];
     db.serialize(function () {
       db.all(
         `SELECT * FROM (${SqlStringOne}) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`,
@@ -1460,6 +1497,82 @@ const SELECTTablePostPublicSearch = (
     });
   });
 };
+// const SELECTTablePostPublicSearch = (
+//   id,
+//   DateStart,
+//   DateEnd,
+//   type,
+//   nameProject,
+//   userName,
+//   branch,
+//   PostID,
+//   where=''
+// ) => {
+//   return new Promise((resolve, reject) => {
+//     let plus = parseInt(PostID) === 0 ? ">" : "<";
+
+//     let SearchSub =
+//       type === "بحسب المشروع والتاريخ"
+//         ? "PR.Nameproject"
+//         : type === "بحسب الفرع"
+//         ? "RE.NameSub"
+//         : "ca.postBy";
+//     let SqlStringOne =
+//       type === "بحسب المشروع والمستخدم والتاريخ"
+//         ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+//           FROM Post ca
+//           LEFT JOIN company EX ON EX.id = ca.CommpanyID
+//           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+//           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+//           WHERE ca.CommpanyID = ?
+//            AND Date(Date) BETWEEN ? AND ?  AND  PR.Nameproject LIKE % ? %  AND ca.postBy LIKE % ? % AND (ca.PostID) ${plus} ?
+//           ORDER BY ca.PostID ASC  `
+//         : type === "بحسب التاريخ"
+//         ? `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+//           FROM Post ca
+//           LEFT JOIN company EX ON EX.id = ca.CommpanyID
+//           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+//           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+//           WHERE ca.CommpanyID = ?
+//            AND Date(Date) BETWEEN ? AND ?   AND (ca.PostID) ${plus} ? ${where}
+//           ORDER BY ca.PostID ASC  `
+//         : `SELECT PostID,postBy,Date,timeminet,url,Type,Data,StageID,NameCompany,NameSub,Nameproject
+//           FROM Post ca
+//           LEFT JOIN company EX ON EX.id = ca.CommpanyID
+//           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+//           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+//           WHERE ca.CommpanyID = ?
+//            AND Date(Date) BETWEEN ? AND ?  AND ${SearchSub} LIKE % ? %  AND (ca.PostID) ${plus} ?
+//           ORDER BY ca.PostID ASC  `;
+
+//     let data =
+//       type === "بحسب التاريخ"
+//         ? [id, DateStart, DateEnd, PostID]
+//         : type === "بحسب المشروع والمستخدم والتاريخ"
+//         ? [id, DateStart, DateEnd, nameProject, userName, PostID]
+//         : type === "بحسب المشروع والتاريخ"
+//         ? [id, DateStart, DateEnd, nameProject, PostID]
+//         : type === "بحسب الفرع"
+//         ? [id, DateStart, DateEnd, branch, PostID]
+//         : [id, DateStart, DateEnd, userName, PostID];
+//     db.serialize(function () {
+//       db.all(
+//         `SELECT * FROM (${SqlStringOne}) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`,
+//         data,
+//         function (err, result) {
+//           if (err) {
+//             reject(err);
+//             // console.error(err.message);
+//           } else {
+//             // console.log(result);
+//             resolve(result);
+//           }
+//         }
+//       );
+//     });
+//   });
+// };
+
 
 // SELECTTablePostPublicSearch(
 //   1,
@@ -1532,10 +1645,10 @@ const SELECTDataPrivatPost = (PostID, type = "Comment", idEdit = null) => {
     let SqlString =
       type === "Likes"
         ? `${idString},fl.PostId,fl.Date,fl.userName`
-        : `${idString},fl.PostId,fl.CommentText,fl.Date,fl.userName`;
+        : `${idString},fl.PostId,fl.commentText,fl.Date,fl.userName`;
     db.serialize(function () {
       db.get(
-        `SELECT po.ProjectID ,po.postBy, ${SqlString} FROM ${type} fl  LEFT JOIN Post po ON po.PostID = fl.PostId  WHERE ${WhereID} =?`,
+        `SELECT po.ProjectID ,po.postBy,po.CommpanyID, ${SqlString} FROM ${type} fl  LEFT JOIN Post po ON po.PostID = fl.PostId  WHERE ${WhereID} =?`,
         [Id],
         function (err, result) {
           if (err) {
@@ -1555,7 +1668,7 @@ const SELECTDataPrivatPostonObject = (PostID) => {
     db.serialize(function () {
       db.get(
         // `SELECT po.ProjectID ,po.postBy,COUNT(${WhereID}) FROM ${type} fl  LEFT JOIN Post po ON po.PostID = fl.PostId  WHERE po.PostID =?`,
-        `SELECT po.ProjectID ,po.postBy FROM Post po  WHERE po.PostID =?`,
+        `SELECT po.ProjectID ,po.postBy,po.CommpanyID FROM Post po  WHERE po.PostID =?`,
         [PostID],
         function (err, result) {
           if (err) {
@@ -1638,8 +1751,8 @@ const SELECTTableLikesPostPublicotherroad = (PostId, userName) => {
         [PostId, userName],
         function (err, result) {
           if (err) {
-            reject(err);
-            console.log(err.message);
+            // reject(err);
+            // console.log(err.message);
             resolve(false);
           } else {
             resolve(result);
@@ -1798,11 +1911,11 @@ const SELECTLastTableChateTypeDontEmpty = (ProjectID, StageID, id) => {
 const SELECTTableChateStageOtherroad = (
   idSendr,
   userName = "",
-  type = "idSendr=?",
+  type = "trim(idSendr)=trim(?)",
   table = "ChatSTAGE"
 ) => {
   return new Promise((resolve, reject) => {
-    let data = type === "idSendr=?" ? [idSendr] : [idSendr, userName];
+    let data = type === "trim(idSendr)=trim(?)" ? [idSendr] : [idSendr, userName];
     db.serialize(function () {
       db.get(
         `SELECT * FROM ${table} WHERE ${type}`,
@@ -1941,6 +2054,31 @@ const SELECTLastTableChate = (ProjectID, Type, count = 1) => {
     });
   });
 };
+// SELECT * FROM Chat  WHERE ProjectID='1010629306' AND Type ='تحضير' AND Sender LIKE '%عبدالله حسين%' AND chatID > 0  ORDER BY rowid DESC, chatID ASC LIMIT 10
+// SELECT * FROM Chat  WHERE ProjectID= '1010629306' AND Type ='تحضير' AND Sender LIKE  '%Software %'  OR message LIKE '%Software %' AND chatID  < 9669  ORDER BY chatID DESC LIMIT 1
+const SELECTfilterTableChate = (ProjectID, Type,userName, count = 0) => {
+  return new Promise((resolve, reject) => {
+    let Plus = parseInt(count)  === 0 ? '>' : '<'
+
+          // AND chatID > 772  
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM Chat  WHERE ProjectID=? AND Type =? AND( Sender LIKE  '%${userName}%' ) AND chatID ${Plus} ?  ORDER BY chatID DESC LIMIT 20 `,
+        [ProjectID, Type,parseInt(count)],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
+            resolve(result);
+            // console.log(result)
+            // resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 //  جلب مشاهدات رسائل الشات
 const SELECTTableViewChate = (chatID) => {
   return new Promise((resolve, reject) => {
@@ -1963,16 +2101,16 @@ const SELECTTableViewChate = (chatID) => {
 const SELECTTableNavigation = (data,where="DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE " ) => {
   return new Promise((resolve, reject) => {
     let plus = parseInt(data[0]) === 0 ? ">" : "<";
-
     db.serialize(function () {
       db.all(
-        `SELECT * FROM(SELECT * FROM Navigation WHERE id ${plus} ?   AND ${where}  ) AS subquery  ORDER BY id DESC   LIMIT 30 `,
+        `SELECT * FROM Navigation ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.id ${plus} ?   AND RE.NumberCompany =?  AND ${where} ORDER BY id DESC LIMIT 30      `,
         data,
         function (err, result) {
           if (err) {
             reject(err);
             console.log(err.message);
           } else {
+
             resolve(result);
           }
         }
@@ -1980,13 +2118,14 @@ const SELECTTableNavigation = (data,where="DateDay BETWEEN strftime('%Y-%m-01',C
     });
   });
 };
-const SELECTTableNavigationObjectOne = (id, type = "max(id) AS id") => {
+const SELECTTableNavigationObjectOne = (IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT ${type} FROM Navigation WHERE IDCompanySub=? AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
-        [id],
+        `SELECT MAX(na.id) AS id FROM Navigation na LEFT JOIN companySub RE ON RE.id = na.IDCompanySub WHERE  RE.NumberCompany = ?  AND DateDay BETWEEN strftime('%Y-%m-01',CURRENT_DATE )  AND CURRENT_DATE`,
+        [IDCompany],
         function (err, result) {
+     
           if (err) {
             reject(err);
             console.log(err.message);
@@ -2045,6 +2184,23 @@ const SELECTTableFinancialCustody = async (id, type = "") => {
           if (err) {
             reject(err);
             console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableBranchdeletionRequests= async (IDCompany,chack,PhoneNumber) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM BranchdeletionRequests WHERE IDCompany=? AND check=?  AND PhoneNumber=? `,
+        [IDCompany,chack,PhoneNumber],
+        function (err, result) {
+          if (err) {
+            resolve([])
           } else {
             resolve(result);
           }
@@ -2139,5 +2295,9 @@ module.exports = {
   SELECTTablecompanyRegistrationall,
   SelectVerifycompanyexistencePhonenumber,
   SELECTProjectStartdateapis,
-  SELECTTableStageNotesAllproject
+  SELECTTableStageNotesAllproject,
+  SELECTfilterTableChate,
+  SELECTTablearchivesNamefolder,
+  SELECTTableBranchdeletionRequests,
+  SELECTTABLEcompanyProjectall
 };

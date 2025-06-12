@@ -46,8 +46,18 @@ const {
 } = require("../notifcation/NotifcationProject");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 
-const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,Contractsigningdate) =>{
-  try{
+const OpreationProjectInsertv2 = async (
+  IDcompanySub,
+  Nameproject,
+  Note,
+  TypeOFContract,
+  GuardNumber,
+  LocationProject,
+  numberBuilding,
+  Referencenumber,
+  Contractsigningdate
+) => {
+  try {
     await insertTablecompanySubProjectv2([
       IDcompanySub,
       Nameproject,
@@ -56,7 +66,7 @@ const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFCont
       GuardNumber,
       LocationProject,
       numberBuilding,
-      Referencenumber
+      Referencenumber,
     ]);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
     let dataStages = await StageTempletXsl(TypeOFContract);
@@ -90,9 +100,10 @@ const OpreationProjectInsertv2 = async (IDcompanySub,Nameproject,Note,TypeOFCont
     await Stage(table, Contractsigningdate);
     await StageSub(tablesub);
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-
-  }catch(error){console.log(error)}
-} 
+  } catch (error) {
+    console.log(error);
+  }
+};
 const projectBrinshv2 = async (req, res) => {
   //
   const userSession = req.session.user;
@@ -101,11 +112,32 @@ const projectBrinshv2 = async (req, res) => {
     console.log("Invalid session");
   }
   try {
-    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber}= req.body;
+    const {
+      IDcompanySub,
+      Nameproject,
+      Note,
+      TypeOFContract,
+      GuardNumber,
+      LocationProject,
+      numberBuilding,
+      Referencenumber,
+    } = req.body;
     const Contractsigningdate = new Date();
     if (Boolean(Nameproject)) {
-      const locationsstring = String(LocationProject).startsWith('https')? LocationProject : null;
-      await OpreationProjectInsertv2(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,locationsstring,numberBuilding,Referencenumber,Contractsigningdate);
+      const locationsstring = String(LocationProject).startsWith("https")
+        ? LocationProject
+        : null;
+      await OpreationProjectInsertv2(
+        IDcompanySub,
+        Nameproject,
+        Note,
+        TypeOFContract,
+        GuardNumber,
+        locationsstring,
+        numberBuilding,
+        Referencenumber,
+        Contractsigningdate
+      );
       res
         .send({
           success: "تم انشاء مشروع بنجاح",
@@ -128,8 +160,17 @@ const projectBrinshv2 = async (req, res) => {
       .status(401);
   }
 };
-const OpreationProjectInsert = async (IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate) =>{
-  try{
+const OpreationProjectInsert = async (
+  IDcompanySub,
+  Nameproject,
+  Note,
+  TypeOFContract,
+  GuardNumber,
+  LocationProject,
+  numberBuilding,
+  Contractsigningdate
+) => {
+  try {
     await insertTablecompanySubProject([
       IDcompanySub,
       Nameproject,
@@ -170,9 +211,10 @@ const OpreationProjectInsert = async (IDcompanySub,Nameproject,Note,TypeOFContra
     await Stage(table, Contractsigningdate);
     await StageSub(tablesub);
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-
-  }catch(error){console.log(error)}
-} 
+  } catch (error) {
+    console.log(error);
+  }
+};
 const projectBrinsh = async (req, res) => {
   //
   const userSession = req.session.user;
@@ -181,10 +223,27 @@ const projectBrinsh = async (req, res) => {
     console.log("Invalid session");
   }
   try {
-    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding}= req.body;
+    const {
+      IDcompanySub,
+      Nameproject,
+      Note,
+      TypeOFContract,
+      GuardNumber,
+      LocationProject,
+      numberBuilding,
+    } = req.body;
     const Contractsigningdate = new Date();
     if (Boolean(Nameproject)) {
-      await OpreationProjectInsert(IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Contractsigningdate);
+      await OpreationProjectInsert(
+        IDcompanySub,
+        Nameproject,
+        Note,
+        TypeOFContract,
+        GuardNumber,
+        LocationProject,
+        numberBuilding,
+        Contractsigningdate
+      );
       res
         .send({
           success: "تم انشاء مشروع بنجاح",
@@ -457,6 +516,7 @@ const StageSub = async (teble) => {
   try {
     for (let index = 0; index < teble.length; index++) {
       const item = teble[index];
+
       await insertTablecompanySubProjectStagesSub([
         item.StageID,
         item.ProjectID,
@@ -486,6 +546,7 @@ const InsertStage = async (req, res) => {
         ProjectID,
         StageName
       );
+      let Daye = Boolean(Days) ? Days : 0;
       // console.log(findName);
       if (findName.length <= 0) {
         const result =
@@ -499,16 +560,17 @@ const InsertStage = async (req, res) => {
         let OrderBy;
         Time = new Date(result.EndDate);
         StartDate = Time.toDateString();
-        const dataend = new Date(Time.setDate(Time.getDate() + Days));
+        const dataend = new Date(Time.setDate(Time.getDate() + Daye));
         EndDate = dataend.toDateString();
         OrderBy = parseInt(result.OrderBy) + 1;
         // console.log(result);
+
         await insertTablecompanySubProjectStageCUST([
           result.StageID + 1,
           ProjectID,
           TypeOFContract,
-          StageName,
-          Days,
+          `${StageName} ${OrderBy}`,
+          Daye,
           StartDate,
           EndDate,
           OrderBy,
@@ -606,6 +668,7 @@ const NotesStage = async (req, res) => {
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
 };
+
 // وظيفة تجمع بين اضافة وتعديل ملاحظات فرعية
 const NotesStageSub = async (req, res) => {
   try {
@@ -621,7 +684,11 @@ const NotesStageSub = async (req, res) => {
     const type = req.body.type;
     let NoteArry;
     let kind;
-    if (Note !== "null" && type === 'AddNote' || type === "DeletNote" || type === "EditNote") {
+    if (
+      (Note !== "null" && type === "AddNote") ||
+      type === "DeletNote" ||
+      type === "EditNote"
+    ) {
       const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
         StageSubID
       );
@@ -801,16 +868,14 @@ const AddORCanselAchievment = async (req, res) => {
   const StageSubID = req.body.StageSubID;
   const userName = userSession.userName;
   const PhoneNumber = userSession.PhoneNumber;
-  await opreationAddAchivevment(StageSubID,userName,PhoneNumber);
+  await opreationAddAchivevment(StageSubID, userName, PhoneNumber);
   res.send({ success: "تمت العملية بنجاح" }).status(200);
-
-
 };
 
 // const cansles = [1,2,3,4];
 // const arrays =[1,4,5,3];
 // console.log(cansles.filter(item => !arrays.includes(item)))
-const AddORCanselAchievmentarrayall = async (req,res) =>{
+const AddORCanselAchievmentarrayall = async (req, res) => {
   const userSession = req.session.user;
   if (!userSession) {
     res.status(401).send("Invalid session");
@@ -821,17 +886,24 @@ const AddORCanselAchievmentarrayall = async (req,res) =>{
 
   const userName = userSession.userName;
   const PhoneNumber = userSession.PhoneNumber;
-  const arraycansle = selectAllarraycansle?.filter(item => !selectAllarray.includes(item));
+  const arraycansle = selectAllarraycansle?.filter(
+    (item) => !selectAllarray.includes(item)
+  );
   for (const element of arraycansle) {
-    await opreationAddAchivevment(element,userName,PhoneNumber);
+    await opreationAddAchivevment(element, userName, PhoneNumber);
   }
   for (const element of selectAllarray) {
-    await opreationAddAchivevment(element,userName,PhoneNumber,'alladd');
+    await opreationAddAchivevment(element, userName, PhoneNumber, "alladd");
   }
   res.send({ success: "تمت العملية بنجاح" }).status(200);
-}
+};
 
-const opreationAddAchivevment = async  (StageSubID,userName,PhoneNumber,type='single')=>{
+const opreationAddAchivevment = async (
+  StageSubID,
+  userName,
+  PhoneNumber,
+  type = "single"
+) => {
   try {
     let data = {
       id: Math.floor(1000 + Math.random() * 9000),
@@ -842,21 +914,24 @@ const opreationAddAchivevment = async  (StageSubID,userName,PhoneNumber,type='si
     const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
       StageSubID
     );
-    if(type === 'single'){
-      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
-    }else{
-      if ( type === 'alladd' && bringData.Done === "true")
-        return;
-      await opreationpartoneAchivement(data,bringData,StageSubID,userName);
-      }
+    if (type === "single") {
+      await opreationpartoneAchivement(data, bringData, StageSubID, userName);
+    } else {
+      if (type === "alladd" && bringData.Done === "true") return;
+      await opreationpartoneAchivement(data, bringData, StageSubID, userName);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
-}
+};
 
-
-const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
+const opreationpartoneAchivement = async (
+  data,
+  bringData,
+  StageSubID,
+  userName
+) => {
   let Done;
   let CloseDate;
   let Operations = [];
@@ -879,8 +954,11 @@ const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
     CloseDate = new Date().toDateString();
   }
 
-    Operations = bringData.closingoperations !== null? JSON.parse(bringData.closingoperations): [];
-    Operations.push(data);
+  Operations =
+    bringData.closingoperations !== null
+      ? JSON.parse(bringData.closingoperations)
+      : [];
+  Operations.push(data);
   await UPDATETablecompanySubProjectStagesSub(
     [JSON.stringify(Operations), CloseDate, Done, StageSubID],
     "Closingoperations"
@@ -890,15 +968,7 @@ const opreationpartoneAchivement =async (data,bringData,StageSubID,userName) =>{
     userName,
     types === "تم الانجاز" ? "إنجاز" : types
   );
-}
-
-
-
-
-
-
-
-
+};
 
 //  إغلاق او التراجع عن اغلاق  المراحل
 const ClassCloaseOROpenStage = async (req, res) => {
@@ -1155,7 +1225,6 @@ const AddFolderArchivesnew = async (req, res) => {
 };
 
 //  إضافة ملف فرعي داخل الملف الرئيسي
-
 const AddfileinFolderHomeinArchive = async (req, res) => {
   try {
     const ArchivesID = req.body.ArchivesID;
@@ -1321,7 +1390,7 @@ const InsertDatainTableRequests = async (req, res) => {
         Data,
         user,
         arrayImage !== null ? JSON.stringify(arrayImage) : null,
-        `${new Date()}`
+        `${new Date()}`,
       ]);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       await Financeinsertnotification(
@@ -1365,5 +1434,5 @@ module.exports = {
   OpreationProjectInsert,
   OpreationProjectInsertv2,
   projectBrinshv2,
-  AddORCanselAchievmentarrayall
+  AddORCanselAchievmentarrayall,
 };

@@ -23,7 +23,6 @@ const { verificationSend } = require("../companyselect/userCompanyselect");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 
-const bcrypt = require('bcrypt');
 
 // اضافة شركة جديدة
 const insertDataCompany = async (req, res) => {
@@ -67,11 +66,12 @@ const insertDataCompany = async (req, res) => {
         ]);
         res
           .send({
-            success: "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات ",
+            success: "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات",
           })
           .status(200);
       
-      }
+      };
+    await sendNotificationCompany(NameCompany);
     }else{
       res
       .send({
@@ -80,7 +80,6 @@ const insertDataCompany = async (req, res) => {
       .status(200);
     }
 
-    await sendNotificationCompany(NameCompany);
   } catch (error) {
     // console.log(error);
     res
@@ -111,13 +110,7 @@ const sendNotificationCompany = async (name) =>{
 //  اضافة فرع جديد
 const inseertCompanybrinsh = async (req, res) => {
   try {
-    const NumberCompany = req.body.NumberCompany;
-    const NameSub = req.body.NameSub;
-    const BranchAddress = req.body.BranchAddress;
-    const Email = req.body.Email;
-    const PhoneNumber = req.body.PhoneNumber;
-    const check = req.body.check;
-    const checkGloble = req.body.checkGloble;
+    const {NumberCompany,NameSub,BranchAddress,Email,PhoneNumber,check,checkGloble} = req.body.NumberCompany;
 
     if (Boolean(NameSub) && Boolean(BranchAddress)) {
       const chackfromCompany = await SELECTTablecompanyName(NumberCompany);

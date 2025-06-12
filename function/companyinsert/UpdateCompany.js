@@ -1,7 +1,23 @@
-const { DeleteTableFinancialCustody, DeleteTablecompanySubProjectall } = require("../../sql/delete");
-const { insertTableuserComppany, insertTablecompany } = require("../../sql/INsertteble");
-const {  SELECTTablecompanyName, SELECTTablecompanyRegistration, SelectVerifycompanyexistencePhonenumber, SelectVerifycompanyexistence } = require("../../sql/selected/selected");
-const { SELECTTableusersCompanyVerification } = require("../../sql/selected/selectuser");
+const {
+  DeleteTableFinancialCustody,
+  DeleteTablecompanySubProjectall,
+} = require("../../sql/delete");
+const {
+  insertTableuserComppany,
+  insertTablecompany,
+  insertTableBranchdeletionRequests,
+} = require("../../sql/INsertteble");
+const {
+  SELECTTablecompanyName,
+  SELECTTablecompanyRegistration,
+  SelectVerifycompanyexistencePhonenumber,
+  SelectVerifycompanyexistence,
+  SELECTTableBranchdeletionRequests,
+  SELECTTABLEcompanyProjectall,
+} = require("../../sql/selected/selected");
+const {
+  SELECTTableusersCompanyVerification,
+} = require("../../sql/selected/selectuser");
 
 const {
   UpdateTablecompanySub,
@@ -11,10 +27,22 @@ const {
   UpdateTablecompanyRegistration,
 } = require("../../sql/update");
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const { opreationDeletProject } = require("./UpdateProject");
 
 const UpdateDataCompany = async (req, res) => {
-  const {NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Cost,id} = req.body;
+  const {
+    NameCompany,
+    BuildingNumber,
+    StreetName,
+    NeighborhoodName,
+    PostalCode,
+    City,
+    Country,
+    TaxNumber,
+    Cost,
+    id,
+  } = req.body;
 
   // console.log(req.body);
   if (
@@ -25,7 +53,7 @@ const UpdateDataCompany = async (req, res) => {
     PostalCode?.length > 0 &&
     City?.length > 0 &&
     Country?.length > 0 &&
-    TaxNumber?.length > 0 
+    TaxNumber?.length > 0
   ) {
     await UpdateTablecompany([
       NameCompany,
@@ -55,97 +83,131 @@ const UpdateDataCompany = async (req, res) => {
   // console.log(tableCompany);
 };
 
-const UpdateApiCompany = async (req,res) => {
+const UpdateApiCompany = async (req, res) => {
   const id = req.query.id;
   const chackfromCompany = await SELECTTablecompanyName(id);
   if (Boolean(chackfromCompany)) {
-    bcrypt.hash(`${chackfromCompany?.CommercialRegistrationNumber}`, 10, async function(err, hash) {
-      await UpdateTableinnuberOfcurrentBranchescompany([hash,id],"Api");
-      res.send({success:'تمت العملية بنجاح',data:`${hash}`}).status(200);
-  });
-}else{
-  res.send({success:'لاتوجد الشركه المطلوبه'}).status(402);
-}
-}
-// قبول تسجيل الشركة
-const AgreedRegistrationCompany = async (req,res) => {
-  try{
-  const id= req.query.id;
-  const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
-  if(Boolean(dataCompany)){
-    await bcrypt.hash(`${dataCompany?.CommercialRegistrationNumber}`, 10, async function(err, hash) {
-        await insertTablecompany([
-        dataCompany?.CommercialRegistrationNumber,
-        dataCompany?.NameCompany,
-        dataCompany?.BuildingNumber,
-        dataCompany?.StreetName,
-        dataCompany?.NeighborhoodName,
-        dataCompany?.PostalCode,
-        dataCompany?.City,
-        dataCompany?.Country,
-        dataCompany?.TaxNumber,
-        hash
-      ]);
-      const checkCompany = await SelectVerifycompanyexistence(
-        dataCompany?.CommercialRegistrationNumber
-      );
-      if(Boolean(checkCompany)){
-        await insertTableuserComppany([
-          checkCompany?.id,
-          dataCompany?.userName,
-          0,
-          dataCompany?.PhoneNumber,
-          "Admin",
-          "موظف",
-          "Admin",
-          JSON.stringify([]),
-        ]);
-        await DeleteTablecompanySubProjectall("companyRegistration","id",id);
-        res.send({success:'تمت العملية بنجاح',data:`${hash}`}).status(200);
+    bcrypt.hash(
+      `${chackfromCompany?.CommercialRegistrationNumber}`,
+      10,
+      async function (err, hash) {
+        await UpdateTableinnuberOfcurrentBranchescompany([hash, id], "Api");
+        res.send({ success: "تمت العملية بنجاح", data: `${hash}` }).status(200);
       }
-  });
+    );
+  } else {
+    res.send({ success: "لاتوجد الشركه المطلوبه" }).status(402);
   }
-}catch(error){
-  res.send({success:'فشل تنفيذ العملية'}).status(402);
-}
-}
-
-
-
-
+};
+// قبول تسجيل الشركة
+const AgreedRegistrationCompany = async (req, res) => {
+  try {
+    const id = req.query.id;
+    const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
+    if (Boolean(dataCompany)) {
+      await bcrypt.hash(
+        `${dataCompany?.CommercialRegistrationNumber}`,
+        10,
+        async function (err, hash) {
+          await insertTablecompany([
+            dataCompany?.CommercialRegistrationNumber,
+            dataCompany?.NameCompany,
+            dataCompany?.BuildingNumber,
+            dataCompany?.StreetName,
+            dataCompany?.NeighborhoodName,
+            dataCompany?.PostalCode,
+            dataCompany?.City,
+            dataCompany?.Country,
+            dataCompany?.TaxNumber,
+            hash,
+          ]);
+          const checkCompany = await SelectVerifycompanyexistence(
+            dataCompany?.CommercialRegistrationNumber
+          );
+          if (Boolean(checkCompany)) {
+            await insertTableuserComppany([
+              checkCompany?.id,
+              dataCompany?.userName,
+              0,
+              dataCompany?.PhoneNumber,
+              "Admin",
+              "موظف",
+              "Admin",
+              JSON.stringify([]),
+            ]);
+            await DeleteTablecompanySubProjectall(
+              "companyRegistration",
+              "id",
+              id
+            );
+            res
+              .send({ success: "تمت العملية بنجاح", data: `${hash}` })
+              .status(200);
+          }
+        }
+      );
+    }
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(402);
+  }
+};
 
 // حذف بيانات الشركة قيد التسجيل
 const DeleteCompanyRegistration = async (req, res) => {
-  try { 
+  try {
     const id = req.query.id;
-    await DeleteTablecompanySubProjectall("companyRegistration","id",id);
+    await DeleteTablecompanySubProjectall("companyRegistration", "id", id);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-  }catch (error) {
-    res.send({success: "فشل تنفيذ العملية" }).status(400);
-    console.log(error);   
+  } catch (error) {
+    res.send({ success: "فشل تنفيذ العملية" }).status(400);
+    console.log(error);
   }
-}
+};
 
-
-const UpdatedataRegistration =  async (req,res) =>{
-  try{
-    const {CommercialRegistrationNumber,NameCompany,BuildingNumber,StreetName,NeighborhoodName,PostalCode,City,Country,TaxNumber,Api,PhoneNumber,userName,id} = req.body;
+const UpdatedataRegistration = async (req, res) => {
+  try {
+    const {
+      CommercialRegistrationNumber,
+      NameCompany,
+      BuildingNumber,
+      StreetName,
+      NeighborhoodName,
+      PostalCode,
+      City,
+      Country,
+      TaxNumber,
+      Api,
+      PhoneNumber,
+      userName,
+      id,
+    } = req.body;
     let number = String(PhoneNumber);
     if (number.startsWith(0)) {
       number = number.slice(1);
     }
     const checkVerifction = await SelectVerifycompanyexistence(
-      CommercialRegistrationNumber,"companyRegistration"
+      CommercialRegistrationNumber,
+      "companyRegistration"
     );
     const verificationFinduser = await SELECTTableusersCompanyVerification(
       number
     );
 
-    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(number)
-    if(verificationFinduser.length <= 0 ){
-      if(!Boolean(findRegistrioncompany) || Boolean(findRegistrioncompany)  && findRegistrioncompany.CommercialRegistrationNumber === CommercialRegistrationNumber || Boolean(findRegistrioncompany) 
-        && findRegistrioncompany.CommercialRegistrationNumber !== CommercialRegistrationNumber && !Boolean(checkVerifction)   ){
-        await UpdateTablecompanyRegistration([     
+    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(
+      number
+    );
+    if (verificationFinduser.length <= 0) {
+      if (
+        !Boolean(findRegistrioncompany) ||
+        (Boolean(findRegistrioncompany) &&
+          findRegistrioncompany.CommercialRegistrationNumber ===
+            CommercialRegistrationNumber) ||
+        (Boolean(findRegistrioncompany) &&
+          findRegistrioncompany.CommercialRegistrationNumber !==
+            CommercialRegistrationNumber &&
+          !Boolean(checkVerifction))
+      ) {
+        await UpdateTablecompanyRegistration([
           NameCompany,
           BuildingNumber,
           StreetName,
@@ -157,21 +219,23 @@ const UpdatedataRegistration =  async (req,res) =>{
           number,
           userName,
           String(Api),
-          id]);
-        res.send({success:'تمت العملية بنجاح'}).status(200);
-      }else{
-        res.send({success:'الرقم مستخدم لاضافة حساب شركة اخرى '}).status(200);
+          id,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+      } else {
+        res
+          .send({ success: "الرقم مستخدم لاضافة حساب شركة اخرى " })
+          .status(200);
       }
-    }else{
-      res.send({success:'الرقم مستخدم بالفعل في حساب باحدى الشركات '}).status(200);
+    } else {
+      res
+        .send({ success: "الرقم مستخدم بالفعل في حساب باحدى الشركات " })
+        .status(200);
     }
-  }catch(error){
-    console.log(error)}
-
-
-}
-
-
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const UpdateCompanybrinsh = async (req, res) => {
   const NumberCompany = req.body.NumberCompany;
@@ -268,11 +332,11 @@ const Deletecovenantrequests = async (req, res) => {
       console.log("Invalid session");
     }
     const PhoneNumber = userSession.PhoneNumber;
-    if(PhoneNumber !== "502464530"){
+    if (PhoneNumber !== "502464530") {
       const id = req.query.id;
       await DeleteTableFinancialCustody([id]);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
-    }else{
+    } else {
       res.send({ success: "لايمكنك  القيام بالحذف" }).status(200);
     }
   } catch (error) {
@@ -281,10 +345,55 @@ const Deletecovenantrequests = async (req, res) => {
   }
 };
 
+const Branchdeletionprocedures = async (req, res) => {
+  try {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const { IDBrach } = req.query;
+    const check = Math.floor(1000 + Math.random() * 9000);
+    await insertTableBranchdeletionRequests([
+      IDBrach,
+      userSession?.IDCompany,
+      check,
+      userSession?.PhoneNumber,
+    ]);
+    await verificationSend(
+      element,
+      check,
+      `كود حذف الفرع تأكد ان لا يصل هذا الرمز لاي شخص`
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-
-
-
+const Implementedbyopreation = async (req, res) => {
+  try {
+    const { check } = req.query;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    const result = await SELECTTableBranchdeletionRequests(
+      userSession?.IDCompany,
+      check,
+      userSession.PhoneNumber
+    );
+    if (result.length > 0) {
+      const project = await SELECTTABLEcompanyProjectall(result[0].IDBranch);
+      for (const pic of project){
+        await opreationDeletProject(pic?.id)
+      }
+      await DeleteTablecompanySubProjectall("companySub", "id", result[0].IDBranch);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // const OperationMoveingdataProjectfromBranshtoBransh = async (fromId,toId,IDCompany) => {
 // const {fromId,toId,IDCompany} = req.query;
@@ -300,7 +409,6 @@ const Deletecovenantrequests = async (req, res) => {
 
 // }
 
-
 // OperationMoveingdataProjectfromBranshtoBransh(2,1,1);
 
 // Function to move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
@@ -309,16 +417,14 @@ const Deletecovenantrequests = async (req, res) => {
 //   const toBrinsh = data.find(item => parseInt(item.idBrinsh) === toId);
 
 //   if (fromBrinshIndex !== -1 && toBrinsh) {
-//     // Move projects
+// Move projects
 //     toBrinsh.project.push(...data[fromBrinshIndex].project);
-    
-//     // Remove the fromId brinsh
+// Remove the fromId brinsh
 //     data.splice(fromBrinshIndex, 1);
-    
-//     // Return the modified data
+// Return the modified data
 //     return data;
 //   } else if(fromBrinshIndex !== -1 ) {
-//     let datanew = [...data, { 
+//     let datanew = [...data, {
 //       idBrinsh: 1,
 //       job: 'عضو',
 //       project:data[fromBrinshIndex].project ,
@@ -327,10 +433,8 @@ const Deletecovenantrequests = async (req, res) => {
 //   }else{
 //     console.log('One of the idBrinsh not found');
 //     return data; // Return the original data if not found
-
 //   }
 // }
-
 
 // Move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
 
@@ -345,5 +449,7 @@ module.exports = {
   UpdateApiCompany,
   AgreedRegistrationCompany,
   UpdatedataRegistration,
-  DeleteCompanyRegistration
+  DeleteCompanyRegistration,
+  Branchdeletionprocedures,
+  Implementedbyopreation
 };

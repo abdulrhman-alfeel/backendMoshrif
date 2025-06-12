@@ -1,4 +1,8 @@
-const { uploaddata,  DeleteBucket, RenameBucket } = require("../../bucketClooud");
+const {
+  uploaddata,
+  DeleteBucket,
+  RenameBucket,
+} = require("../../bucketClooud");
 const {
   DeleteTablecompanySubProjectphase,
   DeleteTablecompanySubProjectarchives,
@@ -42,7 +46,7 @@ const {
 } = require("../notifcation/NotifcationProject");
 const { Stage, StageTempletXsl, AccountDays } = require("./insertProject");
 
-const {deleteFileSingle} = require('../../middleware/Fsfile')
+const { deleteFileSingle } = require("../../middleware/Fsfile");
 
 // وظيفة تقوم بتعديل بيانات الشمروع
 const UpdataDataProject = async (req, res) => {
@@ -52,7 +56,17 @@ const UpdataDataProject = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const {IDcompanySub,Nameproject,Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,ProjectID}= req.body;
+    const {
+      IDcompanySub,
+      Nameproject,
+      Note,
+      TypeOFContract,
+      GuardNumber,
+      LocationProject,
+      numberBuilding,
+      Referencenumber,
+      ProjectID,
+    } = req.body;
 
     const StartDate = await SELECTProjectStartdate(ProjectID);
 
@@ -137,36 +151,39 @@ const DeletProjectwithDependencies = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    if(userSession.PhoneNumber !== "502464530"){
-    const id = req.query.idProject;
-    [
-      { name: "StagesCUST", type: "ProjectID" },
-      { name: "StageNotes", type: "ProjectID" },
-      { name: "StagesSub ", type: "projectID" },
-      { name: "Expense ", type: "projectID" },
-      { name: "Revenue ", type: "projectID" },
-      { name: "Returns ", type: "projectID" },
-      { name: "Savepdf ", type: "projectID" },
-      { name: "Archives ", type: "ProjectID" },
-      { name: "Requests ", type: "ProjectID" },
-      { name: "Post ", type: "ProjectID" },
-      { name: "ChatSTAGE ", type: "ProjectID" },
-      { name: "Chat ", type: "ProjectID" },
-      { name: "Navigation ", type: "ProjectID" },
-      { name: "companySubprojects ", type: "id" },
-    ].forEach(async (pic) => {
-      await DeleteTablecompanySubProjectall(pic.name, pic.type, id);
-    });
-    res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
-  }else{
-    res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-  }
+    if (userSession.PhoneNumber !== "502464530") {
+      const id = req.query.idProject;
+      await opreationDeletProject(id);
+      res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
+    } else {
+      res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشلت عملية حذف الرسالة" }).status(200);
   }
 };
 
+const opreationDeletProject = (id) => {
+  [
+    { name: "StagesCUST", type: "ProjectID" },
+    { name: "StageNotes", type: "ProjectID" },
+    { name: "StagesSub ", type: "projectID" },
+    { name: "Expense ", type: "projectID" },
+    { name: "Revenue ", type: "projectID" },
+    { name: "Returns ", type: "projectID" },
+    { name: "Savepdf ", type: "projectID" },
+    { name: "Archives ", type: "ProjectID" },
+    { name: "Requests ", type: "ProjectID" },
+    { name: "Post ", type: "ProjectID" },
+    { name: "ChatSTAGE ", type: "ProjectID" },
+    { name: "Chat ", type: "ProjectID" },
+    { name: "Navigation ", type: "ProjectID" },
+    { name: "companySubprojects ", type: "id" },
+  ].forEach(async (pic) => {
+    await DeleteTablecompanySubProjectall(pic.name, pic.type, id);
+  });
+};
 
 // وظيفة تقوم بإضافة تاريخ بدء تنفيذ المشروع واعادة ترتيب تواريخ المراحل
 const UpdateStartdate = async (req, res) => {
@@ -319,7 +336,7 @@ const DeleteStageHome = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    if(userSession.PhoneNumber !== "502464530"){
+    if (userSession.PhoneNumber !== "502464530") {
       const ProjectID = req.query.ProjectID;
       const StageID = req.query.StageID;
       await DeleteTablecompanyStageHome(ProjectID, StageID);
@@ -346,11 +363,10 @@ const DeleteStageHome = async (req, res) => {
           date = StartDate["ProjectStartdate"];
         }
         await Stage(arraytable, date);
-      }  
+      }
       res.send({ success: "نجح تنيفذ العملية" }).status(200);
-    }else{
+    } else {
       res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-
     }
   } catch (error) {
     console.log(error);
@@ -377,17 +393,17 @@ const DeleteStageSub = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    if(userSession.PhoneNumber !== "502464530"){
-    const StageSubID = req.query.StageSubID;
-    await DeleteTablecompanySubProjectall(
-      "StagesSub",
-      "StageSubID",
-      StageSubID
-    );
-    res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
-  }else{
-    res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-  }
+    if (userSession.PhoneNumber !== "502464530") {
+      const StageSubID = req.query.StageSubID;
+      await DeleteTablecompanySubProjectall(
+        "StagesSub",
+        "StageSubID",
+        StageSubID
+      );
+      res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+    } else {
+      res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(501);
@@ -524,11 +540,11 @@ const Switchbetweendeleteorupdatefiles = async (nameOld, name, type) => {
   try {
     switch (type) {
       case "update":
-        await RenameBucket(nameOld,name);
-      break;
+        await RenameBucket(nameOld, name);
+        break;
       case "delete":
         await DeleteBucket(nameOld);
-      break
+        break;
     }
   } catch (error) {
     console.log(error);
@@ -580,7 +596,7 @@ const ExpenseUpdate = async (req, res) => {
         imagesToDelete.map(async (pic) => {
           arrayImage = arrayImage.filter((item) => item !== pic); // Remove the image from arrayImage
           try {
-            await DeleteBucket(pic) 
+            await DeleteBucket(pic);
           } catch (error) {
             console.error(`Failed to delete image ${pic}:`, error);
           }
@@ -635,71 +651,73 @@ const RevenuesUpdate = async (req, res) => {
     }
 
     const data = await SELECTTablecompany(userSession?.IDCompany);
-    if(data.DisabledFinance === 'true'){
-    const RevenueId = req.body.RevenueId;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    const Bank = req.body.Bank;
+    if (data.DisabledFinance === "true") {
+      const RevenueId = req.body.RevenueId;
+      const Amount = req.body.Amount;
+      const Data = req.body.Data;
+      const Bank = req.body.Bank;
 
-    const Imageolddelete = req.body.Imageolddelete;
-    const elementUpdate = await SELECTTablecompanySubProjectREVENUEObjectOne(
-      RevenueId
-    );
-    // console.log(elementUpdate);
-
-    const Imageoldindatabese =
-      elementUpdate.Image !== null ? JSON.parse(elementUpdate.Image) : [];
-    let arrayImage = [...Imageoldindatabese];
-    // console.log(req.files, Imageoldindatabese, "kkkkkkk");
-    if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
-      // console.log(Imageolddelete, "arrays");
-      const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
-      await Promise.all(
-        imageDelete.map(async (pic) => {
-          arrayImage = arrayImage.filter((item) => item !== pic);
-          try {
-            await DeleteBucket(pic);
-          } catch (error) {
-            console.log(error);
-          }
-        })
+      const Imageolddelete = req.body.Imageolddelete;
+      const elementUpdate = await SELECTTablecompanySubProjectREVENUEObjectOne(
+        RevenueId
       );
+      // console.log(elementUpdate);
+
+      const Imageoldindatabese =
+        elementUpdate.Image !== null ? JSON.parse(elementUpdate.Image) : [];
+      let arrayImage = [...Imageoldindatabese];
+      // console.log(req.files, Imageoldindatabese, "kkkkkkk");
+      if (Imageoldindatabese.length > 0 && String(Imageolddelete).length > 0) {
+        // console.log(Imageolddelete, "arrays");
+        const imageDelete = Imageolddelete ? Imageolddelete.split(",") : [];
+        await Promise.all(
+          imageDelete.map(async (pic) => {
+            arrayImage = arrayImage.filter((item) => item !== pic);
+            try {
+              await DeleteBucket(pic);
+            } catch (error) {
+              console.log(error);
+            }
+          })
+        );
+      }
+      if (req.files && req.files.length > 0) {
+        // حذف الصورة السابقة من قاعدة البيانات ومن buckte storge
+        await Promise.all(
+          req.files.map(async (element) => {
+            try {
+              await uploaddata(element);
+              deleteFileSingle(element.filename, "upload");
+
+              arrayImage.push(element.filename);
+            } catch (error) {
+              console.error(
+                `Failed to upload image ${element.filename}:`,
+                error
+              );
+            }
+          })
+        );
+      }
+
+      await UPDATETablecompanySubProjectREVENUE([
+        Amount,
+        Data,
+        Bank,
+        JSON.stringify(arrayImage),
+        RevenueId,
+      ]);
+      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      // await Financeinsertnotification(
+      //   0,
+      //   "عهد",
+      //   "تعديل",
+      //   userSession.userName,
+      //   RevenueId
+      // );
+    } else {
+      res.send({ success: "تم ايقاف الحذف اليدوي من قبل الادمن" }).status(200);
     }
-    if (req.files && req.files.length > 0) {
-      // حذف الصورة السابقة من قاعدة البيانات ومن buckte storge
-      await Promise.all(
-        req.files.map(async (element) => {
-          try {
-            await uploaddata(element);
-            deleteFileSingle(element.filename, "upload");
-
-            arrayImage.push(element.filename);
-          } catch (error) {
-            console.error(`Failed to upload image ${element.filename}:`, error);
-          }
-        })
-      );
-    }
-
-    await UPDATETablecompanySubProjectREVENUE([
-      Amount,
-      Data,
-      Bank,
-      JSON.stringify(arrayImage),
-      RevenueId,
-    ]);
-    res.send({ success: "تمت العملية بنجاح" }).status(200);
-    // await Financeinsertnotification(
-    //   0,
-    //   "عهد",
-    //   "تعديل",
-    //   userSession.userName,
-    //   RevenueId
-    // );
-  }else{
-    res.send({ success: "تم ايقاف الحذف اليدوي من قبل الادمن" }).status(200);
-
-  }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -718,7 +736,7 @@ const ReturnsUpdate = async (req, res) => {
     const Amount = req.body.Amount;
     const Data = req.body.Data;
     const Imageolddelete = req.body.Imageolddelete;
-    (Imageolddelete);
+    Imageolddelete;
     const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(
       ReturnsId
     );
@@ -777,7 +795,6 @@ const ReturnsUpdate = async (req, res) => {
   }
 };
 
-
 const DeleteFinance = async (req, res) => {
   try {
     const userSession = req.session.user;
@@ -787,7 +804,10 @@ const DeleteFinance = async (req, res) => {
     }
 
     const data = await SELECTTablecompany(userSession?.IDCompany);
-    if(data.DisabledFinance === 'true' && userSession.PhoneNumber !== "502464530"){
+    if (
+      data.DisabledFinance === "true" &&
+      userSession.PhoneNumber !== "502464530"
+    ) {
       const id = req.query.id;
       const type = req.query.type;
       let nametype;
@@ -810,7 +830,7 @@ const DeleteFinance = async (req, res) => {
       }
       await DeleteTablecompanySubProjectall(nametype, typeid, id);
       res.send({ success: "تم الحذف بنجاح" }).status(200);
-    }else{
+    } else {
       res.send({ success: "تم ايقاف الحذف اليدوي من قبل الادمن" }).status(200);
     }
   } catch (error) {
@@ -818,7 +838,6 @@ const DeleteFinance = async (req, res) => {
     console.log(error);
   }
 };
-
 
 // *******************************************************************
 // ****************** تعديل بيانات الطلبيات ************************
@@ -909,20 +928,21 @@ const UPDATEImplementRquestsORCansle = async (req, res) => {
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
 };
-const Confirmarrivdrequest= async (req, res) => {
+const Confirmarrivdrequest = async (req, res) => {
   try {
     const RequestsID = req.query.RequestsID;
     const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(RequestsID);
     const Done = DoneOrgin.checkorderout === "true" ? "false" : "true";
-    await UPDATETableinRequestsDone([Done, RequestsID],type="checkorderout=?");
+    await UPDATETableinRequestsDone(
+      [Done, RequestsID],
+      (type = "checkorderout=?")
+    );
     res.send({ success: "تمت العملية بنجاح" }).status(200);
-
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
 };
-
 
 const DeleteRequests = async (req, res) => {
   try {
@@ -931,23 +951,22 @@ const DeleteRequests = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    if(userSession.PhoneNumber !== "502464530"){
-    const RequestsID = req.query.RequestsID;
-    await DeleteTablecompanySubProjectall(
-      "Requests",
-      "RequestsID",
-      RequestsID
-    );
-    res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
-  }else{
-    res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-  }
+    if (userSession.PhoneNumber !== "502464530") {
+      const RequestsID = req.query.RequestsID;
+      await DeleteTablecompanySubProjectall(
+        "Requests",
+        "RequestsID",
+        RequestsID
+      );
+      res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+    } else {
+      res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
+    }
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(501);
   }
 };
-
 
 module.exports = {
   UpdataDataProject,
@@ -970,5 +989,6 @@ module.exports = {
   Confirmarrivdrequest,
   DeleteRequests,
   RearrangeStageID,
-  Switchbetweendeleteorupdatefiles
+  Switchbetweendeleteorupdatefiles,
+  opreationDeletProject
 };
