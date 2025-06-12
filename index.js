@@ -275,11 +275,21 @@ app.all("*", (req, res) => {
 
 
 
+const cluster = require('cluster');
+const os = require('os');
 
+const numCPUs = os.cpus().length;
+
+if (cluster.isMaster) {
+  console.log("👑 Master ${process.pid} is running");
+  for (let i = 0; i < numCPUs; i++) cluster.fork();
+} else {
+server.listen(PORT, () => {
+  console.log(PORT, "SERVER ALREADY");
+});
+
+}
 // Error handling middleware
 app.use(handleUploadErrors);
 
 
-server.listen(PORT, () => {
-  console.log(PORT, "SERVER ALREADY");
-});
