@@ -568,7 +568,7 @@ const insertTableBranchdeletionRequests = (data) => {
   try {
     db.serialize(function () {
       db.run(
-        "INSERT INTO BranchdeletionRequests (IDBranch,IDCompany,check,PhoneNumber) VALUES (?,?,?,?)",
+        "INSERT INTO BranchdeletionRequests (IDBranch,IDCompany,checkVerification,PhoneNumber) VALUES (?,?,?,?)",
         data,
         function (err) {
           if (err) {

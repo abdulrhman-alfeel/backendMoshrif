@@ -118,7 +118,8 @@ const OpreactionSend_message = async (data) => {
   return result;
 };
 
-const Chackarrivedmassage = async (req, res) => {
+const Chackarrivedmassage =  () => {
+  return async (req, res) => {
   const userSession = req.session.user;
   const { StageID, idSendr } = req.query;
   if (!userSession) {
@@ -140,9 +141,11 @@ const Chackarrivedmassage = async (req, res) => {
       );
 
   res.send({ success: chackdata }).status(200);
+    }
 };
 
-const PostFilemassage = async (req, res) => {
+const PostFilemassage =  () => {
+  return async (req, res) => {
   try {
     const videofile = req.file;
 
@@ -180,6 +183,7 @@ const PostFilemassage = async (req, res) => {
   } catch (error) {
     res.status(402).send({ success: "فشلة عملية رفع الملف" });
   }
+}
 };
 
 const Datadistribution = (data) => {
@@ -230,92 +234,95 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
 
 // **************
 // جلب الرسائل الناقصة
-const ClassChackTableChat = async (req, res) => {
-  try {
-    const ProjectID = req.query.ProjectID;
-    const StageID = req.query.StageID;
-    const lengthChat = req.query.lengthChat;
-    const userSession = req.session.user;
+const ClassChackTableChat = () => {
+  return async (req, res) => {
+    try {
+      const { ProjectID, StageID, lengthChat } = req.query;
 
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    let arrayResult = [];
-    //  جلب طول البيانات
-    const Listchat = Number(StageID)
-      ? await SELECTLastmassgeuserinchat(
-          ProjectID,
-          StageID,
-          userSession.userName
-        )
-      : await SELECTLastmassgeuserinchat(
-          ProjectID,
-          StageID,
-          userSession.userName,
-          "Chat"
-        );
-    // جلب البيانات
-    let result;
-    if (Listchat.last_id !== null && lengthChat > 0) {
-      result = Number(StageID)
-        ? await SELECTLastTableChateStageDontEmpty(
-            ProjectID,
-            StageID,
-            Listchat?.last_id
-          )
-        : await SELECTLastTableChateTypeDontEmpty(
-            ProjectID,
-            StageID,
-            Listchat?.last_id
-          );
-    } else {
-      result = Number(StageID)
-        ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
-        : await SELECTLastTableChate(ProjectID, StageID, 80);
-    }
-    // فرز البيانات
-    if (result?.length > 0 && result !== undefined) {
-      for (let index = 0; index < result.length; index++) {
-        const element = result[index];
-        element.File = JSON.parse(element.File);
-        element.Reply = JSON.parse(element.Reply);
-        arrayResult.push(element);
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
+      let arrayResult = [];
+      //  جلب طول البيانات
+      const Listchat = Number(StageID)
+        ? await SELECTLastmassgeuserinchat(
+            ProjectID,
+            StageID,
+            userSession.userName
+          )
+        : await SELECTLastmassgeuserinchat(
+            ProjectID,
+            StageID,
+            userSession.userName,
+            "Chat"
+          );
+      // جلب البيانات
+      let result;
+      if (Listchat.last_id !== null && lengthChat > 0) {
+        result = Number(StageID)
+          ? await SELECTLastTableChateStageDontEmpty(
+              ProjectID,
+              StageID,
+              Listchat?.last_id
+            )
+          : await SELECTLastTableChateTypeDontEmpty(
+              ProjectID,
+              StageID,
+              Listchat?.last_id
+            );
+      } else {
+        result = Number(StageID)
+          ? await SELECTLastTableChateStage(ProjectID, StageID, 80)
+          : await SELECTLastTableChate(ProjectID, StageID, 80);
+      }
+      // فرز البيانات
+      if (result?.length > 0 && result !== undefined) {
+        for (let index = 0; index < result.length; index++) {
+          const element = result[index];
+          element.File = JSON.parse(element.File);
+          element.Reply = JSON.parse(element.Reply);
+          arrayResult.push(element);
+        }
+      }
+      // ارسال البيانات
+      res.send({ success: true, data: arrayResult }).status(200);
+    } catch (err) {
+      console.log(err);
+      res.send({ success: false }).status(400);
     }
-    // ارسال البيانات
-    res.send({ success: true, data: arrayResult }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(400);
-  }
+  };
 };
 
-
-const filterTableChat = async (req,res) => {
-  try{
-    const {userName,count,ProjectID,Type} = req.query;
-    let array= []
-    const Count = Boolean(count)? count :0
-    if(Boolean(count)){
-      const result = await SELECTfilterTableChate(ProjectID,Type,userName,Count);
-      for (const pic of result){
-        array.push(
-      { ...pic,
-          File:JSON.parse(pic.File),
-          Reply:JSON.parse(pic.Reply)
+const filterTableChat = () => {
+  return async (req, res) => {
+    try {
+      const { userName, count, ProjectID, Type } = req.query;
+      let array = [];
+      const Count = Boolean(count) ? count : 0;
+      if (Boolean(count)) {
+        const result = await SELECTfilterTableChate(
+          ProjectID,
+          Type,
+          userName,
+          Count
+        );
+        for (const pic of result) {
+          array.push({
+            ...pic,
+            File: JSON.parse(pic.File),
+            Reply: JSON.parse(pic.Reply),
+          });
         }
-        ) 
-      }  
+      }
+      res.send({ success: "تمت العملية بنجاح", data: array }).status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ المهمة", data: [] }).status(200);
     }
-    res.send({ success: 'تمت العملية بنجاح', data: array }).status(200);
-
-  }catch(error){
-    console.log(error);
-    res.send({ success: 'فشل تنفيذ المهمة', data: [] }).status(200);
-
-  }
-}
+  };
+};
 // عملية مشاهدة لرسائل شات
 const ClassChatOprationView = async (data) => {
   return new Promise(async (resolve, reject) => {
@@ -344,40 +351,51 @@ const ClassChatOprationView = async (data) => {
   });
 };
 //  لطلب المشاهدات الناقسة للرسالة
-const ClassViewChat = async (req, res) => {
-  const type = req.query.type;
-  const chatID = req.query.chatID;
-  const data = { chatID: chatID, type: type };
+const ClassViewChat = () => {
+  return async (req, res) => {
+    const { type, chatID } = req.query;
+    const data = { chatID: chatID, type: type };
 
-  const result = await verification(data);
+    const result = await verification(data);
 
-  res.send({ success: true, data: result }).status(200);
+    res.send({ success: true, data: result }).status(200);
+  };
 };
 
 //  لاستقبال مشاهدات الرسائل
-const ClassreceiveMessageViews = async (req, res) => {
-  const userName = req.body.userName;
-  const ProjectID = req.body.ProjectID;
-  const type = req.body.type;
-  const result = await SELECTLastTableChateID(ProjectID, type, userName);
+const ClassreceiveMessageViews =  () => {
+  return async (req, res) => {
+    try {
+      const { userName, ProjectID, type } = req.body;
 
-  for (let index = 0; index < result.length; index++) {
-    const element = result[index];
-    const data = await SELECTTableViewChateUser(element.chatID, userName, type);
+      const result = await SELECTLastTableChateID(ProjectID, type, userName);
 
-    if (data?.length === 0) {
-      const viewSend = {
-        ProjectID: ProjectID,
-        chatID: element.chatID,
-        userName: userName,
-        Date: new Date(),
-        type: type,
-      };
+      for (let index = 0; index < result.length; index++) {
+        const element = result[index];
+        const data = await SELECTTableViewChateUser(
+          element.chatID,
+          userName,
+          type
+        );
 
-      await ClassChatOprationView(viewSend);
+        if (data?.length === 0) {
+          const viewSend = {
+            ProjectID: ProjectID,
+            chatID: element.chatID,
+            userName: userName,
+            Date: new Date(),
+            type: type,
+          };
+
+          await ClassChatOprationView(viewSend);
+        }
+      }
+      res.status(200).send("Message views updated successfully");
+    } catch (error) {
+      console.error("Error updating message views:", error);
+      res.status(500).send("Failed to update message views");
     }
-  }
-  res.status(200).send("Message views updated successfully");
+  };
 };
 
 const verification = async (data) => {
@@ -396,7 +414,8 @@ const verification = async (data) => {
 };
 
 const { GoogleAuth } = require("google-auth-library");
-const initializeUpload = async (req, res) => {
+const initializeUpload =  () => {
+  return async (req, res) => {
   // قراءة بيانات الاعتماد من ملف JSON
   const auth = new GoogleAuth({
     keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
@@ -410,9 +429,11 @@ const initializeUpload = async (req, res) => {
   const uniqueFileName = `${uuidv4()}-${fileName}`;
 
   res.send({ token: accessToken.token, nameFile: uniqueFileName }).status(200);
+}
 };
 
-const generateResumableUrl = async (req, res) => {
+const generateResumableUrl =  () => {
+  return async (req, res) => {
   try {
     const { fileName, fileType } = req.body;
 
@@ -448,9 +469,11 @@ const generateResumableUrl = async (req, res) => {
     console.error("Error generating resumable upload URL:", error);
     res.status(500).json({ error: "Failed to generate resumable upload URL" });
   }
+}
 };
 
-const insertdatafile = async (req, res) => {
+const insertdatafile =  () => {
+  return async (req, res) => {
   try {
     const result = await OpreactionSend_message(req.body);
     res.send({ chatID: result?.chatID }).status(200);
@@ -463,6 +486,7 @@ const insertdatafile = async (req, res) => {
 
     // console.log(err.message);
   }
+}
 };
 
 module.exports = {
@@ -477,5 +501,5 @@ module.exports = {
   initializeUpload,
   insertdatafile,
   generateResumableUrl,
-  filterTableChat
+  filterTableChat,
 };

@@ -1,16 +1,22 @@
 const express = require('express')
 
 const {Loginuser,LoginVerification, BringAllLoginActvity, CheckUserispresentornot, LoginVerificationv2 } = require('../function/companyselect/userCompanyselect')
-const router = express.Router()
 const { verifyJWT } = require("../middleware/jwt");
 
-router.use(verifyJWT);
 
-router.route('/').get(Loginuser);
-router.route('/verification').get(LoginVerification);
-router.route('/v2/verification').get(LoginVerificationv2);
-router.route('/BringAllLoginActvity').get(BringAllLoginActvity);
-router.route('/Checkfinduser').get(CheckUserispresentornot);
+const Login = ({ uploadQueue }) => {
+  // This function is not used in this file, but it might be used in other files.
+  // It is a placeholder for future use or for other modules that might require it.
+  const router = express.Router();
+  router.use(verifyJWT);
+  
+  router.route('/').get(Loginuser(uploadQueue));
+  router.route('/verification').get(LoginVerification(uploadQueue));
+  router.route('/v2/verification').get(LoginVerificationv2(uploadQueue));
+  router.route('/BringAllLoginActvity').get(BringAllLoginActvity(uploadQueue));
+  router.route('/Checkfinduser').get(CheckUserispresentornot(uploadQueue));
 
+  return router;
+}
 
-module.exports = router
+module.exports = Login

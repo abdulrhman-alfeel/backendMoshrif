@@ -48,7 +48,8 @@ const InsertNotifcation = async (
 };
 
 // جلب بيانات الاشعارات لليوم
-const BringDataNotifcation = async (req, res) => {
+const BringDataNotifcation =  () => {
+  return async (req, res) => {
   try {
     const LastID = req.query.LastID;
     const userSession = req.session.user;
@@ -72,10 +73,12 @@ const BringDataNotifcation = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
   }
+}
 };
 
 // جلب بيانات الاشعارات حسب الفلتر
-const FilterNotifcation = async (req, res) => {
+const FilterNotifcation =  () => {
+  return async (req, res) => {
   try {
     try {
       const { LastID, from, to } = req.query;
@@ -86,7 +89,7 @@ const FilterNotifcation = async (req, res) => {
       }
       const result = await SELECTTableNavigation(
         [parseInt(LastID), parseInt(userSession.IDCompany), from, to],
-        `Date(DateDay) BETWEEN ?  AND ?`
+        `AND Date(DateDay) BETWEEN ?  AND ?`
       );
       const arrayNotifcation = await Sortdatauserfromnotificationv2(
         result,
@@ -103,8 +106,10 @@ const FilterNotifcation = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
-const BringDataNotifcationv2 = async (req, res) => {
+const BringDataNotifcationv2 =  () => {
+  return async (req, res) => {
   try {
     const LastID = req.query.LastID;
     const userSession = req.session.user;
@@ -112,11 +117,12 @@ const BringDataNotifcationv2 = async (req, res) => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
+        console.log(LastID,'hhhhh');
+
     const result = await SELECTTableNavigation([
       parseInt(LastID),
       parseInt(userSession.IDCompany),
     ]);
-
     const arrayNotifcation = await Sortdatauserfromnotificationv2(
       result,
       userSession.userName
@@ -128,11 +134,12 @@ const BringDataNotifcationv2 = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
   }
+}
 };
 
 // جلب بيانات الاشعارات حسب الفلتر
-const FilterNotifcationv2 = async (req, res) => {
-  try {
+const FilterNotifcationv2 =  () => {
+  return async (req, res) => {
     try {
       const { LastID, from, to } = req.query;
       const userSession = req.session.user;
@@ -142,7 +149,7 @@ const FilterNotifcationv2 = async (req, res) => {
       }
       const result = await SELECTTableNavigation(
         [parseInt(LastID), parseInt(userSession.IDCompany), from, to],
-        `Date(DateDay) BETWEEN ?  AND ?`
+        `AND Date(DateDay) BETWEEN ?  AND ?`
       );
       const arrayNotifcation = await Sortdatauserfromnotificationv2(
         result,
@@ -155,9 +162,8 @@ const FilterNotifcationv2 = async (req, res) => {
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية العملية بنجاح" }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-  }
+
+}
 };
 
 const Sortdatauserfromnotification = (result, userName) => {
@@ -192,17 +198,15 @@ const Sortdatauserfromnotificationv2 = (result, userName) => {
   let arrayNotifcation = [];
   if (result.length > 0) {
     result.forEach(async (pic) => {
-      // console.log(pic.tokens, userSession?.IDCompany);
 
       let Token = pic.tokens ? JSON.parse(pic.tokens) : [];
-      // console.log(pic,Token);
       Token.forEach(async (item) => {
         if (item === userName) {
         const dataNotifction = JSON.parse(pic.data);
         const data = JSON.parse(dataNotifction?.data);
-        const color = switchColor(JSON.parse(dataNotifction?.data)?.jobUser);
+        const color = await switchColor(JSON.parse(dataNotifction?.data)?.jobUser);
         arrayNotifcation.push({
-          id: pic.data.id,
+          id: pic.id,
           ...data,
           title: JSON.parse(pic.notification)?.title,
           discrption: JSON.parse(pic.notification)?.body,
@@ -227,7 +231,6 @@ const switchColor = (job) => {
   const arrayRed = ["مالك", "Admin", "مدير عام"];
   if (arrayRed.includes(job)) return "#FF0F0F";
   if (job === "مدير الفرع") return "#10B982";
-  console.log(job)
   return "#f6f8fe";
 };
 module.exports = {

@@ -2,7 +2,8 @@ const { DeleteTableCommentPostPublic } = require("../../sql/delete");
 const { UPDATETableCommentPostPublic } = require("../../sql/update");
 const { Postsnotification } = require("../notifcation/NotifcationProject");
 
-const CommentUpdate = async (req, res) => {
+const CommentUpdate =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -20,8 +21,10 @@ const CommentUpdate = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
   }
+}
 };
-const CommentDelete = async (req, res) => {
+const CommentDelete =  () => {
+  return async (req, res) => {
   try {
     // console.log(req.query);
     const CommentID = req.query.CommentID;
@@ -33,6 +36,7 @@ const CommentDelete = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
 module.exports = { CommentUpdate, CommentDelete };

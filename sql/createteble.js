@@ -38,9 +38,13 @@ const CreateTable = () => {
   );
 
   // templet ****************************************
-  db.run(`CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`)
+  db.run(
+    `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`
+  );
 
-  db.run(`CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`);
+  db.run(
+    `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`
+  );
 
   // CUSTOMER TEBLE *************************************
   db.run(
@@ -68,7 +72,7 @@ const CreateTable = () => {
   db.run(
     `CREATE TABLE IF NOT EXISTS Returns(ReturnsId INTEGER PRIMARY KEY AUTOINCREMENT, projectID INTEGER NOT NULL ,Amount DECIMAL, Date DATE NULL DEFAULT CURRENT_DATE , Data nvarchar[max] NULL,Image JSON NULL,Referencenumberfinanc INTEGER NULL) `
   );
-// حفظ اخر عملية pdf
+  // حفظ اخر عملية pdf
   db.run(
     `CREATE TABLE IF NOT EXISTS Savepdf(id INTEGER PRIMARY KEY AUTOINCREMENT, projectID INTEGER NOT NULL ,namefileall TEXT NULL,namefileparty TEXT NULL , Date DATE NULL DEFAULT CURRENT_DATE ,Total INTEGER NULL,TotalExpense INTEGER NULL) `
   );
@@ -78,9 +82,10 @@ const CreateTable = () => {
   );
 
   //  الطلبيات
-  db.run(`CREATE TABLE IF NOT EXISTS Requests(RequestsID INTEGER PRIMARY KEY AUTOINCREMENT,ProjectID INTEGER NOT NULL,Type TEXT NOT NULL, Data nvarchar[max] NOT NULL,Date DATE NULL DEFAULT CURRENT_DATE,Done TEXT NULL DEFAULT 'false',InsertBy navrchar[50] NULL,Implementedby narchar[10] NULL,Image JSON NULL,checkorderout TEXT NULL DEFAULT 'false',DateTime DATE NULL) `)
-  
-  
+  db.run(
+    `CREATE TABLE IF NOT EXISTS Requests(RequestsID INTEGER PRIMARY KEY AUTOINCREMENT,ProjectID INTEGER NOT NULL,Type TEXT NOT NULL, Data nvarchar[max] NOT NULL,Date DATE NULL DEFAULT CURRENT_DATE,Done TEXT NULL DEFAULT 'false',InsertBy navrchar[50] NULL,Implementedby narchar[10] NULL,Image JSON NULL,checkorderout TEXT NULL DEFAULT 'false',DateTime DATE NULL) `
+  );
+
   //العامة منشورات
   db.run(
     `CREATE TABLE IF NOT EXISTS Post (PostID INTEGER PRIMARY KEY AUTOINCREMENT , postBy TEXT NOT NULL, Date DATE NULL DEFAULT CURRENT_DATE, url TEXT NOT NULL , Type TEXT NOT NULL ,Data TEXT NOT NULL,timeminet DATE NULL,  StageID INTEGER NOT NULL, ProjectID INTEGER NOT NULL ,brunshCommpanyID INTEGER NOT NULL , CommpanyID INTEGER NOT NULL)`
@@ -118,32 +123,46 @@ const CreateTable = () => {
   db.run(
     `CREATE TABLE IF NOT EXISTS FinancialCustody (id INTEGER PRIMARY KEY AUTOINCREMENT , idOrder INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, IDCompanySub INTEGER NOT NULL , Requestby TEXT NOT NULL , Amount DECIMAL NOT NULL ,Statement TEXT NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP,Approvingperson TEXT NULL 
     ,ApprovalDate DATE NULL,OrderStatus TEXT NULL DEFAULT 'false',RejectionStatus TEXT NULL DEFAULT 'false', Reasonforrejection TEXT NULL  , Dateofrejection DATE NULL)`
-  )
-  db.run(
-    `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (id INTEGER PRIMARY KEY AUTOINCREMENT , IDBranch INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, check INTEGER NOT NULL , PhoneNumber INTEGER NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP)`
-  )
+  );
+  const sql = `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      IDBranch INTEGER NOT NULL,
+      IDCompany INTEGER NOT NULL,
+      checkVerification INTEGER NOT NULL,
+      PhoneNumber TEXT NOT NULL,
+      Date DATE DEFAULT CURRENT_TIMESTAMP
+  )`;
+
+
+  db.run(sql, (err) => {
+    if (err) {
+      console.error("SQL Error:", err);
+    }
+  });
+
+  // db.run(
+  //   `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (id INTEGER PRIMARY KEY AUTOINCREMENT , IDBranch INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, check INTEGER NOT NULL , PhoneNumber INTEGER NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP)`
+  // )
   // db.run(`
-  //   ALTER TABLE Expense 
+  //   ALTER TABLE Expense
   //   ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
   // db.run(`
-  //   ALTER TABLE Expense 
+  //   ALTER TABLE Expense
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
   // db.run(`
-  //   ALTER TABLE Revenue 
+  //   ALTER TABLE Revenue
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
   // db.run(`
-  //   ALTER TABLE Returns 
+  //   ALTER TABLE Returns
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
   // db.run(`
-  //   ALTER TABLE Requests 
+  //   ALTER TABLE Requests
   //   ADD COLUMN DateTime DATE NULL ;`  )
-
 };
-
 
 // const createtabletTemplet =()=>{
 //   dbd.run(
-//     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL 
+//     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL
 //   )`
 //   );
 
@@ -152,7 +171,7 @@ const CreateTable = () => {
 //   );
 // }
 
-module.exports = {CreateTable};
+module.exports = { CreateTable };
 
 // `DECLARE @DAYS nvarchar(50)
 // DECLARE @DAYSOFStage int

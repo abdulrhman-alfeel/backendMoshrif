@@ -13,17 +13,14 @@ const {
   SELECTTableLoginActivatActivatyall,
 } = require("../../sql/selected/selectuser");
 
-const Loginuser = async (req, res) => {
-  const PhoneNumber = req.query.PhoneNumber;
-  const token = req.query.token;
-  //    bring data from table user origin
-  // console.log(PhoneNumber, token);
+const Loginuser =  () => {
+  return async (req, res) => {
+  const {PhoneNumber,token} = req.query;
+  // bring data from table user origin
+
   const result = await SELECTTableusersCompanyVerification(PhoneNumber);
-  // console.log(result);
   await DELETETableLoginActivaty([PhoneNumber]);
-
   // bring validity users from table user table
-
   //   send operation login to table loginActivaty
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
@@ -59,6 +56,7 @@ const Loginuser = async (req, res) => {
       })
       .status(201);
   }
+}
 };
 const axios = require("axios");
 
@@ -90,10 +88,10 @@ const verificationSend = (number, chack = null, title = null) => {
   }
 };
 
-const LoginVerification = async (req, res) => {
+const LoginVerification =  () => {
+  return async (req, res) => {
   try {
-    const output = req.query.output;
-    const PhoneNumber = req.query.PhoneNumber;
+    const {output,PhoneNumber} = req.query;
     const result = await SELECTTableLoginActivaty(
       output,
       parseInt(PhoneNumber)
@@ -140,8 +138,10 @@ const LoginVerification = async (req, res) => {
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
+}
 };
-const LoginVerificationv2 = async (req, res) => {
+const LoginVerificationv2 =  () => {
+  return async (req, res) => {
   try {
     const output = req.query.output;
     const PhoneNumber = req.query.PhoneNumber;
@@ -190,14 +190,18 @@ const LoginVerificationv2 = async (req, res) => {
       .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
       .status(201);
   }
+}
 };
 
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
 
-const BringUserCompany = async (req, res) => {
+const BringUserCompany =  () => {
+  return async (req, res) => {
   try {
-    const IDCompany = req.query.IDCompany;
-    const result = await SELECTTableusersCompany(IDCompany);
+    const {IDCompany,number,kind_request} = req.query;
+    let count = number || 0;
+    let kindrequest = kind_request === 'all' ? `AND id > ${count}` : `AND userName LIKE '%${kind_request}%'`;
+    const result = await SELECTTableusersCompany(IDCompany,kindrequest);
     let array = [];
     for (const pic of result) {
       const validity = JSON.parse(pic.Validity) ?? [];
@@ -220,21 +224,13 @@ const BringUserCompany = async (req, res) => {
   } catch (err) {
     console.log(err);
   }
+}
 };
-const BringNameCompany = async (req, res) => {
-  try {
-    const IDCompany = req.query.IDCompany;
-    const result = await SELECTTableUsernameBrinsh(IDCompany);
 
-    res.send({ success: "successfuly", data: result }).status(200);
-  } catch (err) {
-    console.log(err);
-    res.send({ success: false }).status(400);
-  }
-};
 
 // جلب بيانات الاعضاء داخل الفرع
-const BringUserCompanyinBrinsh = async (req, res) => {
+const BringUserCompanyinBrinsh =  () => {
+  return async (req, res) => {
   try {
     const { IDCompany, idBrinsh, type } = req.query;
 
@@ -299,17 +295,19 @@ const BringUserCompanyinBrinsh = async (req, res) => {
       .status(500)
       .send({ success: "error", message: "Internal Server Error" });
   }
+}
 };
 
 // بعد التعديل لعملية جلب بيانات الاعضاء
-const BringUserCompanyinv2 = async (req, res) => {
+const BringUserCompanyinv2 =  () => {
+  return async (req, res) => {
   try {
-    const { IDCompany, idBrinsh, type } = req.query;
+    const { IDCompany, idBrinsh, type,number ,kind_request} = req.query;
     let checkGloble = {};
     let arrayvalidityuser = [];
     let bosss;
-    const result = await SELECTTableusersCompany(IDCompany);
-
+    let kindrequest = kind_request === 'all' ? `AND id > ${number}` : `AND userName LIKE '%${kind_request}%'`;
+    const result = await SELECTTableusersCompany(IDCompany,kindrequest);
     let CountID = 0;
     for (const element of result) {
       const validity = JSON.parse(element.Validity) || [];
@@ -341,10 +339,11 @@ const BringUserCompanyinv2 = async (req, res) => {
         }
       }
     }
-    const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
+    // const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
     const responseMessage =
       arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
-    res.status(responseStatus).send({
+
+    res.status(200).send({
       success: responseMessage,
       data: arrayvalidityuser,
       checkGloble: checkGloble,
@@ -357,7 +356,11 @@ const BringUserCompanyinv2 = async (req, res) => {
       .status(500)
       .send({ success: "error", message: "Internal Server Error" });
   }
+}
 };
+
+
+
 // const BringUserCompanyinv2 = async (req, res) => {
 //   try {
 //     const { IDCompany, idBrinsh, type, select } = req.query;
@@ -588,13 +591,16 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   return arrayUser;
 };
 
-const BringAllLoginActvity = async (req, res) => {
+const BringAllLoginActvity =  () => {
+  return async (req, res) => {
   const resultall = await SELECTTableLoginActivatActivatyall();
   res.send({ success: "تمت العملية بنجاح", data: resultall }).status(200);
+  }
 };
 
 // حلب صلاحيات المستخدم داخل الفرع
-const BringvalidityuserinBransh = async (req, res) => {
+const BringvalidityuserinBransh =  () => {
+  return async (req, res) => {
   try {
     const { PhoneNumber, idBrinsh } = req.query;
 
@@ -618,10 +624,12 @@ const BringvalidityuserinBransh = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
 // فحص وجود المستخدم من عدم وجودة
-const CheckUserispresentornot = async (req, res) => {
+const CheckUserispresentornot =  () => {
+  return async (req, res) => {
   const userSession = req.session.user;
   if (!userSession) {
     res.status(401).send("Invalid session");
@@ -636,6 +644,7 @@ const CheckUserispresentornot = async (req, res) => {
   } else {
     res.status(200).send({ success: true });
   }
+}
 };
 module.exports = {
   BringAllLoginActvity,
@@ -643,7 +652,6 @@ module.exports = {
   LoginVerification,
   BringUserCompany,
   BringUserCompanyinBrinsh,
-  BringNameCompany,
   CheckUserispresentornot,
   LoginVerificationv2,
   BringvalidityuserinBransh,

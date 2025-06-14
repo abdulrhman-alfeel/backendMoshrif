@@ -1,7 +1,7 @@
 // useerCompanyselect.js 
 // ChatJobsClass.js
+// ChatJobs.js
 // NotifcationProject.js
-// insertNotifcation.js
 // Opreation.js
 // insertCompany.js 
 // UpdatuserCompany.js
@@ -9,6 +9,8 @@
 // usersCompany.js 
 // apiMoshrif.js
 
+
+// insertNotifcation.js
 // selected.js
 // INsertteble.js
 // createteble.js
@@ -19,7 +21,7 @@
 // redis-server.exe
 // PS D:\ppp\aldy\Purebred_horses\38\backend> Set-ExecutionPolicy -ExecutionPolicy
 //  Bypass -Scope Process
-
+// Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypas 
 
 // {"uri":"file:///data/user/0/com.musharaf/cache/639fdb6a-cb9d-4b3f-8fc2-588e8dbb6fd2.mp4","uriImage":"","name":"5024645301744614590110-mrousavy894299404789797299.mov","type":"video/quicktime","size":"142.91 MB","location":{"latitude":24.8704664,"longitude":46.6504611}}
 
@@ -38,14 +40,20 @@ const {uploads,handleUploadErrors} = require("./middleware/uploads");
 const { uploaddata, bucket } = require("./bucketClooud");
 const { fFmpegFunction } = require("./middleware/ffmpeg");
 const { verifyJWT } = require("./middleware/jwt");
+const limiter = require("./middleware/loginLimiter.js");
 const { Queue } = require("bullmq");
+const config = require("./config.js");
 const { ExpressAdapter } = require("@bull-board/express");
 const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter.js");
 const { createBullBoard } = require("@bull-board/api");
-const  config  = require("./config.js");
-const {uploadRoutes} = require('./routes/upload.js');
-const { performCleanup } = require("./function/chate/workersUpload/cleanUpController.js");
-const limiter = require("./middleware/loginLimiter.js");
+const { companySub } = require("./routes/companySub");
+const  company  = require("./routes/company");
+const postpublic = require("./routes/postpublic");
+const chatroute = require("./routes/chatroute");
+const usersCompany = require("./routes/usersCompany");
+const Login = require("./routes/login");
+const apiMoshrif = require("./routes/apiMoshrif");
+
 
 require('dotenv').config();
 
@@ -59,29 +67,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/upload", express.static("upload"));
 
-
-// Initialize upload queue
-const uploadQueue = new Queue('fileUploads', {
-  connection: config.redis,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 5000
-    },
-    removeOnComplete: false,
-    removeOnFail: false
-  }
-});
-
-// Set up Bull Board for queue monitoring
-const serverAdapter = new ExpressAdapter();
-createBullBoard({
-  queues: [new BullMQAdapter(uploadQueue)],
-  serverAdapter
-});
-serverAdapter.setBasePath('/admin/queues');
-app.use('/admin/queues', serverAdapter.getRouter());
 
 
 
@@ -97,25 +82,52 @@ app.use(
 
 PORT = process.env.PORT || 8080;
 
+const uploadQueue = new Queue('project-requests', {
+  connection: config.redis,
+  defaultJobOptions: {
+    attempts: 10,             // Reduced attempts to 10 for less retries
+    backoff: {
+      type: 'exponential',
+      delay: 2000            // Reduced initial delay to 2 seconds for faster retry
+    },
+    removeOnComplete: true,   // Automatically remove successful jobs to free memory
+    removeOnFail: false       // Keep failed jobs for diagnostics
+  }
+});
+
+// Set up Bull Board for queue monitoring
+const serverAdapter = new ExpressAdapter();
+createBullBoard({
+  queues: [new BullMQAdapter(uploadQueue)],
+  serverAdapter
+});
+serverAdapter.setBasePath('/admin/queues');
+app.use('/admin/queues', serverAdapter.getRouter());
+
 
 app.use("/", require("./routes/root"));
 // الربط المالي
-app.use("/apis/company", require("./routes/apiMoshrif"));
+app.use('/apis/company', apiMoshrif({ uploadQueue }));
 // **********
-app.use("/api/auth", require("./routes/login"));
-app.use("/api/company", require("./routes/company"));
-app.use("/api/user", require("./routes/usersCompany"));
-app.use("/api/brinshCompany", require("./routes/companySub"));
-app.use("/api/posts", require("./routes/postpublic"));
-app.use("/api/Chate", require("./routes/chatroute"));
-app.use("/api//videos", require("./routes/vedio"));
-app.use("/api/Files", require("./routes/Files"));
 
 
 
 
-// Initialize route handlers
-app.use('/api', uploadRoutes({ uploadQueue }));
+
+
+app.use('/api/auth', Login({ uploadQueue }));
+app.use('/api/user', usersCompany({ uploadQueue }));
+app.use('/api/company', company({ uploadQueue }));
+
+app.use('/api/brinshCompany', companySub({ uploadQueue }));
+app.use('/api/posts', postpublic({ uploadQueue }));
+app.use('/api/Chate', chatroute({ uploadQueue }));
+
+
+
+
+
+
 
 
 // لاستقبال الملفات والصور
@@ -181,11 +193,6 @@ app.post(
   }
 );
 
-
-// Cleanup tmp files
-setInterval(() => {
-  performCleanup();
-}, 60 * 1000);
 
 
 
@@ -254,25 +261,32 @@ io.on("connection", (socket) => {
     // console.log("user disconnected", data.id);
   });
 });
-app.all("*", (req, res) => {
-  if (req.accepts("html")) {
-    res.status(404);
-    // console.log(req)
-    // res.sendFile(path.json(__dirname, "views", "404.html"));
-  } else if (req.accepts("json")) {
-    res.json({ message: "404 not Found" });
-  } else {
-    res.type("txt").send("404 Not Found");
-  }
-});
-
-
 
 
 // Error handling middleware
 app.use(handleUploadErrors);
 
 
+// const cluster = require('cluster');
+// const os = require('os');
+
+// const numCPUs = os.cpus().length;
+
+// if (cluster.isMaster) {
+//   console.log(`👑 Master ${process.pid} is running`);
+//   for (let i = 0; i < numCPUs; i++) cluster.fork();
+// } else {
+// server.listen(PORT, () => {
+//   console.log(PORT, "SERVER ALREADY");
+// });
+
+// }
+
+// cluster.on('exit', (worker, code, signal) => {
+//   console.log(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+//   // Optionally, you can fork a new worker here
+//   cluster.fork();
+// });
 server.listen(PORT, () => {
   console.log(PORT, "SERVER ALREADY");
 });

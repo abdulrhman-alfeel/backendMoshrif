@@ -147,9 +147,10 @@ const UpdateTableLinkevaluation = (data) => {
 const UpdateTableuserComppany = (data,type ='job=?') => {
   return new Promise((resolve, reject) => {
     try {
+  
       db.serialize(function () {
         db.run(
-          `UPDATE usersCompany SET IDCompany=?, userName=?, IDNumber=?,PhoneNumber=?,${type},Validity=? WHERE id=?`,
+          `UPDATE usersCompany SET IDCompany=?, userName=?, IDNumber=?,PhoneNumber=?,${type} WHERE id=?`,
           data,
           function (err) {
             // console.log("updatetableusercompany", data);

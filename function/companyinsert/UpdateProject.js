@@ -49,7 +49,8 @@ const { Stage, StageTempletXsl, AccountDays } = require("./insertProject");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 
 // وظيفة تقوم بتعديل بيانات الشمروع
-const UpdataDataProject = async (req, res) => {
+const UpdataDataProject =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -91,9 +92,11 @@ const UpdataDataProject = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
-const CloseOROpenProject = async (req, res) => {
+const CloseOROpenProject =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const idProject = req.query.idProject;
     const project = await SELECTTablecompanySubProjectLast_id(
@@ -110,6 +113,7 @@ const CloseOROpenProject = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // وظيفة تقوم باعادة ترتيب المراحل وايامها
@@ -144,7 +148,8 @@ const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
 // const count = 14 + 14 / 3;
 // console.log(count);
 //  وظيفة لحذف المشروع كامل مع توابعه
-const DeletProjectwithDependencies = async (req, res) => {
+const DeletProjectwithDependencies =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -162,6 +167,7 @@ const DeletProjectwithDependencies = async (req, res) => {
     console.log(error);
     res.send({ success: "فشلت عملية حذف الرسالة" }).status(200);
   }
+}
 };
 
 const opreationDeletProject = (id) => {
@@ -186,10 +192,10 @@ const opreationDeletProject = (id) => {
 };
 
 // وظيفة تقوم بإضافة تاريخ بدء تنفيذ المشروع واعادة ترتيب تواريخ المراحل
-const UpdateStartdate = async (req, res) => {
+const UpdateStartdate =  (uploadQueue) => {
+  return async (req, res) => {
   try {
-    const ProjectID = req.body.data.ProjectID;
-    const ProjectStartdate = req.body.data.ProjectStartdate;
+    const {ProjectID,ProjectStartdate} = req.body.data;
     await UpdateProjectStartdateinProject([ProjectStartdate, ProjectID]);
     dataItem = await SELECTTablecompanySubProjectStageCUST(ProjectID);
     await DeleteTablecompanySubProjectphase(ProjectID);
@@ -199,9 +205,11 @@ const UpdateStartdate = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 // وظيفة تقوم بإعادة ترتيب المراحل حسب رؤية المستخدم
-const RearrangeStage = async (req, res) => {
+const RearrangeStage =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -222,9 +230,11 @@ const RearrangeStage = async (req, res) => {
     console.log(error);
     res.send({ success: "خطاء في تنفيذ العملية" }).status(401);
   }
+}
 };
 // وظيفة تعديل تاخيرات المرحلة الرئيسية
-const UpdateNotesStage = async (req, res) => {
+const UpdateNotesStage =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -261,20 +271,20 @@ const UpdateNotesStage = async (req, res) => {
     console.log(err);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 //  وظيفة تعديل بيانات المرحلة الرئيسية
-const UpdateDataStage = async (req, res) => {
+const UpdateDataStage =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const ProjectID = req.body.ProjectID;
-    const StageID = req.body.StageID;
-    const StageName = req.body.StageName;
-    const Days = req.body.Days;
+    const {ProjectID,StageID,StageName,Days} = req.body;
+
     const verify = await SELECTTablecompanySubProjectStageCUSTONe(
       ProjectID,
       StageID,
@@ -326,10 +336,12 @@ const UpdateDataStage = async (req, res) => {
     console.log(error);
     res.send({ success: "خطاء في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // وظيفة حذف المرحلة الرئيسية
-const DeleteStageHome = async (req, res) => {
+const DeleteStageHome =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -337,8 +349,7 @@ const DeleteStageHome = async (req, res) => {
       console.log("Invalid session");
     }
     if (userSession.PhoneNumber !== "502464530") {
-      const ProjectID = req.query.ProjectID;
-      const StageID = req.query.StageID;
+      const {ProjectID,StageID} = req.query;
       await DeleteTablecompanyStageHome(ProjectID, StageID);
       await DeleteTablecompanyStageSub(ProjectID, StageID);
       const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
@@ -371,22 +382,25 @@ const DeleteStageHome = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
 // وظيفة تعديل المرحلة الفرعية
-const UpdateDataStageSub = async (req, res) => {
+const UpdateDataStageSub =  (uploadQueue) => {
+  return async (req, res) => {
   try {
-    const StageSubName = req.body.StageSubName;
-    const StageSubID = req.body.StageSubID;
+    const {StageSubName,StageSubID} = req.body;
     await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
     res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(200);
   }
+}
 };
 // وظيفة حذف المرحلة الفرعية
-const DeleteStageSub = async (req, res) => {
+const DeleteStageSub =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -408,6 +422,7 @@ const DeleteStageSub = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(501);
   }
+}
 };
 
 // *********************************************************************************
@@ -505,26 +520,24 @@ const deletChild = (children, idsub) => {
   });
 };
 
-const UpdateNameFolderOrfileinArchive = async (req, res) => {
+const UpdateNameFolderOrfileinArchive =  (uploadQueue) => {
+  return async (req, res) => {
   try {
-    const ArchivesID = req.body.ArchivesID;
-    const idsub = req.body.id;
-    const type = req.body.type;
-    const name = req.body.name;
-    const kidopreation = req.body.kidopreation;
+    const {ArchivesID,id,type,name,kidopreation} = req.body;
+  
 
     if (type === "folder") {
-      if (parseInt(ArchivesID) === parseInt(idsub)) {
-        await SwitchbetweendeleteorupdatefolderHome(name, idsub, kidopreation);
+      if (parseInt(ArchivesID) === parseInt(id)) {
+        await SwitchbetweendeleteorupdatefolderHome(name, id, kidopreation);
       } else {
-        await ClassUpdataNmaeinArchive(ArchivesID, name, idsub, kidopreation);
+        await ClassUpdataNmaeinArchive(ArchivesID, name, id, kidopreation);
       }
       res.send({ success: "تمت العملية بنجاح" }).status(200);
     } else {
       const nameOld = req.body.nameOld;
       // console.log(nameOld);
       // Get a reference to the file
-      await ClassUpdataNmaeinArchive(ArchivesID, name, idsub, kidopreation);
+      await ClassUpdataNmaeinArchive(ArchivesID, name, id, kidopreation);
       await Switchbetweendeleteorupdatefiles(nameOld, name, kidopreation);
       // console.log("okkkk");
       res.send({ success: "تمت العملية بنجاح" }).status(200);
@@ -533,6 +546,7 @@ const UpdateNameFolderOrfileinArchive = async (req, res) => {
     console.log(error);
     res.send({ success: "خطاء في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // وظيفة تعديل اوحذف من جوجل كلاود
@@ -565,18 +579,16 @@ const SwitchbetweendeleteorupdatefolderHome = async (name, idsub, type) => {
 };
 
 // تعديل بيانات المصروفات
-const ExpenseUpdate = async (req, res) => {
+const ExpenseUpdate =  (uploadQueue) => {
+  return async (req, res) => {  
   try {
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const Expenseid = req.body.Expenseid;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    const ClassificationName = req.body.ClassificationName;
-    const Imageolddelete = req.body.Imageolddelete;
+    const {Expenseid,Amount,Data,ClassificationName,Imageolddelete} = req.body;
+  
     const elementUpdate = await SELECTTablecompanySubProjectexpenseObjectOne(
       Expenseid
     );
@@ -639,10 +651,12 @@ const ExpenseUpdate = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // ادخال بييانات العهد
-const RevenuesUpdate = async (req, res) => {
+const RevenuesUpdate =  (uploadQueue) => {
+  return async (req,res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -722,21 +736,21 @@ const RevenuesUpdate = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
 // ادخال بيانات المرتجع
-const ReturnsUpdate = async (req, res) => {
+const ReturnsUpdate =  (uploadQueue) => {
+  return async (req,res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const ReturnsId = req.body.ReturnsId;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    const Imageolddelete = req.body.Imageolddelete;
-    Imageolddelete;
+    const {ReturnsId,Amount,Data,Imageolddelete} = req.body;
+  
+    
     const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(
       ReturnsId
     );
@@ -793,9 +807,11 @@ const ReturnsUpdate = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ العملية" }).status(401);
   }
+}
 };
 
-const DeleteFinance = async (req, res) => {
+const DeleteFinance =  (uploadQueue) => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -808,8 +824,7 @@ const DeleteFinance = async (req, res) => {
       data.DisabledFinance === "true" &&
       userSession.PhoneNumber !== "502464530"
     ) {
-      const id = req.query.id;
-      const type = req.query.type;
+      const {id,type} = req.query;
       let nametype;
       let typeid;
       if (type === "مصروفات") {
@@ -837,24 +852,23 @@ const DeleteFinance = async (req, res) => {
     res.send({ success: "فشل تنفيذ العملية" }).status(500);
     console.log(error);
   }
+}
 };
 
 // *******************************************************************
 // ****************** تعديل بيانات الطلبيات ************************
 
 // تعديل بيانات الطلبيات الرئيسية
-const UPDATEdataRequests = async (req, res) => {
+const UPDATEdataRequests =  (uploadQueue) => {
+  return async (req,res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-    const Type = req.body.Type;
-    const Data = req.body.Data;
-    const RequestsID = req.body.RequestsID;
-    const user = req.body.user;
-    const Imageolddelete = req.body.Imageolddelete;
+    const {Type,Data,RequestsID,user,Imageolddelete} = req.body;
+
 
     const elementUpdate = await SELECTDataAndTaketDonefromTableRequests(
       RequestsID
@@ -911,12 +925,13 @@ const UPDATEdataRequests = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
+}
 };
 // تنفيذ الطلبيه او الغاء التنفيذ
-const UPDATEImplementRquestsORCansle = async (req, res) => {
+const UPDATEImplementRquestsORCansle =  (uploadQueue) => {
+  return async (req, res) => {
   try {
-    const user = req.body.user;
-    const RequestsID = req.body.RequestsID;
+    const {user,RequestsID} = req.body;
     const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(RequestsID);
     let Done;
     Done = DoneOrgin.Done === "true" ? "false" : "true";
@@ -927,8 +942,10 @@ const UPDATEImplementRquestsORCansle = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
+}
 };
-const Confirmarrivdrequest = async (req, res) => {
+const Confirmarrivdrequest =  (uploadQueue) => {
+  return async (req,res) => {
   try {
     const RequestsID = req.query.RequestsID;
     const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(RequestsID);
@@ -942,9 +959,11 @@ const Confirmarrivdrequest = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل في تنفيذ  العملية" }).status(401);
   }
+}
 };
 
-const DeleteRequests = async (req, res) => {
+const DeleteRequests =  (uploadQueue) => {
+  return async (req,res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -967,6 +986,7 @@ const DeleteRequests = async (req, res) => {
     res.send({ success: "فشل تنفيذ العملية" }).status(501);
   }
 };
+}
 
 module.exports = {
   UpdataDataProject,

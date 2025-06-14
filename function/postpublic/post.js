@@ -10,16 +10,16 @@ const {
 const { SELECTTableusersCompanyonObject, SELECTusersCompany } = require("../../sql/selected/selectuser");
 
 
-const BringPost = async (req, res) => {
+const BringPost =  () => {
+  return async (req, res) => {
   try {
-    const id = req.query.CompanyID;
-    const PostID = req.query.PostID;
-    const user = req.query.user;
+    const {CompanyID,PostID,user} = req.query;
+
     const now = new Date();
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");
-      console.log("Invalid session");
+      console.log("In,valid session");
     }
 
     // Extract day, month, and year from the Date object
@@ -33,22 +33,23 @@ const BringPost = async (req, res) => {
 
     if(userSession.jobdiscrption !== 'موظف'){
     const arrayes= await BringPostforUsersinCompany(userSession.PhoneNumber);
-    where = `AND PR.id= ${arrayes}`
+    where = `AND PR.id IN (${arrayes})`
     }
 
-    const arrayPosts = await BringPostforEmploaysCompany(id, formattedDate, PostID,user,where);
+    const arrayPosts = await BringPostforEmploaysCompany(CompanyID, formattedDate, PostID,user,where);
     res.send({ success: "تمت العملية بنجاح", data: arrayPosts }).status(200);
     // console.log(arrayPosts);
   } catch (error) {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(404);
   }
+}
 };
 
-const BringCommentinsert = async (req, res) => {
+const BringCommentinsert =  () => {
+  return async (req, res) => {
   try {
-    const PostId = req.query.PostID;
-    const count = req.query.count;
+    const {PostId,count} = req.query;
     const userSession = req.session.user;
   if (!userSession) {
     res.status(401).send("Invalid session");
@@ -72,6 +73,7 @@ const BringCommentinsert = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ المهمة" }).status(404);
   }
+}
 };
 
 
@@ -109,9 +111,8 @@ const BringPostforEmploaysCompany =async (id, formattedDate, PostID,user,where =
 
 const BringPostforUsersinCompany = async (PhoneNumber) => {
   try{
-    
     const arrayData = await filterProjectforusers(PhoneNumber);
-    const where = arrayData.reduce((item,r) => `${String(item) + " AND "+ r}`);
+    const where = arrayData.reduce((item,r) => `${String(item) + ","+ r}`);
     return where;
   }catch(error){
     console.log(error);
@@ -142,17 +143,11 @@ const filterProjectforusers = (PhoneNumber, idBrinsh = 0) => {
   }
 };
 
-const SearchPosts = async (req, res) => {
+const SearchPosts =  () => {
+  return async (req, res) => {
   try {
-    const id = req.query.CompanyID;
-    const DateStart = req.query.DateStart;
-    const DateEnd = req.query.DateEnd;
-    const type = req.query.type;
-    const nameProject = req.query.nameProject;
-    const userName = req.query.userName;
-    const branch = req.query.branch;
-    const PostID = req.query.PostID;
-    const user = req.query.user;
+    const {CompanyID,DateStart,DateEnd,type,nameProject,userName,branch,PostID,user} = req.query;
+ 
 
     const userSession = req.session.user;
     if (!userSession) {
@@ -164,11 +159,11 @@ const SearchPosts = async (req, res) => {
 
     if(userSession.jobdiscrption !== 'موظف'){
     const arrayes= await BringPostforUsersinCompany(userSession.PhoneNumber);
-    where = `AND PR.id= ${arrayes}`
+    where = `AND PR.id IN (${arrayes})`
     };
 
     const result = await SELECTTablePostPublicSearch(
-      id,
+      CompanyID,
       DateStart,
       DateEnd,
       type,
@@ -205,9 +200,11 @@ const SearchPosts = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(404);
   }
+}
 };
 
-const BringObjectOnefromPost = async (req, res) => {
+const BringObjectOnefromPost =  () => {
+  return async (req, res) => {
   try {
     const PostID = req.query.PostID;
     const userSession = req.session.user;
@@ -234,9 +231,11 @@ const BringObjectOnefromPost = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
-const BringDatabrachCompany = async (req, res) => {
+const BringDatabrachCompany =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -251,6 +250,7 @@ const BringDatabrachCompany = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 module.exports = {
   BringPost,

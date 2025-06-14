@@ -15,20 +15,23 @@ const {
   BringDatabrachCompany,
 } = require("../function/postpublic/post");
 const { verifyJWT } = require("../middleware/jwt");
-const limiter = require("../middleware/loginLimiter");
-const router = express.Router();
-router.use(verifyJWT);
-router.use(limiter);
+const postpublic = ({ uploadQueue }) => {
+  // This function is not used in this file, but it might be used in other files.
+  // It is a placeholder for future use or for other modules that might require it.
+  const router = express.Router();
+  router.use(verifyJWT);
+  
+  router.route("/Commentinsert").post(Commentinsert(uploadQueue));
+  router.route("/CommentUpdate").put(CommentUpdate(uploadQueue));
+  router.route("/CommentDelete").delete(CommentDelete(uploadQueue));
+  
+  router.route("/Likesinsert").get(Likesinsert(uploadQueue));
+  router.route("/BringPost").get(BringPost(uploadQueue));
+  router.route("/BringObjectOnefromPost").get(BringObjectOnefromPost(uploadQueue));
+  router.route("/BringCommentinsert").get(BringCommentinsert(uploadQueue));
+  router.route("/SearchPosts").get(SearchPosts(uploadQueue));
+  router.route("/BringDatabrachCompany").get(BringDatabrachCompany(uploadQueue));
+  return router;
+}
 
-router.route("/Commentinsert").post(Commentinsert);
-router.route("/CommentUpdate").put(CommentUpdate);
-router.route("/CommentDelete").delete(CommentDelete);
-
-router.route("/Likesinsert").get(Likesinsert);
-router.route("/BringPost").get(BringPost);
-router.route("/BringObjectOnefromPost").get(BringObjectOnefromPost);
-router.route("/BringCommentinsert").get(BringCommentinsert);
-router.route("/SearchPosts").get(SearchPosts);
-router.route("/BringDatabrachCompany").get(BringDatabrachCompany);
-
-module.exports = router;
+module.exports = postpublic;

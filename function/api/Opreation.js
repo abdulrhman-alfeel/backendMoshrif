@@ -30,7 +30,8 @@ const {
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
 
-const ProjectOpreationsinsert = async (req, res) => {
+const ProjectOpreationsinsert =  () => {
+  return async (req, res) => {
   try {
     const {
       IDcompanySub,
@@ -64,9 +65,11 @@ const ProjectOpreationsinsert = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
-const ProjectOpreationsUpdate = async (req, res) => {
+const ProjectOpreationsUpdate =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -108,10 +111,12 @@ const ProjectOpreationsUpdate = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
 // ادخال المالية
-const FinancialOperationsDatainsert = async (req, res) => {
+const FinancialOperationsDatainsert =  () => {
+  return async (req, res) => {
   try {
     const {
       IDcompanySub,
@@ -229,6 +234,7 @@ const FinancialOperationsDatainsert = async (req, res) => {
       .status(402);
     console.log(error);
   }
+}
 };
 
 const OpreationExpensedatainsert = async (
@@ -261,7 +267,8 @@ const OpreationExpensedatainsert = async (
 };
 
 // تعديل الملية
-const FinancialOperationsDataUpdate = async (req, res) => {
+const FinancialOperationsDataUpdate =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -333,8 +340,10 @@ const FinancialOperationsDataUpdate = async (req, res) => {
       })
       .status(402);
   }
+}
 };
-const FinancialUpdateInvoiceNo = async (req, res) => {
+const FinancialUpdateInvoiceNo =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const { IDcompanySub, Referencenumber, Referencenumberfinanc, InvoiceNo } =
@@ -361,10 +370,12 @@ const FinancialUpdateInvoiceNo = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 
 // ادخال الملفات
-const FinancialOperationsFile = async (req, res) => {
+const FinancialOperationsFile =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -426,9 +437,11 @@ const FinancialOperationsFile = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 // جلب بيانات الملفات للمالية
-const BringDatafileFinancial = async (req, res) => {
+const BringDatafileFinancial =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -459,9 +472,11 @@ const BringDatafileFinancial = async (req, res) => {
     res.send({ success: "فشل تنفيذ العملية" }).status(402);
     console.log(error);
   }
+}
 };
 // حذف الملفات
-const DeleteFileinFinancialOperationse = async (req, res) => {
+const DeleteFileinFinancialOperationse =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -523,9 +538,11 @@ const DeleteFileinFinancialOperationse = async (req, res) => {
       })
       .status(402);
   }
+}
 };
 
-const DeleteOperationsFinancial = async (req, res) => {
+const DeleteOperationsFinancial =  () => {
+  return async (req, res) => {
   try {
     const dataCampny = req.session.data;
     const {
@@ -558,9 +575,11 @@ const DeleteOperationsFinancial = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: "Something went wrong" });
   }
+}
 };
 
-const AddfilesinArchives = async (req, res) => {
+const AddfilesinArchives =  () => {
+  return async (req, res) => {
   try {
     const { IDcompanySub, Referencenumber } = req.body;
     const project = await SELECTProjectStartdateapis(
@@ -601,6 +620,7 @@ const AddfilesinArchives = async (req, res) => {
     res.send({ success: "تمت العملية بنجاح" }).status(200);
 
   }
+}
 };
 
 module.exports = {

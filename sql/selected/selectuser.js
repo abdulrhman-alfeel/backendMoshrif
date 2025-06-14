@@ -1,11 +1,11 @@
 const db = require("../sqlite");
 
 //  مستخدمي الشركة
-const SELECTTableusersCompany = (id) => {
+const SELECTTableusersCompany = (id,type="") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT * FROM usersCompany WHERE IDCompany=? AND Activation="true"`,
+        `SELECT * FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} LIMIT 20`,
         [id],
         function (err, result) {
           if (err) {
@@ -243,7 +243,7 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT ${type} FROM LoginActivaty   `,
+        `SELECT id,userName,PhoneNumber,job,jobdiscrption,codeVerification FROM LoginActivaty   `,
         [],
         function (err, result) {
           if (err) {

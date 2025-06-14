@@ -29,8 +29,10 @@ const {
 const { CovenantNotfication } = require("../notifcation/NotifcationProject");
 const bcrypt = require("bcrypt");
 const { opreationDeletProject } = require("./UpdateProject");
+const { verificationSend } = require("../companyselect/userCompanyselect");
 
-const UpdateDataCompany = async (req, res) => {
+const UpdateDataCompany =  () => {
+  return async (req, res) => {
   const {
     NameCompany,
     BuildingNumber,
@@ -79,11 +81,12 @@ const UpdateDataCompany = async (req, res) => {
       })
       .status(400);
   }
-
+  }
   // console.log(tableCompany);
 };
 
-const UpdateApiCompany = async (req, res) => {
+const UpdateApiCompany =  () => {
+  return async (req, res) => {
   const id = req.query.id;
   const chackfromCompany = await SELECTTablecompanyName(id);
   if (Boolean(chackfromCompany)) {
@@ -98,9 +101,11 @@ const UpdateApiCompany = async (req, res) => {
   } else {
     res.send({ success: "لاتوجد الشركه المطلوبه" }).status(402);
   }
+}
 };
 // قبول تسجيل الشركة
-const AgreedRegistrationCompany = async (req, res) => {
+const AgreedRegistrationCompany =  () => {
+  return async (req, res) => {
   try {
     const id = req.query.id;
     const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
@@ -150,10 +155,12 @@ const AgreedRegistrationCompany = async (req, res) => {
   } catch (error) {
     res.send({ success: "فشل تنفيذ العملية" }).status(402);
   }
+}
 };
 
 // حذف بيانات الشركة قيد التسجيل
-const DeleteCompanyRegistration = async (req, res) => {
+const DeleteCompanyRegistration =  () => {
+  return async (req, res) => {
   try {
     const id = req.query.id;
     await DeleteTablecompanySubProjectall("companyRegistration", "id", id);
@@ -162,9 +169,11 @@ const DeleteCompanyRegistration = async (req, res) => {
     res.send({ success: "فشل تنفيذ العملية" }).status(400);
     console.log(error);
   }
+}
 };
 
-const UpdatedataRegistration = async (req, res) => {
+const UpdatedataRegistration =  () => {
+  return async (req, res) => {
   try {
     const {
       CommercialRegistrationNumber,
@@ -235,15 +244,13 @@ const UpdatedataRegistration = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+}
 };
 
-const UpdateCompanybrinsh = async (req, res) => {
-  const NumberCompany = req.body.NumberCompany;
-  const NameSub = req.body.NameSub;
-  const BranchAddress = req.body.BranchAddress;
-  const Email = req.body.Email;
-  const PhoneNumber = req.body.PhoneNumber;
-  const id = req.body.id;
+const UpdateCompanybrinsh =  () => {
+return async (req, res) => {
+  const {NumberCompany,NameSub,BranchAddress,Email,PhoneNumber,id} = req.body;
+
   const operation = await UpdateTablecompanySub([
     NumberCompany,
     NameSub,
@@ -265,10 +272,12 @@ const UpdateCompanybrinsh = async (req, res) => {
       })
       .status(400);
   }
+}
 };
 
 // قبول ورفض الطلبات
-const Acceptandrejectrequests = async (req, res) => {
+const Acceptandrejectrequests =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -297,23 +306,23 @@ const Acceptandrejectrequests = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(200);
   }
+}
 };
 
 // تعديل بيانات الطلب
-const Updatecovenantrequests = async (req, res) => {
+const Updatecovenantrequests =  () => {
+  return async (req, res) => {
   try {
-    const typedata = req.body.typedata;
-    const Statement = req.body.title;
-    const id = req.body.id;
+    const {typedata,title,id} = req.body;
     if (typedata === "معلقة") {
       const Amount = req.body.Amount;
       await UPDATETableFinancialCustody(
-        `Statement="${Statement}",Amount=${Amount}`,
+        `Statement="${title}",Amount=${Amount}`,
         id
       );
     } else {
       await UPDATETableFinancialCustody(
-        `Reasonforrejection="${Statement}"`,
+        `Reasonforrejection="${title}"`,
         id
       );
     }
@@ -322,9 +331,11 @@ const Updatecovenantrequests = async (req, res) => {
     console.log(error);
     res.send({ success: "تمت العملية بنجاح" }).status(200);
   }
+}
 };
 
-const Deletecovenantrequests = async (req, res) => {
+const Deletecovenantrequests =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -343,9 +354,11 @@ const Deletecovenantrequests = async (req, res) => {
     console.log(error);
     res.send({ success: "فشل تنفيذ العملية" }).status(500);
   }
+}
 };
 
-const Branchdeletionprocedures = async (req, res) => {
+const Branchdeletionprocedures =  () => {
+  return async (req, res) => {
   try {
     const userSession = req.session.user;
     if (!userSession) {
@@ -361,16 +374,20 @@ const Branchdeletionprocedures = async (req, res) => {
       userSession?.PhoneNumber,
     ]);
     await verificationSend(
-      element,
+      userSession?.PhoneNumber,
       check,
       `كود حذف الفرع تأكد ان لا يصل هذا الرمز لاي شخص`
     );
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
+    res.send({ success: "قشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
-const Implementedbyopreation = async (req, res) => {
+const Implementedbyopreation =  () => {
+  return async (req, res) => {
   try {
     const { check } = req.query;
     const userSession = req.session.user;
@@ -385,14 +402,26 @@ const Implementedbyopreation = async (req, res) => {
     );
     if (result.length > 0) {
       const project = await SELECTTABLEcompanyProjectall(result[0].IDBranch);
-      for (const pic of project){
-        await opreationDeletProject(pic?.id)
+      for (const pic of project) {
+        await opreationDeletProject(pic?.id);
       }
-      await DeleteTablecompanySubProjectall("companySub", "id", result[0].IDBranch);
+      await DeleteTablecompanySubProjectall(
+        "companySub",
+        "id",
+        result[0].IDBranch
+      );
+      await DeleteTablecompanySubProjectall(
+        "BranchdeletionRequests",
+        "id",
+        result[0].id
+      );
     }
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
   } catch (error) {
     console.log(error);
+    res.send({ success: "قشل تنفيذ العملية" }).status(400);
   }
+}
 };
 
 // const OperationMoveingdataProjectfromBranshtoBransh = async (fromId,toId,IDCompany) => {
@@ -451,5 +480,5 @@ module.exports = {
   UpdatedataRegistration,
   DeleteCompanyRegistration,
   Branchdeletionprocedures,
-  Implementedbyopreation
+  Implementedbyopreation,
 };

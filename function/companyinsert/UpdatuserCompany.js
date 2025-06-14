@@ -17,140 +17,147 @@ const {
 } = require("../../sql/update");
 // const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
 
-const userCompanyUpdat = async (req, res) => {
-  try {
-    // console.log(req.body);
-    const IDCompany = req.body.IDCompany;
-    const userName = req.body.userName;
-    const IDNumber = req.body.IDNumber;
-    const PhoneNumber = req.body.PhoneNumber;
-    const jobdiscrption = req.body.jobdiscrption;
-    // const image = req.file.filename;
-    const job = req.body.job;
-    const Validity = req.body.Validity;
-    const id = req.body.id;
-    let number = String(PhoneNumber);
+const userCompanyUpdat = () => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session")}
+      // console.log(req.body);
+      const {
+        userName,
+        IDNumber,
+        PhoneNumber,
+        jobdiscrption,
+        job,
+        id,
+      } = req.body;
+      let number = String(PhoneNumber);
 
-    if (number.startsWith(0)) {
-      number = number.slice(1);
-    }
-    const verificationFinduser =
-      await SELECTTableusersCompanyVerificationIDUpdate(number, id);
-    const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(
-      number
-    );
-    if (
-      verificationFinduser.length <= 0 &&
-      findRegistrioncompany === undefined
-    ) {
-      await UpdateTableuserComppany(
-        [
-          IDCompany,
-          userName,
-          IDNumber,
-          number,
-          job,
-          jobdiscrption,
-          JSON.stringify(Validity),
-          id,
-        ],
-        "job=?,jobdiscrption=?"
-      );
+      if (number.startsWith(0)) {
+        number = number.slice(1);
+      }
+      const verificationFinduser =
+        await SELECTTableusersCompanyVerificationIDUpdate(number, id);
+      const findRegistrioncompany =
+        await SelectVerifycompanyexistencePhonenumber(number);
+      
+      if (
+        verificationFinduser.length <= 0 &&
+        findRegistrioncompany === undefined
+      ) {
+        await UpdateTableuserComppany(
+          [
+            userSession?.IDCompany,
+            userName,
+            IDNumber,
+            number,
+            job,
+            jobdiscrption,
+            id,
+          ],
+          "job=?,jobdiscrption=?"
+        );
+        res
+          .send({
+            success: "تمت العملية بنجاح",
+          })
+          .status(200);
+      } else {
+        res
+          .send({
+            success:
+              findRegistrioncompany !== undefined
+                ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
+                : "الرقم الذي اضفته لمستخدم موجود",
+          })
+          .status(200);
+      }
+    } catch (err) {
+      console.log(err);
       res
         .send({
-          success: "تمت العملية بنجاح",
+          success: "فشل في تنفيذ العملية",
         })
-        .status(200);
-    } else {
-      res
-        .send({
-          success:
-            findRegistrioncompany !== undefined
-              ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
-              : "الرقم الذي اضفته لمستخدم موجود",
-        })
-        .status(200);
+        .status(400);
     }
-  } catch (err) {
-    console.log(err);
-    res
-      .send({
-        success: "فشل في تنفيذ العملية",
-      })
-      .status(400);
-  }
+  };
 };
 
-const UpdatUserCompanyinBrinsh = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    // console.log(req.body);
-    const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
+const UpdatUserCompanyinBrinsh = () => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      // console.log(req.body);
+      const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
 
-    // const result = await SELECTTableusersCompany(IDCompany);
-    if (kind === "Acceptingcovenant" || kind === "user") {
-      await Updatchackglobluserinbrinsh(
-        idBrinsh,
-        kind === "user" ? type : kind,
-        checkGloblenew,
-        checkGlobleold,
-        userSession.userName
-      );
-    } else {
-      await UpdatchackAdmininbrinsh(
-        idBrinsh,
-        type,
-        checkGloblenew,
-        checkGlobleold,
-        userSession.userName
-      );
+      // const result = await SELECTTableusersCompany(IDCompany);
+      if (kind === "Acceptingcovenant" || kind === "user") {
+        await Updatchackglobluserinbrinsh(
+          idBrinsh,
+          kind === "user" ? type : kind,
+          checkGloblenew,
+          checkGlobleold,
+          userSession.userName
+        );
+      } else {
+        await UpdatchackAdmininbrinsh(
+          idBrinsh,
+          type,
+          checkGloblenew,
+          checkGlobleold,
+          userSession.userName
+        );
+      }
+      // console.log(result,'updatusercompanyinbrinsh')
+      // }
+      res.send({ success: "successfuly" }).status(200);
+    } catch (err) {
+      console.log(err);
     }
-    // console.log(result,'updatusercompanyinbrinsh')
-    // }
-    res.send({ success: "successfuly" }).status(200);
-  } catch (err) {
-    console.log(err);
-  }
+  };
 };
-const UpdatUserCompanyinBrinshV2 = async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
+const UpdatUserCompanyinBrinshV2 = () => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      // console.log(req.body);
+      const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
+      // const result = await SELECTTableusersCompany(IDCompany);
+      let arraykind = ["Acceptingcovenant", "user", "justuser"];
+      if (arraykind.includes(kind)) {
+        await Updatchackglobluserinbrinshv2(
+          idBrinsh,
+          type,
+          // kind === "user" ? type : kind,
+          checkGloblenew,
+          checkGlobleold,
+          userSession.userName
+        );
+      } else {
+        await UpdatchackAdmininbrinshv2(
+          idBrinsh,
+          type,
+          checkGloblenew,
+          checkGlobleold,
+          userSession.userName
+        );
+      }
+      // console.log(result,'updatusercompanyinbrinsh')
+      // }
+      res.send({ success: "successfuly" }).status(200);
+    } catch (err) {
+      console.log(err);
     }
-    // console.log(req.body);
-    const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
-    // const result = await SELECTTableusersCompany(IDCompany);
-    let arraykind = ['Acceptingcovenant','user','justuser'];
-    if (arraykind.includes(kind) ) {
-      await Updatchackglobluserinbrinshv2(
-        idBrinsh,
-        type,
-        // kind === "user" ? type : kind,
-        checkGloblenew,
-        checkGlobleold,
-        userSession.userName
-      );
-    } else {
-      await UpdatchackAdmininbrinshv2(
-        idBrinsh,
-        type,
-        checkGloblenew,
-        checkGlobleold,
-        userSession.userName
-      );
-    }
-    // console.log(result,'updatusercompanyinbrinsh')
-    // }
-    res.send({ success: "successfuly" }).status(200);
-  } catch (err) {
-    console.log(err);
-  }
+  };
 };
 
 //  عمليات تعديل صلاحية الادمن
@@ -197,15 +204,17 @@ const UpdatchackAdmininbrinsh = async (
             // );
           }
 
-          const operation = await UpdateTableuserComppany([
-            pic.IDCompany,
-            pic.userName,
-            pic.IDNumber,
-            pic.PhoneNumber,
-            job,
-            JSON.stringify(deletevalidity),
-            pic.id,
-          ]);
+          const operation = await UpdateTableuserComppany(
+            [
+              pic.IDCompany,
+              pic.userName,
+              pic.IDNumber,
+              pic.PhoneNumber,
+              job,
+              JSON.stringify(deletevalidity),
+              pic.id,
+            ]`job=?,Validity=?`
+          );
         }
       }
     });
@@ -232,15 +241,18 @@ const UpdatchackAdmininbrinsh = async (
           project: [],
           Acceptingcovenant: false,
         });
-        const operation = await UpdateTableuserComppany([
-          pic.IDCompany,
-          pic.userName,
-          pic.IDNumber,
-          pic.PhoneNumber,
-          type,
-          JSON.stringify(deletevalidity),
-          pic.id,
-        ]);
+        const operation = await UpdateTableuserComppany(
+          [
+            pic.IDCompany,
+            pic.userName,
+            pic.IDNumber,
+            pic.PhoneNumber,
+            type,
+            JSON.stringify(deletevalidity),
+            pic.id,
+          ],
+          `job=?,Validity=?`
+        );
 
         // await AddOrUpdatuser(
         //   pic.PhoneNumber,
@@ -347,15 +359,18 @@ const UpdatchackAdmininbrinshv2 = async (
             //   userName
             // );
           }
-          const operation = await UpdateTableuserComppany([
-            pic.IDCompany,
-            pic.userName,
-            pic.IDNumber,
-            pic.PhoneNumber,
-            job,
-            JSON.stringify(deletevalidity),
-            pic.id,
-          ]);
+          const operation = await UpdateTableuserComppany(
+            [
+              pic.IDCompany,
+              pic.userName,
+              pic.IDNumber,
+              pic.PhoneNumber,
+              job,
+              JSON.stringify(deletevalidity),
+              pic.id,
+            ],
+            `job=?,Validity=?`
+          );
         }
       }
     });
@@ -382,15 +397,18 @@ const UpdatchackAdmininbrinshv2 = async (
           project: [],
           Acceptingcovenant: false,
         });
-        const operation = await UpdateTableuserComppany([
-          pic.IDCompany,
-          pic.userName,
-          pic.IDNumber,
-          pic.PhoneNumber,
-          type,
-          JSON.stringify(deletevalidity),
-          pic.id,
-        ]);
+        const operation = await UpdateTableuserComppany(
+          [
+            pic.IDCompany,
+            pic.userName,
+            pic.IDNumber,
+            pic.PhoneNumber,
+            type,
+            JSON.stringify(deletevalidity),
+            pic.id,
+          ],
+          `job=?,Validity=?`
+        );
 
         // await AddOrUpdatuser(
         //   pic.PhoneNumber,
@@ -475,15 +493,18 @@ const opreationDeletuserfromBrinshorProjectorCovenant = async (
           );
           deletevalidity = arrayBrinsh;
         }
-        const operation = await UpdateTableuserComppany([
-          pic.IDCompany,
-          pic.userName,
-          pic.IDNumber,
-          pic.PhoneNumber,
-          pic.job,
-          JSON.stringify(deletevalidity),
-          pic.id,
-        ]);
+        const operation = await UpdateTableuserComppany(
+          [
+            pic.IDCompany,
+            pic.userName,
+            pic.IDNumber,
+            pic.PhoneNumber,
+            pic.job,
+            JSON.stringify(deletevalidity),
+            pic.id,
+          ],
+          `job=?,Validity=?`
+        );
       }
     });
   } catch (error) {
@@ -491,38 +512,39 @@ const opreationDeletuserfromBrinshorProjectorCovenant = async (
   }
 };
 
-const DeletUser = async (req, res) => {
-  const PhoneNumber = req.body.PhoneNumber;
-  try {
-    const deletuser = await DeletTableuserComppanyCorssUpdateActivationtoFalse([
-      PhoneNumber,
-    ]);
-    const deletloginuser =
-      await DeletTableuserComppanyCorssUpdateActivationtoFalse(
-        [PhoneNumber],
-        "LoginActivaty"
-      );
-    if (deletuser) {
-      res
-        .send({
-          success: "تمت العملية بنجاح",
-        })
-        .status(200);
-    } else {
+const DeletUser = () => {
+  return async (req, res) => {
+    const PhoneNumber = req.body.PhoneNumber;
+    try {
+      const deletuser =
+        await DeletTableuserComppanyCorssUpdateActivationtoFalse([PhoneNumber]);
+      const deletloginuser =
+        await DeletTableuserComppanyCorssUpdateActivationtoFalse(
+          [PhoneNumber],
+          "LoginActivaty"
+        );
+      if (deletuser) {
+        res
+          .send({
+            success: "تمت العملية بنجاح",
+          })
+          .status(200);
+      } else {
+        res
+          .send({
+            success: "العملية غير ناجحة",
+          })
+          .status(200);
+      }
+    } catch (error) {
+      console.log(error);
       res
         .send({
           success: "العملية غير ناجحة",
         })
-        .status(200);
+        .status(400);
     }
-  } catch (error) {
-    console.log(error);
-    res
-      .send({
-        success: "العملية غير ناجحة",
-      })
-      .status(400);
-  }
+  };
 };
 
 //  عمليات اضافة صلاحيات للمستخدم
@@ -545,7 +567,6 @@ const opreationAddvalidityuserBrinshorCovenant = async (
       // console.log(type);
 
       try {
-
         if (Number(type)) {
           // If the type is a number, call AddUserInProject
           const { arrayBrinsh, Boolen } = await AddUserInProject(
@@ -580,15 +601,18 @@ const opreationAddvalidityuserBrinshorCovenant = async (
 
         // If Booleans is true, update the table
         if (Booleans) {
-          await UpdateTableuserComppany([
-            pic.IDCompany,
-            pic.userName,
-            pic.IDNumber,
-            pic.PhoneNumber,
-            pic.job,
-            JSON.stringify(validity),
-            pic.id,
-          ]);
+          await UpdateTableuserComppany(
+            [
+              pic.IDCompany,
+              pic.userName,
+              pic.IDNumber,
+              pic.PhoneNumber,
+              pic.job,
+              JSON.stringify(validity),
+              pic.id,
+            ],
+            `job=?,Validity=?`
+          );
         }
       } catch (error) {
         // Handle any errors that occur during the process
@@ -689,31 +713,32 @@ const AddUserInProject = (validity, idBrinsh, type, Validitynew) => {
   }
 };
 
-const UpdateToken = async (req, res) => {
-  try {
-    const tokenNew = req.body.tokenNew;
-    const tokenOld = req.body.tokenOld;
+const UpdateToken = () => {
+  return async (req, res) => {
+    try {
+      const { tokenNew, tokenOld } = req.body;
 
-    const PhoneNumber = req.session.user.PhoneNumber;
-    // console.log(tokenNew,tokenOld,'hhhhhhhhhhhh');
-    if (!PhoneNumber) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
+      const PhoneNumber = req.session.user.PhoneNumber;
+      // console.log(tokenNew,tokenOld,'hhhhhhhhhhhh');
+      if (!PhoneNumber) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      // console.log(PhoneNumber) ;
+      await UpdateTableLoginActivatytoken(PhoneNumber, tokenNew, tokenOld);
+
+      const result = await SELECTTableLoginActivatActivaty(
+        PhoneNumber,
+        "Validity"
+      );
+      res
+        .send({ success: "تمت العملية بنجاح", data: result.Validity })
+        .status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية" }).status(401);
     }
-    // console.log(PhoneNumber) ;
-    await UpdateTableLoginActivatytoken(PhoneNumber, tokenNew, tokenOld);
-
-    const result = await SELECTTableLoginActivatActivaty(
-      PhoneNumber,
-      "Validity"
-    );
-    res
-      .send({ success: "تمت العملية بنجاح", data: result.Validity })
-      .status(200);
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل تنفيذ العملية" }).status(401);
-  }
+  };
 };
 
 // إزالة المستخدم من المشروع
@@ -735,66 +760,74 @@ const DeleteUserFromProject = (validity, idBrinsh, type) => {
 };
 
 // إدخال مشاريع متعددة في صلاحية المستخدم
-const InsertmultipleProjecsinvalidity = async (req, res) => {
-  try {
-    const { ProjectesNew, Validitynew, idBrinsh, PhoneNumber } = req.body;
+const InsertmultipleProjecsinvalidity = () => {
+  return async (req, res) => {
+    try {
+      const { ProjectesNew, Validitynew, idBrinsh, PhoneNumber } = req.body;
 
-    const resultuser = await SELECTTableusersCompanyVerification(PhoneNumber);
-    // Delete projects
-    for (const pic of resultuser) {
-      const validity = JSON.parse(pic.Validity);
-      let deletevalidity = [...validity];
-      const BrinshIndex = deletevalidity.findIndex(
-        (item) => item.idBrinsh === idBrinsh
-      );
-      deletevalidity[BrinshIndex].project = [];
-      await UpdateTableuserComppany([
-        pic.IDCompany,
-        pic.userName,
-        pic.IDNumber,
-        pic.PhoneNumber,
-        pic.job,
-        JSON.stringify(deletevalidity),
-        pic.id,
-      ]);
-    }
-    const resultusernew = await SELECTTableusersCompanyVerification(
-      PhoneNumber
-    );
-    // Add new projects
-    let validity =
-      resultusernew[0]?.Validity?.length > 0
-        ? JSON.parse(resultusernew[0]?.Validity)
-        : [];
-
-    for (const item of ProjectesNew) {
-      const { arrayBrinsh, Boolen } = await AddUserInProject(
-        validity,
-        idBrinsh,
-        item,
-        Validitynew
-      );
-      validity = arrayBrinsh;
-
-      // If Boolen is true, update the table
-      if (Boolen) {
-        await UpdateTableuserComppany([
-          resultusernew[0].IDCompany,
-          resultusernew[0].userName,
-          resultusernew[0].IDNumber,
-          resultusernew[0].PhoneNumber,
-          resultusernew[0].job,
-          JSON.stringify(validity),
-          resultusernew[0].id,
-        ]);
+      const resultuser = await SELECTTableusersCompanyVerification(PhoneNumber);
+      // Delete projects
+      for (const pic of resultuser) {
+        const validity = JSON.parse(pic.Validity);
+        let deletevalidity = [...validity];
+        const BrinshIndex = deletevalidity.findIndex(
+          (item) => item.idBrinsh === idBrinsh
+        );
+        deletevalidity[BrinshIndex].project = [];
+        await UpdateTableuserComppany(
+          [
+            pic.IDCompany,
+            pic.userName,
+            pic.IDNumber,
+            pic.PhoneNumber,
+            pic.job,
+            JSON.stringify(deletevalidity),
+            pic.id,
+          ],
+          `job=?,Validity=?`
+        );
       }
-    }
+      const resultusernew = await SELECTTableusersCompanyVerification(
+        PhoneNumber
+      );
+      // Add new projects
+      let validity =
+        resultusernew[0]?.Validity?.length > 0
+          ? JSON.parse(resultusernew[0]?.Validity)
+          : [];
 
-    res.status(200).send({ success: "تمت العملية بنجاح" });
-  } catch (error) {
-    console.error(error);
-    res.status(402).send({ success: "فشل تنفيذ العملية" });
-  }
+      for (const item of ProjectesNew) {
+        const { arrayBrinsh, Boolen } = await AddUserInProject(
+          validity,
+          idBrinsh,
+          item,
+          Validitynew
+        );
+        validity = arrayBrinsh;
+
+        // If Boolen is true, update the table
+        if (Boolen) {
+          await UpdateTableuserComppany(
+            [
+              resultusernew[0].IDCompany,
+              resultusernew[0].userName,
+              resultusernew[0].IDNumber,
+              resultusernew[0].PhoneNumber,
+              resultusernew[0].job,
+              JSON.stringify(validity),
+              resultusernew[0].id,
+            ],
+            `job=?,Validity=?`
+          );
+        }
+      }
+
+      res.status(200).send({ success: "تمت العملية بنجاح" });
+    } catch (error) {
+      console.error(error);
+      res.status(402).send({ success: "فشل تنفيذ العملية" });
+    }
+  };
 };
 
 // InsertmultipleProjecsinvalidity([1,2,6,7,8,9,10],[1,2,3,4,5],['تشييك طلبيات','تشييك انجازات','اقفال مراحل'],1,505566502)
@@ -813,15 +846,18 @@ const BringUpdateuser = async () => {
         };
         arrayValidity.push(element);
       }
-      await UpdateTableuserComppany([
-        pic.IDCompany,
-        pic.userName,
-        pic.IDNumber,
-        pic.PhoneNumber,
-        pic.job,
-        JSON.stringify(arrayValidity),
-        pic.id,
-      ]);
+      await UpdateTableuserComppany(
+        [
+          pic.IDCompany,
+          pic.userName,
+          pic.IDNumber,
+          pic.PhoneNumber,
+          pic.job,
+          JSON.stringify(arrayValidity),
+          pic.id,
+        ],
+        `job=?,Validity=?`
+      );
     });
   } catch (error) {
     console.log(error);

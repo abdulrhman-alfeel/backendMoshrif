@@ -18,7 +18,7 @@ const {
   projectBrinshv2,
   AddORCanselAchievmentarrayall,
 } = require("../function/companyinsert/insertProject");
-const {uploads} = require("../middleware/uploads");
+const { uploads } = require("../middleware/uploads");
 const {
   BringProject,
   BringProjectindividual,
@@ -64,106 +64,150 @@ const {
   DeleteStageSub,
   UpdateDataStageSub,
   Confirmarrivdrequest,
-  DeleteRequests
+  DeleteRequests,
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
+const companySub = ({ uploadQueue }) => {
+  const router = express.Router();
 
-const router = express.Router();
+  router.use(verifyJWT);
+  //  عمليات الادخال
+  // router.route("/project").post(uploads.single("image"), projectBrinsh);
+  router.post("/project", projectBrinsh(uploadQueue));
+  router.post("/v2/project", projectBrinshv2(uploadQueue));
 
-router.use(verifyJWT);
-//  عمليات الادخال
-// router.route("/project").post(uploads.single("image"), projectBrinsh);
-router.route("/project").post(projectBrinsh);
-router.route("/v2/project").post(projectBrinshv2);
+  router.post("/StageTemplet", StageTemplet(uploadQueue));
+  router.post("/StageSubTemplet", StageSubTemplet(uploadQueue));
+  router.post("/Stage", InsertStage(uploadQueue));
+  router.post("/StageSub", insertStageSub(uploadQueue));
+  router.post("/ClassCloaseOROpenStage", ClassCloaseOROpenStage(uploadQueue));
+  router.post("/NotesStage", uploads.single("image"), NotesStage(uploadQueue));
+  router.post(
+    "/NotesStageSub",
+    uploads.any("image"),
+    NotesStageSub(uploadQueue)
+  );
+  router.post("/AddORCanselAchievment", AddORCanselAchievment(uploadQueue));
+  router.post(
+    "/AddORCanselAchievmentarrayall",
+    AddORCanselAchievmentarrayall(uploadQueue)
+  );
+  router.post(
+    "/ExpenseInsert",
+    uploads.any("image"),
+    ExpenseInsert(uploadQueue)
+  );
+  router.post(
+    "/RevenuesInsert",
+    uploads.any("image"),
+    RevenuesInsert(uploadQueue)
+  );
+  router.post(
+    "/ReturnsInsert",
+    uploads.any("image"),
+    ReturnsInsert(uploadQueue)
+  );
+  router.post("/AddFolderArchivesnew", AddFolderArchivesnew(uploadQueue));
+  router.post(
+    "/AddfileinFolderinArchivesnew",
+    uploads.single("file"),
+    AddfileinFolderHomeinArchive(uploadQueue)
+  );
+  router.post(
+    "/InsertDatainTableRequests",
+    uploads.any("image"),
+    InsertDatainTableRequests(uploadQueue)
+  );
 
+  // //  عمليات الطلب
+  router.get("/BringProject", BringProject(uploadQueue));
+  router.get("/BringDataprojectClosed", BringDataprojectClosed(uploadQueue));
+  router.get("/CloseOROpenProject", CloseOROpenProject(uploadQueue));
+  router.get("/FilterProject", FilterProject(uploadQueue));
+  // router.get("/BringProjectindividual", BringProjectindividual(uploadQueue));
+  router.get("/BringProjectObjectone", BringProjectObjectone(uploadQueue));
+  router.get("/BringStageTemplet", BringStageTemplet(uploadQueue));
+  router.get("/BringStageSubTemplet", BringStageSubTemplet(uploadQueue));
+  router.get("/BringStage", BringStage(uploadQueue));
+  router.get("/BringStageOneObject", BringStageOneObject(uploadQueue));
+  router.get("/BringStagesub", BringStagesub(uploadQueue));
+  router.get("/BringStageNotes", BringStageNotes(uploadQueue));
+  router.get("/BringExpense", BringExpense(uploadQueue));
+  router.get("/BringRevenue", BringRevenue(uploadQueue));
+  router.get("/BringReturned", BringReturned(uploadQueue));
+  router.get("/BringArchives", BringArchives(uploadQueue));
+  router.get("/BringArchivesFolderdata", BringArchivesFolderdata(uploadQueue));
+  router.get("/BringTotalAmountproject", BringTotalAmountproject(uploadQueue));
+  router.get(
+    "/BringStatmentFinancialforproject",
+    BringStatmentFinancialforproject(uploadQueue)
+  );
+  router.get("/SearchinFinance", SearchinFinance(uploadQueue));
+  router.get("/BringDataRequests", BringDataRequests(uploadQueue));
+  router.get("/BringCountRequsts", BringCountRequsts(uploadQueue));
 
-router.route("/StageTemplet").post(StageTemplet);
-router.route("/StageSubTemplet").post(StageSubTemplet);
-router.route("/Stage").post(InsertStage);
-router.route("/StageSub").post(insertStageSub);
-router.route("/ClassCloaseOROpenStage").post(ClassCloaseOROpenStage);
-router.route("/NotesStage").post(uploads.single("image"), NotesStage);
-router.route("/NotesStageSub").post(uploads.any("image"),NotesStageSub);
-router.route("/AddORCanselAchievment").post(AddORCanselAchievment);
-router.route("/AddORCanselAchievmentarrayall").post(AddORCanselAchievmentarrayall);
-router.route("/ExpenseInsert").post(uploads.any("image"), ExpenseInsert);
-router.route("/RevenuesInsert").post(uploads.any("image"), RevenuesInsert);
-router.route("/ReturnsInsert").post(uploads.any("image"), ReturnsInsert);
-router.route("/AddFolderArchivesnew").post(AddFolderArchivesnew);
-router
-  .route("/AddfileinFolderinArchivesnew")
-  .post(uploads.single("file"), AddfileinFolderHomeinArchive);
-router
-  .route("/InsertDatainTableRequests")
-  .post(uploads.any("image"), InsertDatainTableRequests);
+  router.get("/v2/BringDataRequests", BringDataRequestsV2(uploadQueue));
+  router.get("/v2/BringCountRequsts", BringCountRequstsV2(uploadQueue));
 
-//  عمليات الطلب
-router.route("/BringProject").get(BringProject);
-router.route("/BringDataprojectClosed").get(BringDataprojectClosed);
-router.route("/CloseOROpenProject").get(CloseOROpenProject);
-router.route("/FilterProject").get(FilterProject);
-router.route("/BringProjectindividual").get(BringProjectindividual);
-router.route("/BringProjectObjectone").get(BringProjectObjectone);
-router.route("/BringStageTemplet").get(BringStageTemplet);
-router.route("/BringStageSubTemplet").get(BringStageSubTemplet);
-router.route("/BringStage").get(BringStage);
-router.route("/BringStageOneObject").get(BringStageOneObject);
-router.route("/BringStagesub").get(BringStagesub);
-router.route("/BringStageNotes").get(BringStageNotes);
-router.route("/BringExpense").get(BringExpense),
-router.route("/BringRevenue").get(BringRevenue),
-router.route("/BringReturned").get(BringReturned);
-router.route("/BringArchives").get(BringArchives),
-router.route("/BringArchivesFolderdata").get(BringArchivesFolderdata);
-router.route("/BringTotalAmountproject").get(BringTotalAmountproject);
-router
-  .route("/BringStatmentFinancialforproject")
-  .get(BringStatmentFinancialforproject);
-router.route("/SearchinFinance").get(SearchinFinance);
-router.route("/BringDataRequests").get(BringDataRequests);
-router.route("/BringCountRequsts").get(BringCountRequsts);
+  router.get("/BringReportforProject", BringReportforProject(uploadQueue));
 
-router.route("/v2/BringDataRequests").get(BringDataRequestsV2);
-router.route("/v2/BringCountRequsts").get(BringCountRequstsV2);
+  //  عملية التعديل
+  router.put("/projectUpdat", UpdataDataProject(uploadQueue));
+  router.put("/RearrangeStage", RearrangeStage(uploadQueue));
+  router.put("/UpdateStartdate", UpdateStartdate(uploadQueue));
+  router.put("/UpdateDataStage", UpdateDataStage(uploadQueue));
+  router.put("/UpdateDataStageSub", UpdateDataStageSub(uploadQueue));
+  // حذف المشروع
+  router.get(
+    "/DeletProjectwithDependencies",
+    DeletProjectwithDependencies(uploadQueue)
+  );
+  // حذف عمليات المالية
+  router.get("/DeleteFinance", DeleteFinance(uploadQueue));
 
-router.route("/BringReportforProject").get(BringReportforProject);
+  //  حذف المراحل الرئيسية
+  router.get("/DeleteStageHome", DeleteStageHome(uploadQueue));
+  // حذف المراحل الفرعية
+  router.get("/DeleteStageSub", DeleteStageSub(uploadQueue));
 
-//  عملية التعديل
-router.route("/projectUpdat").put(UpdataDataProject);
-router.route("/RearrangeStage").put(RearrangeStage);
-router.route("/UpdateStartdate").put(UpdateStartdate);
-router.route("/UpdateDataStage").put(UpdateDataStage);
-router.route("/UpdateDataStageSub").put(UpdateDataStageSub);
-// حذف المشروع
-router.route("/DeletProjectwithDependencies").get(DeletProjectwithDependencies);
-// حذف عمليات المالية 
-router.route("/DeleteFinance").get(DeleteFinance);
+  router.put(
+    "/UpdateNameFolderOrfileinArchive",
+    UpdateNameFolderOrfileinArchive(uploadQueue)
+  );
+  router.put(
+    "/UpdateNotesStage",
+    uploads.single("image"),
+    UpdateNotesStage(uploadQueue)
+  );
+  router.put(
+    "/ExpenseUpdate",
+    uploads.any("image"),
+    ExpenseUpdate(uploadQueue)
+  );
+  router.put(
+    "/RevenuesUpdate",
+    uploads.any("image"),
+    RevenuesUpdate(uploadQueue)
+  );
+  router.put(
+    "/ReturnsUpdate",
+    uploads.any("image"),
+    ReturnsUpdate(uploadQueue)
+  );
+  router.put(
+    "/UPDATEdataRequests",
+    uploads.any("image"),
+    UPDATEdataRequests(uploadQueue)
+  );
+  router.put(
+    "/UPDATEImplementRquestsORCansle",
+    UPDATEImplementRquestsORCansle(uploadQueue)
+  );
+  router.get("/Confirmarrivdrequest", Confirmarrivdrequest(uploadQueue));
 
-//  حذف المراحل الرئيسية 
-router.route('/DeleteStageHome').get(DeleteStageHome)
-// حذف المراحل الفرعية 
-router.route('/DeleteStageSub').get(DeleteStageSub)
+  // //
+  router.get("/DeleteRequests", DeleteRequests(uploadQueue));
+  return router;
+};
 
-router
-  .route("/UpdateNameFolderOrfileinArchive")
-  .put(UpdateNameFolderOrfileinArchive);
-router
-  .route("/UpdateNotesStage")
-  .put(uploads.single("image"), UpdateNotesStage);
-router.route("/ExpenseUpdate").put(uploads.any("image"), ExpenseUpdate);
-router.route("/RevenuesUpdate").put(uploads.any("image"), RevenuesUpdate);
-router.route("/ReturnsUpdate").put(uploads.any("image"), ReturnsUpdate);
-router
-  .route("/UPDATEdataRequests")
-  .put(uploads.any("image"), UPDATEdataRequests);
-router
-  .route("/UPDATEImplementRquestsORCansle")
-  .put(UPDATEImplementRquestsORCansle);
-router
-  .route("/Confirmarrivdrequest")
-  .get(Confirmarrivdrequest);
-
-  // 
-  router.route('/DeleteRequests').get(DeleteRequests)
-
-module.exports = router;
+module.exports = {companySub};
