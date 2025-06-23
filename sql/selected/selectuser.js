@@ -1,11 +1,11 @@
 const db = require("../sqlite");
 
 //  مستخدمي الشركة
-const SELECTTableusersCompany = (id,type="") => {
+const SELECTTableusersCompany = (id,type="",LIMIT="LIMIT 20") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT * FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} LIMIT 20`,
+        `SELECT * FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
         [id],
         function (err, result) {
           if (err) {
@@ -258,7 +258,64 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
   });
 };
 
+const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m-%d",Dateday)=? AND pr.id > ? ${search} DESC LIMIT 10`,
+        [IDCompany,Dateday,LastID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+const SELECTTABLEObjectHR = async (IDCompany,Dateday,search="") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=${IDCompany} AND strftime("%Y-%m-%d",pr.Dateday)= '${Dateday}'  ${search}  `,
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTABLEHRuser = async (IDCompany, idUser, DateDay) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT * FROM Prepare WHERE IDCompany = ${IDCompany} AND idUser = ${idUser} AND strftime("%Y-%m-%d", Dateday) = '${DateDay}'`,
+         // <-- FIXED: Added missing comma
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
 module.exports = {
+  SELECTTABLEHR,
+  SELECTTABLEHRuser,
   SELECTTableLoginActivatActivatyall,
   SELECTTableusersCompany,
   SELECTTableusersCompanySub,
@@ -269,5 +326,6 @@ module.exports = {
   SELECTTableusersCompanyonObject,
   SELECTTableusersCompanyVerificationIDUpdate,
   SELECTTableusersCompanyboss,
-  SELECTusersCompany
+  SELECTusersCompany,
+  SELECTTABLEObjectHR
 };

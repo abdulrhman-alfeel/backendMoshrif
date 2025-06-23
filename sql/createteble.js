@@ -105,7 +105,7 @@ const CreateTable = () => {
   //  مشاهدة دردشة المراحل
   db.run(
     `CREATE TABLE IF NOT EXISTS ViewsCHATSTAGE(viewsID INTEGER PRIMARY KEY AUTOINCREMENT, chatID INTEGER NOT NULL, userName TEXT NOT NULL, Date DATE DEFAULT CURRENT_DATE, FOREIGN KEY (chatID) REFERENCES ChatSTAGE (chatID) ON DELETE RESTRICT ON UPDATE RESTRICT) `
-  );
+  ); 
   // الدردشة
   db.run(
     `CREATE TABLE IF NOT EXISTS Chat(chatID INTEGER PRIMARY KEY AUTOINCREMENT , idSendr TEXT NOT NULL,Type TEXT NULL ,ProjectID INTEGER NOT NULL,Sender TEXT NOT NULL ,message TEXT NULL,Date DATE DEFAULT CURRENT_DATE,timeminet DATE NULL,File JSON NULL , Reply JSON NULL)`
@@ -123,6 +123,9 @@ const CreateTable = () => {
   db.run(
     `CREATE TABLE IF NOT EXISTS FinancialCustody (id INTEGER PRIMARY KEY AUTOINCREMENT , idOrder INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, IDCompanySub INTEGER NOT NULL , Requestby TEXT NOT NULL , Amount DECIMAL NOT NULL ,Statement TEXT NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP,Approvingperson TEXT NULL 
     ,ApprovalDate DATE NULL,OrderStatus TEXT NULL DEFAULT 'false',RejectionStatus TEXT NULL DEFAULT 'false', Reasonforrejection TEXT NULL  , Dateofrejection DATE NULL)`
+  );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS Prepare (id INTEGER PRIMARY KEY AUTOINCREMENT ,IDCompany INTEGER NOT NULL, idUser INTEGER NOT NULL,Dateday DATE DEFAULT CURRENT_DATE ,CheckIntime DATE  NULL, CheckInFile JSON NULL , CheckOUTtime DATE NULL , CheckoutFile JSON NULL , Numberofworkinghours INTEGER NULL,Overtimeassignment TEXT DEFAULT "false" ,Numberofovertimehours INTEGER NULL)`
   );
   const sql = `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

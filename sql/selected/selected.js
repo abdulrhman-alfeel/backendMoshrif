@@ -333,12 +333,15 @@ ORDER BY id ASC, datetime(Contractsigningdate) ASC`
         ? `SELECT Contractsigningdate,ProjectStartdate,Nameproject,IDcompanySub,TypeOFContract FROM companySubprojects WHERE id=? AND Disabled =?`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=?  `
-        : kind === "forchatAdmin" 
+        : kind === "forchatAdmin"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE RE.NumberCompany=? AND (ca.id) > ?   AND (ca.Disabled) =?      ORDER BY ca.id ASC
     LIMIT 10`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=? AND Disabled =?`;
 
-    let data = kind === "all" || kind === "forchatAdmin" ? [id, IDfinlty, Disabled] : [id, Disabled];
+    let data =
+      kind === "all" || kind === "forchatAdmin"
+        ? [id, IDfinlty, Disabled]
+        : [id, Disabled];
     db.serialize(function () {
       db.all(stringSql, data, function (err, result) {
         if (err) {
@@ -2293,7 +2296,9 @@ const SELECTTableBranchdeletionRequests = async (
   });
 };
 
+
 module.exports = {
+
   SELECTTablecompanyApi,
   SELECTTablecompany,
   SELECTTablecompanyName,

@@ -59,7 +59,7 @@ const BringNameCompany = () => {
 const biringDatabrinshCompany = () => {
   return async (req, res) => {
     try {
-      const IDCompany = req.body.IDCompany;
+      const {IDCompany,type} = req.body;
       const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");
@@ -69,9 +69,9 @@ const biringDatabrinshCompany = () => {
       const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
 
       const cached = await redis.get(key);
-      if (cached) {
+      if (cached && type === "cache") {
         const cachedData = JSON.parse(cached);
-        console.log("Data fetched from cache");
+        // console.log("Data fetched from cache");
         return res.send({ masseg: "succfuly", ...cachedData }).status(200);
       }
 
@@ -84,7 +84,7 @@ const biringDatabrinshCompany = () => {
         })
         .status(200);
 
-      await redis.set(key, JSON.stringify(result), "EX", 5 * 60);
+      await redis.set(key, JSON.stringify(result), "EX",   60 * 1000 );
     } catch (error) {
       console.log(error);
     }
@@ -101,9 +101,11 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
   const company = await SELECTTablecompanyName(IDCompany);
   let arrayBrinsh = [];
   if (userSession.job !== "Admin") {
-    const where = validity
-      .map((items) => items?.idBrinsh)
-      .reduce((item, r) => `${String(item) + " , " + r}`);
+
+    const where =validity.length > 0 && validity
+      ?.map((items) => items?.idBrinsh)
+      ?.reduce((item, r) => `${String(item) + " , " + r}`);
+    if (where) {
     const typeproject = `id IN (${where})`;
     const dataCompany = await SELECTTablecompanySub(
       IDCompany,
@@ -111,6 +113,7 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
       typeproject
     );
     arrayBrinsh = dataCompany;
+  }
   } else {
     const dataCompany = await SELECTTablecompanySub(IDCompany);
     arrayBrinsh = dataCompany;
@@ -136,59 +139,6 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
     "COUNT(idOrder) AS count"
   );
 
-  return {
-    data: ObjectData,
-    nameCompany: company.NameCompany,
-    CommercialRegistrationNumber: company.CommercialRegistrationNumber,
-    Country: company.Country,
-    Covenantnumber: Covenantnumber.count,
-  };
-}
-
-// Standalone function to get company branches and related data for a user
-async function getCompanyBranchesForUser(IDCompany, userSession) {
-  const Datausere = await SELECTTableusersCompanyonObject(
-    userSession.PhoneNumber
-  );
-  const validity =
-    Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
-  const company = await SELECTTablecompanyName(IDCompany);
-  let arrayBrinsh = [];
-  if (userSession.job !== "Admin") {
-    const where = validity
-      .map((items) => items?.idBrinsh)
-      .reduce((item, r) => `${String(item) + " , " + r}`);
-    const typeproject = `id IN (${where})`;
-    const dataCompany = await SELECTTablecompanySub(
-      IDCompany,
-      "*",
-      typeproject
-    );
-    arrayBrinsh = dataCompany;
-  } else {
-    const dataCompany = await SELECTTablecompanySub(IDCompany);
-    arrayBrinsh = dataCompany;
-  }
-
-  let ObjectData = [];
-  for (let index = 0; index < arrayBrinsh.length; index++) {
-    const element = arrayBrinsh[index];
-    const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
-    const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
-    if (element !== undefined) {
-      const ObjectBrinsh = {
-        ...element,
-        CountProject: Count[0]["COUNT(*)"],
-        Linkevaluation: Boolean(evaluation?.urlLink) ? evaluation?.urlLink : "",
-      };
-      ObjectData.push(ObjectBrinsh);
-    }
-  }
-  const Covenantnumber = await SELECTTableMaxFinancialCustody(
-    IDCompany,
-    "count",
-    "COUNT(idOrder) AS count"
-  );
 
   return {
     data: ObjectData,
@@ -198,6 +148,7 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
     Covenantnumber: Covenantnumber.count,
   };
 }
+
 //  طلبات بيانات العهد
 
 const BringDataFinancialCustody = () => {

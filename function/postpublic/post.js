@@ -49,13 +49,13 @@ const BringPost =  () => {
 const BringCommentinsert =  () => {
   return async (req, res) => {
   try {
-    const {PostId,count} = req.query;
+    const {PostID,count} = req.query;
     const userSession = req.session.user;
   if (!userSession) {
     res.status(401).send("Invalid session");
     console.log("Invalid session");
   }
-    const result = await SELECTTableCommentPostPublic(PostId, count);
+    const result = await SELECTTableCommentPostPublic(PostID, count);
     let arraynew = [];
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
@@ -64,7 +64,6 @@ const BringCommentinsert =  () => {
         ...element,
         job: user.job,
       };
-      console.log(user.job);
       arraynew.push(data);
     }
 
@@ -207,6 +206,7 @@ const BringObjectOnefromPost =  () => {
   return async (req, res) => {
   try {
     const PostID = req.query.PostID;
+
     const userSession = req.session.user;
     if (!userSession) {
       res.status(401).send("Invalid session");

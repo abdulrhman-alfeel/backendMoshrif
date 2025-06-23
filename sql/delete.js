@@ -188,6 +188,16 @@ const DeleteTableFinancialCustody = (data) => {
     });
   });
 };
+const deletePostFromDatabase = (data) => {
+  db.serialize(function () {
+    db.run(`Delete FROM Post WHERE url=?`, data, function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+    });
+  });
+};
 
 const DeleteTablecompanySubProjectChate = () => {};
 
@@ -210,5 +220,6 @@ module.exports = {
   DeleteTablecompanyStageSub,
   DeleteTableProjectdataforchat,
   DeleteTableFinancialCustody,
-  DeleteTablecompanySubProjectallapi
+  DeleteTablecompanySubProjectallapi,
+  deletePostFromDatabase
 };

@@ -51,21 +51,15 @@ const ClassChatOpration = async (Socket, io) => {
 
 const OpreactionSend_message = async (data) => {
   let result;
-
-  const chackdata = Number(data?.StageID)
-    ? await SELECTTableChateStageOtherroad(
-        data.idSendr,
-        data.Sender,
-        "trim(idSendr)=trim(?) AND trim(Sender)=trim(?)"
-      )
-    : await SELECTTableChateStageOtherroad(
-        data.idSendr,
-        data.Sender,
-        "trim(idSendr)=trim(?) AND trim(Sender)=trim(?)",
-        "Chat"
-      );
-  if (!chackdata) {
-    if (data.kind === "new") {
+  if (data?.kind === "delete") {
+    const chackdata = await bringdatachate(data, "delete");
+    result = await DeleteChatfromdatabaseanddatabaseuser(chackdata);
+    if (Object.entries(chackdata?.File).length > 0 && String(JSON.parse(chackdata?.File).type).startsWith("video")) {
+      await Deleteposts(JSON.parse(chackdata.File).name);
+    }
+  } else {
+    const chackdata = await bringdatachate(data);
+    if (!chackdata) {
       const newData = Datadistribution(data);
       if (Number(data?.StageID)) {
         await insertTableChateStage(newData);
@@ -103,87 +97,96 @@ const OpreactionSend_message = async (data) => {
         }
       }
     } else {
-      result = await DeleteChatfromdatabaseanddatabaseuser(data);
+      result = {
+        ...chackdata,
+        File: JSON.parse(chackdata.File),
+        Reply: JSON.parse(chackdata.Reply),
+        arrived: true,
+        kind: "mssageEnd",
+      };
     }
-  } else {
-    result = {
-      ...chackdata,
-      File: JSON.parse(chackdata.File),
-      Reply: JSON.parse(chackdata.Reply),
-      arrived: true,
-      kind: "mssageEnd",
-    };
   }
 
   return result;
 };
 
-const Chackarrivedmassage =  () => {
+const bringdatachate = async (data, type = "new") => {
+  let sqltype =
+    type === "delete"
+      ? "chatID=? AND trim(Sender)=trim(?)"
+      : "trim(idSendr)=trim(?) AND trim(Sender)=trim(?)";
+  let id = type === "delete" ? data.chatID : data.idSendr;
+  const chackdata = Number(data?.StageID)
+    ? await SELECTTableChateStageOtherroad(id, data.Sender, sqltype)
+    : await SELECTTableChateStageOtherroad(id, data.Sender, sqltype, "Chat");
+  return chackdata;
+};
+const Chackarrivedmassage = () => {
   return async (req, res) => {
-  const userSession = req.session.user;
-  const { StageID, idSendr } = req.query;
-  if (!userSession) {
-    res.status(401).send("Invalid session");
-    console.log("Invalid session");
-  }
-
-  const chackdata = Number(StageID)
-    ? await SELECTTableChateStageOtherroad(
-        idSendr,
-        userSession.userName,
-        "idSendr=? AND Sender=?"
-      )
-    : await SELECTTableChateStageOtherroad(
-        idSendr,
-        userSession.userName,
-        "idSendr=? AND Sender=?",
-        "Chat"
-      );
-
-  res.send({ success: chackdata }).status(200);
+    const userSession = req.session.user;
+    const { StageID, idSendr } = req.query;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
     }
+
+    const chackdata = Number(StageID)
+      ? await SELECTTableChateStageOtherroad(
+          idSendr,
+          userSession.userName,
+          "idSendr=? AND Sender=?"
+        )
+      : await SELECTTableChateStageOtherroad(
+          idSendr,
+          userSession.userName,
+          "idSendr=? AND Sender=?",
+          "Chat"
+        );
+
+    res.send({ success: chackdata }).status(200);
+  };
 };
 
-const PostFilemassage =  () => {
+const PostFilemassage = () => {
   return async (req, res) => {
-  try {
-    const videofile = req.file;
+    try {
+      const videofile = req.file;
 
-    if (!videofile) {
-      return res.status(400).send("No video file uploaded");
+      if (!videofile) {
+        return res.status(400).send("No video file uploaded");
+      }
+
+      const data = JSON.parse(req.body.data);
+      const result = await OpreactionSend_message(data);
+
+      res.status(200).send({ success: "Full request", chatID: result.chatID });
+
+      io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
+        .timeout(50)
+        .emit("received_message", result);
+
+      await uploaddata(videofile);
+      // Check if the uploaded file is a video
+      if (
+        videofile.mimetype === "video/mp4" ||
+        videofile.mimetype === "video/quicktime"
+      ) {
+        const timePosition = "00:00:00.100";
+        let matchvideo = videofile.filename.match(/\.([^.]+)$/)[1];
+        let filename = String(videofile.filename).replace(matchvideo, "png");
+
+        const pathdir = path.dirname(videofile.path);
+        const tempFilePathtimp = `${pathdir}/${filename}`;
+
+        await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
+        await bucket.upload(tempFilePathtimp);
+      }
+      // حذف الملف
+      await deleteFileSingle(data.File.name, "upload", data.File.type);
+    } catch (error) {
+      res.status(402).send({ success: "فشلة عملية رفع الملف" });
     }
-
-    const data = JSON.parse(req.body.data);
-    const result = await OpreactionSend_message(data);
-
-    res.status(200).send({ success: "Full request", chatID: result.chatID });
-
-    io.to(`${parseInt(data.ProjectID)}:${data?.StageID}`)
-      .timeout(50)
-      .emit("received_message", result);
-
-    await uploaddata(videofile);
-    // Check if the uploaded file is a video
-    if (
-      videofile.mimetype === "video/mp4" ||
-      videofile.mimetype === "video/quicktime"
-    ) {
-      const timePosition = "00:00:00.100";
-      let matchvideo = videofile.filename.match(/\.([^.]+)$/)[1];
-      let filename = String(videofile.filename).replace(matchvideo, "png");
-
-      const pathdir = path.dirname(videofile.path);
-      const tempFilePathtimp = `${pathdir}/${filename}`;
-
-      await fFmpegFunction(tempFilePathtimp, videofile.path, timePosition);
-      await bucket.upload(tempFilePathtimp);
-    }
-    // حذف الملف
-    await deleteFileSingle(data.File.name, "upload", data.File.type);
-  } catch (error) {
-    res.status(402).send({ success: "فشلة عملية رفع الملف" });
-  }
-}
+  };
 };
 
 const Datadistribution = (data) => {
@@ -210,10 +213,11 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
     const chatID = data.chatID;
     let dataopration = {
       ProjectID: data.ProjectID,
-      StageID: data.StageID,
-      kind: data.kind,
+      StageID: data.StageID || data.Type,
+      kind: "delete",
       chatID: chatID,
     };
+
     if (Number(data.StageID)) {
       await DeleteTableChate("ChatSTAGE", chatID);
     } else {
@@ -221,7 +225,7 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
     }
     await ChateNotficationdelete(
       data.ProjectID,
-      data?.StageID,
+      data?.StageID || data.Type,
       data.message,
       data.Sender,
       chatID
@@ -363,7 +367,7 @@ const ClassViewChat = () => {
 };
 
 //  لاستقبال مشاهدات الرسائل
-const ClassreceiveMessageViews =  () => {
+const ClassreceiveMessageViews = () => {
   return async (req, res) => {
     try {
       const { userName, ProjectID, type } = req.body;
@@ -414,40 +418,9 @@ const verification = async (data) => {
 };
 
 const { GoogleAuth } = require("google-auth-library");
-const initializeUpload =  () => {
+const { Deleteposts } = require("../postpublic/updatPost");
+const initializeUpload = () => {
   return async (req, res) => {
-  // قراءة بيانات الاعتماد من ملف JSON
-  const auth = new GoogleAuth({
-    keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
-    scopes: ["https://www.googleapis.com/auth/cloud-platform"], // نطاقات الوصول المطلوبة
-  });
-
-  const client = await auth.getClient();
-  const accessToken = await client.getAccessToken();
-  const { fileName } = req.query;
-
-  const uniqueFileName = `${uuidv4()}-${fileName}`;
-
-  res.send({ token: accessToken.token, nameFile: uniqueFileName }).status(200);
-}
-};
-
-const generateResumableUrl =  () => {
-  return async (req, res) => {
-  try {
-    const { fileName, fileType } = req.body;
-
-    const uniqueFileName = `${uuidv4()}-${fileName}`;
-    const file = bucket.file(uniqueFileName);
-
-    // Generate resumable upload URL
-    const [uri] = await file.createResumableUpload({
-      origin: "*",
-      metadata: {
-        contentType: fileType,
-      },
-    });
-
     // قراءة بيانات الاعتماد من ملف JSON
     const auth = new GoogleAuth({
       keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
@@ -456,37 +429,72 @@ const generateResumableUrl =  () => {
 
     const client = await auth.getClient();
     const accessToken = await client.getAccessToken();
+    const { fileName } = req.query;
 
-    res.status(200).json({
-      fileId: file.id,
-      nameFile: uniqueFileName,
-      token: accessToken.token,
-      uri,
-    });
+    const uniqueFileName = `${uuidv4()}-${fileName}`;
 
-    console.log(uri);
-  } catch (error) {
-    console.error("Error generating resumable upload URL:", error);
-    res.status(500).json({ error: "Failed to generate resumable upload URL" });
-  }
-}
+    res
+      .send({ token: accessToken.token, nameFile: uniqueFileName })
+      .status(200);
+  };
 };
 
-const insertdatafile =  () => {
+const generateResumableUrl = () => {
   return async (req, res) => {
-  try {
-    const result = await OpreactionSend_message(req.body);
-    res.send({ chatID: result?.chatID }).status(200);
+    try {
+      const { fileName, fileType } = req.body;
 
-    io.to(`${result.ProjectID}:${result?.StageID}`)
-      .timeout(50)
-      .emit("received_message", result);
-  } catch (err) {
-    res.send({ success: "فشل تنفيذ المهمة" }).status(401);
+      const uniqueFileName = `${uuidv4()}-${fileName}`;
+      const file = bucket.file(uniqueFileName);
 
-    // console.log(err.message);
-  }
-}
+      // Generate resumable upload URL
+      const [uri] = await file.createResumableUpload({
+        origin: "*",
+        metadata: {
+          contentType: fileType,
+        },
+      });
+
+      // قراءة بيانات الاعتماد من ملف JSON
+      const auth = new GoogleAuth({
+        keyFile: "backendMoshrif.json", // استبدل هذا بمسار ملف JSON الخاص بحساب الخدمة
+        scopes: ["https://www.googleapis.com/auth/cloud-platform"], // نطاقات الوصول المطلوبة
+      });
+
+      const client = await auth.getClient();
+      const accessToken = await client.getAccessToken();
+
+      res.status(200).json({
+        fileId: file.id,
+        nameFile: uniqueFileName,
+        token: accessToken.token,
+        uri,
+      });
+
+    } catch (error) {
+      console.error("Error generating resumable upload URL:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to generate resumable upload URL" });
+    }
+  };
+};
+
+const insertdatafile = () => {
+  return async (req, res) => {
+    try {
+      const result = await OpreactionSend_message(req.body);
+      res.send({ chatID: result?.chatID }).status(200);
+
+      io.to(`${result.ProjectID}:${result?.StageID}`)
+        .timeout(50)
+        .emit("received_message", result);
+    } catch (err) {
+      res.send({ success: "فشل تنفيذ المهمة" }).status(401);
+
+      // console.log(err.message);
+    }
+  };
 };
 
 module.exports = {

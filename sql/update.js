@@ -28,12 +28,12 @@ const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub
 
 
 
-const UpdateTablecompany = (data) => {
+const UpdateTablecompany = (data,type='') => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
         db.run(
-          `UPDATE company SET NameCompany=?, BuildingNumber=?, StreetName=?,NeighborhoodName=?,PostalCode=?,City=?,Country=?,TaxNumber=?,Cost=? WHERE id=?`,
+          `UPDATE company SET NameCompany=?, BuildingNumber=?, StreetName=?,NeighborhoodName=?,PostalCode=?,City=?,Country=?,TaxNumber=?,Cost=? ${type} WHERE id=?`,
           data,
           function (err) {
             if (err) {
@@ -56,7 +56,7 @@ const UpdateTablecompanyRegistration = (data) => {
     try {
       db.serialize(function () {
         db.run(
-          `UPDATE companyRegistration SET NameCompany=?, BuildingNumber=?, StreetName=?,NeighborhoodName=?,PostalCode=?,City=?,Country=?,TaxNumber=?,PhoneNumber=?,userName=? ,Api=? WHERE id=?`,
+          `UPDATE companyRegistration SET CommercialRegistrationNumber=?, NameCompany=?, BuildingNumber=?, StreetName=?,NeighborhoodName=?,PostalCode=?,City=?,Country=?,TaxNumber=?,PhoneNumber=?,userName=? ,Api=? WHERE id=?`,
           data,
           function (err) {
             if (err) {
@@ -670,8 +670,42 @@ const UPDATETableFinancialCustody = (type,id) => {
     console.log(error);
   }
 };
+const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `UPDATE Prepare  SET Overtimeassignment=${Overtimeassignment} WHERE id =${id}`,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const UPDATETablecheckPreparation = (checktime,checkfile,id,type1="CheckIntime",type2="CheckInFile",Numberofworkinghours="") => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `UPDATE Prepare  SET ${type1}='${checktime}',${type2}=${checkfile} ${Numberofworkinghours}  WHERE id =${id}`,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 module.exports = {
+  UPDATETablecheckPreparation,
+  UPDATETableprepareOvertimeassignment,
   UpdateTablecompany,
   UpdateTablecompanySub,
   UpdateTablecompanySubProject,

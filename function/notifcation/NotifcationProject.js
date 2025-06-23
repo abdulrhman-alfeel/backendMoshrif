@@ -755,7 +755,6 @@ const ChateNotfication = async (
 ) => {
   try {
     let nameChate;
-
     let arrayuser;
     let tokenuser;
     let bodymassge;
@@ -823,7 +822,6 @@ const ChateNotfication = async (
     if (Object.entries(File).length > 0) {
         image = String(File.type).includes("video") ?  String(File.name).replace("mp4", "png") : File.name;
         image = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${image}`;
-     
       if (String(File.type).includes("video")) {
         typfile = "ارفق فديو";
       } else if (String(File.type).includes("image")) {

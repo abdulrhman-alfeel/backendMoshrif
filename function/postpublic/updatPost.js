@@ -1,7 +1,8 @@
 const { DeleteTableCommentPostPublic } = require("../../sql/delete");
 const { UPDATETableCommentPostPublic } = require("../../sql/update");
 const { Postsnotification } = require("../notifcation/NotifcationProject");
-
+const {DeleteBucket} = require("../../bucketClooud");
+const {deletePostFromDatabase} = require("../../sql/delete");
 const CommentUpdate =  () => {
   return async (req, res) => {
   try {
@@ -39,4 +40,15 @@ const CommentDelete =  () => {
 }
 };
 
-module.exports = { CommentUpdate, CommentDelete };
+const Deleteposts = async (url) => {
+  try {
+
+    await deletePostFromDatabase([url]);
+    await DeleteBucket(url);
+  } catch (error) {
+  }
+}
+
+
+
+module.exports = { CommentUpdate, CommentDelete,Deleteposts };

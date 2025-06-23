@@ -446,6 +446,7 @@ const insertTableLikesPostPublic = (data) => {
       `INSERT INTO Likes (PostId,userName) VALUES (?,?)`,
       data,
       function (err) {
+        
         if (err) {
           console.log(err.message);
         }
@@ -582,8 +583,49 @@ const insertTableBranchdeletionRequests = (data) => {
   }
 };
 
+
+
+// عمليات التحضير
+
+const insertTablecheckPreparation = (data,type1="CheckIntime",type2="CheckInFile") => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO Prepare (IDCompany,idUser,${type1},${type2}) VALUES (?,?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const inserttableAvailabilityday = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO Prepare (IDCompany,idUser,Overtimeassignment) VALUES (?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 //
 module.exports = {
+  insertTablecheckPreparation,
+  inserttableAvailabilityday,
   insertTablecompany,
   insertTablecompanySub,
   insertTablecompanySubProject,

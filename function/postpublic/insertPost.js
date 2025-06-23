@@ -40,13 +40,13 @@ const insertPostURL = async (items) => {
 const Likesinsert =  () => {
   return async (req, res) => {
   try {
-    const {PostId,userName} = req.query;
+    const {PostID,userName} = req.query;
 
-    const result = await SELECTTableLikesPostPublicotherroad(PostId, userName);
+    const result = await SELECTTableLikesPostPublicotherroad(PostID, userName);
     if (result === undefined || result === false) {
-      await insertTableLikesPostPublic([PostId, userName]);
+      await insertTableLikesPostPublic([PostID, userName]);
     } else {
-      await DeleteTableLikesPostPublic([PostId, userName]);
+      await DeleteTableLikesPostPublic([PostID, userName]);
     }
     res.send({ success: true }).status(200);
   } catch (err) {
@@ -61,7 +61,7 @@ const Commentinsert =  () => {
   try {
     
     const {PostId,commentText,userName} = req.body;
-
+    console.log(req.body);
     await insertTableCommentPostPublic([
       PostId,
       commentText,

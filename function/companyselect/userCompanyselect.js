@@ -15,17 +15,16 @@ const {
 
 const Loginuser =  () => {
   return async (req, res) => {
-  const {PhoneNumber,token} = req.query;
+  const {PhoneNumber,token,code} = req.query;
   // bring data from table user origin
-
   const result = await SELECTTableusersCompanyVerification(PhoneNumber);
   await DELETETableLoginActivaty([PhoneNumber]);
   // bring validity users from table user table
   //   send operation login to table loginActivaty
   if (result?.length > 0) {
     const output = Math.floor(1000 + Math.random() * 9000);
-
-    verificationSend(PhoneNumber, output);
+    let PhoneNumbers = code  ?  `${code}${PhoneNumber}` : PhoneNumber;
+    verificationSend(PhoneNumbers, output);
 
     const currentDate = new Date();
     const futureDate = new Date(currentDate);
@@ -58,6 +57,8 @@ const Loginuser =  () => {
   }
 }
 };
+
+
 const axios = require("axios");
 
 const verificationSend = (number, chack = null, title = null) => {
@@ -71,7 +72,7 @@ const verificationSend = (number, chack = null, title = null) => {
       SenderID: "Mushrf.com",
       Body: title1,
       // Recipient: `966567256943`,
-      Recipient: `966${number}`,
+      Recipient: switchNumber(number),
     };
     const headers = {
       accept: "application/json",
@@ -87,6 +88,21 @@ const verificationSend = (number, chack = null, title = null) => {
     console.log(err);
   }
 };
+
+
+
+
+
+const switchNumber = (number) => {
+  if( number.startsWith("+")) {
+    return number.replace("+", "");
+  }
+
+  if (number.startsWith("5") || number.startsWith("0")) { 
+    return `966${number}`
+  }
+    return number; 
+  }
 
 const LoginVerification =  () => {
   return async (req, res) => {
@@ -307,7 +323,8 @@ const BringUserCompanyinv2 =  () => {
     let arrayvalidityuser = [];
     let bosss;
     let kindrequest = kind_request === 'all' ? `AND id > ${number}` : `AND userName LIKE '%${kind_request}%'`;
-    const result = await SELECTTableusersCompany(IDCompany,kindrequest);
+    const LIMIT = Number(type) ? "" : "LIMIT 20";
+    const result = await SELECTTableusersCompany(IDCompany,kindrequest,LIMIT);
     let CountID = 0;
     for (const element of result) {
       const validity = JSON.parse(element.Validity) || [];
@@ -498,7 +515,8 @@ const AcceptingcovenantAndbransh = async (kind, result, idBrinsh) => {
   let arrayvalidity = [];
   let boss;
   for (const pic of result) {
-    const findBrinsh = JSON.parse(pic?.Validity).find((i) => {
+    let validity = JSON.parse(pic?.Validity) || [];
+    const findBrinsh = validity.find((i) => {
       const verfiyBransh = parseInt(i.idBrinsh) === parseInt(idBrinsh);
       return kind === "Acceptingcovenant"
         ? verfiyBransh && i.Acceptingcovenant === true
@@ -520,7 +538,7 @@ const AcceptingcovenantAndbransh = async (kind, result, idBrinsh) => {
         },
       };
     }
-    const validityextrct = await extractdataValidity(JSON.parse(pic?.Validity));
+    const validityextrct = await extractdataValidity(validity);
     arrayvalidity.push({
       id: pic.id,
       userName: pic.userName,

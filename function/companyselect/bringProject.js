@@ -60,15 +60,14 @@ const BringProject = () => {
       if (!userSession) {
         return res.status(401).send("Invalid session");
       }
-      const IDcompanySub = req.query.IDcompanySub;
+      const {IDcompanySub,IDfinlty,type} = req.query;
       const PhoneNumber = userSession.PhoneNumber;
-      const IDfinlty = req.query.IDfinlty;
       const key = `projects:${PhoneNumber}:${IDcompanySub}:${parseInt(
         IDfinlty
       )}`;
 
       const cached = await redis.get(key);
-      if (cached) {
+      if (cached && type === "cache") {
         const cachedData = JSON.parse(cached);
         console.log("Data fetched from cache");
         return res
@@ -86,17 +85,19 @@ const BringProject = () => {
         IDfinlty
       );
 
-      const { arrayReturnProject, bosss } = await BringTotalbalance(
+      const arrayReturnProject = await BringTotalbalance(
         IDcompanySub,
         userSession.IDCompany,
         projects
       );
+      
       arrayBrinsh = arrayReturnProject;
+      const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
+      const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),IDcompanySub,0,'validityJob');
+      const data = { success: true, data: arrayBrinsh, boss: boss };
 
-      const data = { data: arrayBrinsh, boss: bosss };
-
-      res.status(200).send({ success: true, data: arrayBrinsh, boss: bosss });
-      await redis.set(key, JSON.stringify(data), "EX", 5 * 60);
+      res.status(200).send(data);
+      await redis.set(key, JSON.stringify(data), "EX",  60 * 1000); // Cache for 1 minute
     } catch (err) {
       console.error(err);
       res.status(400).send({ success: false, error: err.message });
@@ -163,7 +164,7 @@ const FilterProject = () => {
         search,
         IDCompanySub
       );
-      const { arrayReturnProject } = await BringTotalbalance(
+      const  arrayReturnProject  = await BringTotalbalance(
         IDCompanySub,
         userSession.IDCompany,
         result
@@ -321,11 +322,11 @@ const BringStage = () => {
       if (!userSession) {
         return res.status(401).send("Invalid session");
       }
-      const ProjectID = req.query.ProjectID;
+      const {ProjectID,type} = req.query;
       const key = `Stage:${userSession?.PhoneNumber}:${ProjectID}`;
 
       const cached = await redis.get(key);
-      if (cached) {
+      if (cached && type === "cache") {
         const cachedData = JSON.parse(cached);
         return res
           .send({
@@ -356,7 +357,7 @@ const BringStage = () => {
         userSession.PhoneNumber
       );
 
-      const { arrayUser } = await BringUserinProject(
+      const  arrayUser = await BringUserinProject(
         JSON.parse(userdata[0].Validity),
         0,
         ProjectID,
@@ -418,7 +419,27 @@ const BringStageOneObject = () => {
 const BringStagesub = () => {
   return async (req, res) => {
     try {
-      const { ProjectID, StageID } = req.query;
+      const { ProjectID, StageID ,type} = req.query;
+    const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const key = `StageSub:${userSession?.PhoneNumber}:${ProjectID}:${StageID}`;
+
+      const cached = await redis.get(key);
+      let typeCache = type || "update";
+      if (cached && typeCache === "cache") {
+        const cachedData = JSON.parse(cached);
+        return res
+          .send({
+            success: true,
+            data: cachedData?.data, resultProject: cachedData?.resultProject
+          })
+          .status(200);
+      }
+
+
       const result = await SELECTTablecompanySubProjectStagesSub(
         ProjectID,
         StageID
@@ -434,15 +455,69 @@ const BringStagesub = () => {
         ...resultProject,
         rate: rate,
       };
+      
       res
         .send({ success: true, data: result, resultProject: resultProject })
         .status(200);
+      let data = {data: result, resultProject: resultProject}
+      await redis.set(key, JSON.stringify(data), "EX", 60 * 1000);
     } catch (err) {
       console.log(err);
       res.send({ success: false }).status(400);
     }
   };
 };
+// const BringStagesub = () => {
+//   return async (req, res) => {
+//     try {
+//       const { ProjectID, StageID ,type} = req.query;
+//     const userSession = req.session.user;
+//       if (!userSession) {
+//         res.status(401).send("Invalid session");
+//         console.log("Invalid session");
+//       }
+//       const key = `StageSub:${userSession?.PhoneNumber}:${ProjectID}:${StageID}`;
+
+//       const cached = await redis.get(key);
+//       let typeCache = type || "cache";
+//       if (cached && typeCache === "cache") {
+//         const cachedData = JSON.parse(cached);
+//         return res
+//           .send({
+//             success: true,
+//             data: cachedData?.data, resultProject: cachedData?.resultProject
+//           })
+//           .status(200);
+//       }
+
+
+//       const result = await SELECTTablecompanySubProjectStagesSub(
+//         ProjectID,
+//         StageID
+//       );
+//       let resultProject = await SELECTTablecompanySubProjectStageCUSTONe(
+//         ProjectID,
+//         StageID
+//       );
+//       const rate = await PercentagecalculationforSTage(StageID, ProjectID);
+
+//       // result?.push(rate);
+//       resultProject = {
+//         ...resultProject,
+//         rate: rate,
+//       };
+      
+//       res
+//         .send({ success: true, data: result, resultProject: resultProject })
+//         .status(200);
+//       let data = {data: result, resultProject: resultProject}
+//       await redis.set(key, JSON.stringify(data), "EX", 60 * 1000);
+//     } catch (err) {
+//       console.log(err);
+//       res.send({ success: false }).status(400);
+//     }
+//   };
+// };
 
 // استيراد ملاحظات المراحل الرئيسية للمشروع
 const BringStageNotes = () => {
@@ -824,7 +899,7 @@ const BringDataRequestsV2 = () => {
         userSession.PhoneNumber
       );
 
-      const { boss } = await BringUserinProject(
+      const  boss  = await BringUserinProject(
         JSON.parse(userdata[0].Validity),
         ProjectID,
         0,
@@ -895,7 +970,7 @@ const BringCountRequstsV2 = () => {
         userSession.PhoneNumber
       );
 
-      const { boss } = await BringUserinProject(
+      const  boss  = await BringUserinProject(
         JSON.parse(userdata[0].Validity),
         ProjectID,
         0,
@@ -1112,16 +1187,14 @@ const BringReportforProject = () => {
 const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
   let arrayReturnProject = [];
   const datacompany = await SELECTTablecompany(IDCompany, "DisabledFinance");
-  let bosss = null;
   for (let index = 0; index < result?.length; index++) {
     const element = result[index];
 
-    const { data, boss } = await OpreationExtrinProject(
+    const data = await OpreationExtrinProject(
       element,
       IDCompany,
       IDcompanySub
     );
-    bosss = boss || null;
     if (data !== undefined) {
       arrayReturnProject.push({
         ...data,
@@ -1129,7 +1202,7 @@ const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
       });
     }
   }
-  return { arrayReturnProject, bosss };
+  return arrayReturnProject;
 };
 // عملية استخراج بيانات المشروع ككائان واحد
 const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
@@ -1162,7 +1235,7 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
         countuser: countuser?.countuser,
         Daysremaining: TotalDay,
       };
-      return { data: data, boss: countuser?.boss };
+      return data;
     }
   } catch (error) {
     console.log(error);
@@ -1174,7 +1247,6 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
 const BringCountUserinProject = (IDCompany, IDcompanySub, idproject) => {
   return new Promise(async (resolve, reject) => {
     let arrayvalidityuser = [];
-    let bosss = null;
     const result = await SELECTTableusersCompany(IDCompany);
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
@@ -1182,30 +1254,31 @@ const BringCountUserinProject = (IDCompany, IDcompanySub, idproject) => {
       const validity = JSON.parse(element.Validity) || [];
       if (validity.length > 0) {
         // console.log(type, "mmmmmmmm");
-        const { arrayUser, boss } = await BringUserinProject(
+        const arrayUser = await BringUserinProject(
           validity,
           IDcompanySub,
           idproject,
           element
         );
-        bosss = boss || null;
+ 
         if (Object.entries(arrayUser).length > 0) {
           arrayvalidityuser.push(arrayUser);
         }
       }
     }
-    resolve({ countuser: arrayvalidityuser.length, boss: bosss || null });
+    resolve({ countuser: arrayvalidityuser.length });
   });
 };
 // استخراج المستخدمين الموجودين داخل المشروع
 const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
   let arrayUser = {};
-  let boss = null;
   //      لاخراج  البيانات من داخل حاوية الصلاحيات
   Validity.forEach((pic) => {
     //  للتحقق من وجود المستخدم بداخل الفرع
     if (parseInt(pic.idBrinsh) === parseInt(idBrinsh)) {
-      boss = pic.job;
+      if(element === 'validityJob'){
+        arrayUser = pic.job
+      }else ;
       if (pic?.project.length > 0) {
         const findUserinProject = pic?.project?.find(
           (items) => parseInt(items.idProject) === parseInt(idProject)
@@ -1227,7 +1300,7 @@ const BringUserinProject = (Validity, idBrinsh, idProject, element) => {
       }
     }
   });
-  return { arrayUser, boss: boss || null };
+  return arrayUser;
 };
 
 // استخراج مدير فرع الخاص بالتقرير
