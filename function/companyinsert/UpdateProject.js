@@ -103,8 +103,8 @@ const addrateallinstage = async () => {
     await UpdaterateStage(element.ProjectID, element.StageID);
   }
 };
-// addallcostandrate()
-// addrateallinstage();
+addallcostandrate()
+addrateallinstage();
 
 const PercentagecalculationforProject = async (id) => {
   try {

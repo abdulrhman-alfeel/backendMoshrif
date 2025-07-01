@@ -160,18 +160,18 @@ const CreateTable = () => {
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
 
-  // db.run(`
-  //   ALTER TABLE companySubprojects
-  //   ADD COLUMN cost INTEGER NULL `)
-  // db.run(`
-  //   ALTER TABLE companySubprojects
-  //   ADD COLUMN rate INTEGER NULL `)
-  // db.run(`
-  //   ALTER TABLE companySubprojects
-  //   ADD COLUMN countuser INTEGER NULL  `)
-  // db.run(`
-  //   ALTER TABLE StagesCUST
-  //   ADD COLUMN rate DATE NULL ;`  )
+  db.run(`
+    ALTER TABLE companySubprojects
+    ADD COLUMN cost INTEGER NULL `)
+  db.run(`
+    ALTER TABLE companySubprojects
+    ADD COLUMN rate INTEGER NULL `)
+  db.run(`
+    ALTER TABLE companySubprojects
+    ADD COLUMN countuser INTEGER NULL  `)
+  db.run(`
+    ALTER TABLE StagesCUST
+    ADD COLUMN rate DATE NULL ;`  )
 
 
   // db.run(`
