@@ -7,3 +7,4 @@ node_modules/
 backendMoshrif.json
 serviceAccountKeys.json
 .env
+mydatabase.db
