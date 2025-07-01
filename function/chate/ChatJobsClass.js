@@ -53,9 +53,11 @@ const OpreactionSend_message = async (data) => {
   let result;
   if (data?.kind === "delete") {
     const chackdata = await bringdatachate(data, "delete");
-    result = await DeleteChatfromdatabaseanddatabaseuser(chackdata);
-    if (Object.entries(chackdata?.File).length > 0 && String(JSON.parse(chackdata?.File).type).startsWith("video")) {
-      await Deleteposts(JSON.parse(chackdata.File).name);
+    if(chackdata){
+      result = await DeleteChatfromdatabaseanddatabaseuser(chackdata);
+      if (Object.entries(chackdata?.File).length > 0 && String(JSON.parse(chackdata?.File).type).startsWith("video")) {
+        await Deleteposts(JSON.parse(chackdata.File).name);
+      }
     }
   } else {
     const chackdata = await bringdatachate(data);

@@ -30,6 +30,7 @@ const {
   SELECTallDatafromTableRequestsV2,
   SELECTDataAndTaketDonefromTableRequests2,
   SELECTTableStageNotesAllproject,
+  SELECTTablecompanySubProjectStageCUSTv2,
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -45,6 +46,7 @@ const {
   SELECTTableusersCompany,
   SELECTTableusersCompanyVerification,
   SELECTTableusersCompanyboss,
+  SELECTTableusersCompanyVerificationobject,
 } = require("../../sql/selected/selectuser");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 const redis = require("../../middleware/cache");
@@ -54,7 +56,6 @@ const redis = require("../../middleware/cache");
 const BringProject = () => {
   return async (req, res) => {
     try {
-      let arrayBrinsh = [];
       const userSession = req.session.user;
 
       if (!userSession) {
@@ -90,12 +91,9 @@ const BringProject = () => {
         userSession.IDCompany,
         projects
       );
-      
-      arrayBrinsh = arrayReturnProject;
-      const userdata = await SELECTTableusersCompanyVerification(userSession.PhoneNumber);
-      const boss = await BringUserinProject(JSON.parse(userdata[0].Validity),IDcompanySub,0,'validityJob');
-      const data = { success: true, data: arrayBrinsh, boss: boss };
-
+      const userdata = await SELECTTableusersCompanyVerificationobject(userSession.PhoneNumber);
+      const boss = await BringUserinProject(JSON.parse(userdata.Validity),IDcompanySub,0,'validityJob');
+      const data = { success: true, data: arrayReturnProject, boss: boss };
       res.status(200).send(data);
       await redis.set(key, JSON.stringify(data), "EX",  60 * 1000); // Cache for 1 minute
     } catch (err) {
@@ -146,7 +144,6 @@ async function getProjectsForUser(PhoneNumber, IDcompanySub, IDfinlty) {
   return result;
 }
 //  فلتر المشاريع
-//  SELECT * FROM posts WHERE Saction LIKE '%"+search+"%'
 
 const FilterProject = () => {
   return async (req, res) => {
@@ -337,20 +334,68 @@ const BringStage = () => {
           .status(200);
       }
 
-      const result = await SELECTTablecompanySubProjectStageCUST(ProjectID);
-      let arrayresult = [];
-      // console.log(result.length, ProjectID);
-      for (let index = 0; index < result.length; index++) {
-        const element = result[index];
-        const rate = await PercentagecalculationforSTage(
-          element.StageID,
-          ProjectID
-        );
-        arrayresult.push({
-          ...element,
-          rate: rate,
-        });
+      const result = await SELECTTablecompanySubProjectStageCUSTv2(ProjectID);
+   
+      // استيراد صلاحية المستخدم للمشروع
+
+      const userdata = await SELECTTableusersCompanyVerificationobject(
+        userSession.PhoneNumber
+      );
+
+      const  arrayUser = await BringUserinProject(
+        JSON.parse(userdata.Validity),
+        0,
+        ProjectID,
+        "validityProject"
+      );
+      let data = {
+        data: result,
+        Validity: isNaN(arrayUser?.ValidityProject)
+          ? arrayUser?.ValidityProject
+          : arrayUser,
+      };
+
+      res
+        .send({
+          success: true,
+          data: result,
+          Validity: isNaN(arrayUser?.ValidityProject)
+            ? arrayUser?.ValidityProject
+            : arrayUser,
+        })
+        .status(200);
+      await redis.set(key, JSON.stringify(data), "EX", 60 * 1000);
+    } catch (err) {
+      console.log(err);
+      res.send({ success: false }).status(400);
+    }
+  };
+};
+const BringStagev2 = () => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+
+      if (!userSession) {
+        return res.status(401).send("Invalid session");
       }
+      const {ProjectID,type,number} = req.query;
+      const key = `Stage:${userSession?.PhoneNumber}:${ProjectID}:${number}`;
+
+      const cached = await redis.get(key);
+      if (cached && type === "cache") {
+        const cachedData = JSON.parse(cached);
+        return res
+          .send({
+            success: true,
+            data: cachedData?.data,
+            Validity: cachedData?.Validity,
+          })
+          .status(200);
+      }
+
+      const result = await SELECTTablecompanySubProjectStageCUSTv2(ProjectID,`AND cu.StageCustID > ${number}  ORDER BY cu.StageCustID ASC LIMIT 8 `);
+   
       // استيراد صلاحية المستخدم للمشروع
 
       const userdata = await SELECTTableusersCompanyVerification(
@@ -363,9 +408,8 @@ const BringStage = () => {
         ProjectID,
         "validityProject"
       );
-
       let data = {
-        data: arrayresult,
+        data: result,
         Validity: isNaN(arrayUser?.ValidityProject)
           ? arrayUser?.ValidityProject
           : arrayUser,
@@ -374,7 +418,7 @@ const BringStage = () => {
       res
         .send({
           success: true,
-          data: arrayresult,
+          data: result,
           Validity: isNaN(arrayUser?.ValidityProject)
             ? arrayUser?.ValidityProject
             : arrayUser,
@@ -399,13 +443,7 @@ const BringStageOneObject = () => {
         ProjectID,
         StageID
       );
-      const rate = await PercentagecalculationforSTage(StageID, ProjectID);
 
-      // result?.push(rate);
-      result = {
-        ...result,
-        rate: rate,
-      };
 
       res.send({ success: true, data: result }).status(200);
     } catch (err) {
@@ -419,13 +457,14 @@ const BringStageOneObject = () => {
 const BringStagesub = () => {
   return async (req, res) => {
     try {
-      const { ProjectID, StageID ,type} = req.query;
+      const { ProjectID, StageID ,type,number} = req.query;
     const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      const key = `StageSub:${userSession?.PhoneNumber}:${ProjectID}:${StageID}`;
+      let numberv2 = number ?? 0
+      const key = `StageSub:${userSession?.PhoneNumber}:${ProjectID}:${StageID}:${numberv2}`;
 
       const cached = await redis.get(key);
       let typeCache = type || "update";
@@ -442,19 +481,17 @@ const BringStagesub = () => {
 
       const result = await SELECTTablecompanySubProjectStagesSub(
         ProjectID,
-        StageID
+        StageID,
+        'all',
+        "",
+        `AND StageSubID > ${numberv2}  ORDER BY StageSubID ASC LIMIT 5 `
       );
-      let resultProject = await SELECTTablecompanySubProjectStageCUSTONe(
-        ProjectID,
-        StageID
-      );
-      const rate = await PercentagecalculationforSTage(StageID, ProjectID);
-
-      // result?.push(rate);
-      resultProject = {
-        ...resultProject,
-        rate: rate,
-      };
+        const resultProject = await SELECTTablecompanySubProjectStageCUSTONe(
+          ProjectID,
+          StageID
+        );
+      
+ 
       
       res
         .send({ success: true, data: result, resultProject: resultProject })
@@ -1033,15 +1070,12 @@ const BringReportforProject = () => {
         ) {
           arrayDelay.push(index);
         }
-        const rate = await PercentagecalculationforSTage(
-          element.StageID,
-          ProjectID
-        );
-        if (rate === 0) {
-          arrayresult.push(rate);
+     
+        if (element?.rate === 0) {
+          arrayresult.push(element?.rate);
         }
-        if (rate === 100) {
-          arrayTrue.push(rate);
+        if (element?.rate === 100) {
+          arrayTrue.push(element?.rate);
         }
       }
       // اجمالي الهام
@@ -1208,12 +1242,7 @@ const BringTotalbalance = async (IDcompanySub, IDCompany, result) => {
 const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
   try {
     if (element?.id !== undefined) {
-      const dataProject = await SELECTSUMAmountandBring(
-        element.ProjectID !== undefined ? element.ProjectID : element.id
-      );
-      const rate = await PercentagecalculationforProject(
-        element.ProjectID !== undefined ? element.ProjectID : element.id
-      );
+
       const { daysDifference, Total } = await AccountCostProject(
         element.ProjectID !== undefined ? element.ProjectID : element.id,
         element.ConstCompany
@@ -1221,18 +1250,11 @@ const OpreationExtrinProject = async (element, IDCompany, IDcompanySub) => {
       const { TotalDay } = await Numberofdaysremainingfortheproject(
         element.ProjectID !== undefined ? element.ProjectID : element.id
       );
-      const countuser = await BringCountUserinProject(
-        IDCompany,
-        IDcompanySub,
-        element.ProjectID !== undefined ? element.ProjectID : element.id
-      );
+
       const data = {
         ...element,
         DaysUntiltoday: daysDifference,
         TotalcosttothCompany: Total,
-        cost: dataProject.RemainingBalance,
-        rate: rate,
-        countuser: countuser?.countuser,
         Daysremaining: TotalDay,
       };
       return data;
@@ -1834,4 +1856,6 @@ module.exports = {
   FilterProject,
   BringDataRequestsV2,
   BringCountRequstsV2,
+  BringCountUserinProject,
+  BringStagev2
 };

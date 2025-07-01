@@ -5,10 +5,59 @@ const db = require("./sqlite");
 const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub") =>{
   return new Promise((resolve, reject) => {
     try {
+
       db.serialize(function () {
         db.run(
           `UPDATE ${type} SET ${typename}=? WHERE ${typename}=?`,
           [toId,fromId],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
+const Updaterateandcost = (fromId,toId,type,typedata,typename="IDcompanySub") =>{
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE ${type} SET ${typedata}=? WHERE ${typename}=?`,
+          [toId,fromId],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
+const UpdaterateandcostStage = (rate,StageID,ProjectID) =>{
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE StagesCUST SET rate=? WHERE StageID=? AND ProjectID=?`,
+          [rate,StageID,ProjectID],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -670,11 +719,11 @@ const UPDATETableFinancialCustody = (type,id) => {
     console.log(error);
   }
 };
-const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id) => {
+const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id,DateDay) => {
   try {
     db.serialize(function () {
       db.run(
-        `UPDATE Prepare  SET Overtimeassignment=${Overtimeassignment} WHERE id =${id}`,
+        `UPDATE Prepare  SET Overtimeassignment='${Overtimeassignment}' WHERE id =${id} AND  strftime("%Y-%m-%d", Dateday) = '${DateDay}'`,
         function (err) {
           if (err) {
             console.log(err.message);
@@ -687,10 +736,10 @@ const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id) => {
   }
 };
 const UPDATETablecheckPreparation = (checktime,checkfile,id,type1="CheckIntime",type2="CheckInFile",Numberofworkinghours="") => {
-  try {
+  try {    
     db.serialize(function () {
       db.run(
-        `UPDATE Prepare  SET ${type1}='${checktime}',${type2}=${checkfile} ${Numberofworkinghours}  WHERE id =${id}`,
+        `UPDATE Prepare  SET ${type1}='${checktime}',${type2}='${checkfile}' ${Numberofworkinghours}  WHERE id =${id}`,
         function (err) {
           if (err) {
             console.log(err.message);
@@ -746,6 +795,8 @@ module.exports = {
   UPDATETablecompanySubProjectFinancial,
   UpdateTablecompanySubProjectapi,
   UpdateTablecompanyRegistration,
-  UPDATETablecompanySubProjectexpenseInvoiceNoapi
+  UPDATETablecompanySubProjectexpenseInvoiceNoapi,
+  Updaterateandcost,
+  UpdaterateandcostStage
   
 };

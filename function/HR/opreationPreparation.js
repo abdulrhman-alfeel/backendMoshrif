@@ -18,23 +18,21 @@ const  opreationPreparation =  () => {
         console.log("Invalid session");
       }
             // Assuming you have a function to insert HR data into the database
-      const {PhoneNumber,Overtimeassignment,DateDay,type,Checktime,CheckFile} = req.body; // Get HR data from request body
+      const {PhoneNumber,Overtimeassignment,DateDay,DateDayfalse,type,Checktime,CheckFile} = req.body; // Get HR data from request body
       // Insert the HR data into the database (this is a placeholder, replace with actual DB logic)
       if (String(type).includes("Check")) {
         // Handle CheckPreparation type
         const user = await SELECTTableusersCompanyonObject(PhoneNumber,'id');
-        console.log(DateDay);
         await CheckPreparation(userSession?.IDCompany, user.id, DateDay, Checktime, CheckFile, type);
       } else if (type === "Overtimeassignment") {
         // Handle Overtimeassignment type
-        const newvalidy = Object.keys(PhoneNumber);
-
-        for (let i = 0; i < newvalidy.length; i++) {
-
-          if (!newvalidy || typeof newvalidy[i] !== 'number') {
-            return res.status(400).send({ error: "Invalid user ID provided" });
+        for (let i = 0; i < DateDay.length; i++) {
+          await Overtimeassignmentopreation(userSession?.IDCompany, PhoneNumber, Overtimeassignment, DateDay[i]);
+        }
+        if(DateDayfalse && DateDayfalse.length > 0){
+          for (let i = 0; i < DateDayfalse.length; i++) {
+            await Overtimeassignmentopreation(userSession?.IDCompany, PhoneNumber, 'false', DateDayfalse[i]);
           }
-          await Overtimeassignmentopreation(userSession?.IDCompany, newvalidy[i], Overtimeassignment, DateDay);
         }
   
       } else {
@@ -55,11 +53,11 @@ const  opreationPreparation =  () => {
 const Overtimeassignmentopreation  = async (IDCompany,idUser,Overtimeassignment,DateDay) => {
   try {
     const resultuser = await SELECTTABLEHRuser(IDCompany,idUser,DateDay);
-    
     if(!resultuser || typeof resultuser !== 'object' || !resultuser?.id) {
-    await inserttableAvailabilityday([IDCompany,idUser,Overtimeassignment]); // Replace with actual DB logic
+    await inserttableAvailabilityday([IDCompany,idUser,Overtimeassignment,DateDay]); // Replace with actual DB logic
     }else{
-      await UPDATETableprepareOvertimeassignment([Overtimeassignment,resultuser.id]);
+
+      await UPDATETableprepareOvertimeassignment(Overtimeassignment,resultuser.id,DateDay);
     }
   } catch (error) {
     console.error(error);
@@ -74,12 +72,10 @@ const CheckPreparation = async (IDCompany,idUser,DateDay,Checktime,CheckFile,typ
     const check = type === 'CheckIn' ? "CheckIntime" : "CheckOUTtime";
     const checkfile = type === 'CheckIn' ? "CheckInFile" : "CheckoutFile";
     if(!resultuser || typeof resultuser !== 'object' || !resultuser?.id) {
-      
       await insertTablecheckPreparation([IDCompany,idUser,Checktime,JSON.stringify(CheckFile)],check,checkfile); // Replace with actual DB logic
     }else{
     let Numberofworkinghours = '';
     if(type === 'CheckOut' && resultuser.CheckIntime) {
-    
     const hoursBetween = calculateHoursBetween(resultuser.CheckIntime, Checktime);
     // console.log(`Hours between: ${hoursBetween.toFixed(2)}`); // Output: 9.50
     if (hoursBetween < 0) {
@@ -91,7 +87,7 @@ const CheckPreparation = async (IDCompany,idUser,DateDay,Checktime,CheckFile,typ
       Numberofworkinghours= `,Numberofworkinghours=${hoursBetween.toFixed(2)},Numberofovertimehours=${hoursBetween.toFixed(2) - 8}`
     }
   }
-
+    // const checkfileStr = JSON.stringify(CheckFile).replace(/'/g, "''"); // Escape single quotes
   await UPDATETablecheckPreparation(Checktime,JSON.stringify(CheckFile),resultuser.id,check,checkfile,Numberofworkinghours);
   }
   } catch (error) {

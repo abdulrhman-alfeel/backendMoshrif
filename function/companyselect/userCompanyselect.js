@@ -112,7 +112,6 @@ const LoginVerification =  () => {
       output,
       parseInt(PhoneNumber)
     );
-    // console.log(result, "user", output);
     if (result !== undefined) {
       // create accessToken from data users
       const user = {
@@ -323,7 +322,7 @@ const BringUserCompanyinv2 =  () => {
     let arrayvalidityuser = [];
     let bosss;
     let kindrequest = kind_request === 'all' ? `AND id > ${number}` : `AND userName LIKE '%${kind_request}%'`;
-    const LIMIT = Number(type) ? "" : "LIMIT 20";
+    const LIMIT = Number(type) ? "LIMIT 50" : "LIMIT 20";
     const result = await SELECTTableusersCompany(IDCompany,kindrequest,LIMIT);
     let CountID = 0;
     for (const element of result) {
@@ -378,96 +377,7 @@ const BringUserCompanyinv2 =  () => {
 
 
 
-// const BringUserCompanyinv2 = async (req, res) => {
-//   try {
-//     const { IDCompany, idBrinsh, type, select } = req.query;
-//     let checkGloble = {};
-//     let arrayvalidityuser = [];
-//     const result = await SELECTTableusersCompany(IDCompany);
 
-//     let CountID = 0;
-//     if (!Boolean(select)) {
-//       for (const element of result) {
-//         const validity = JSON.parse(element.Validity) || [];
-//         if (Number(type)) {
-//           const datanew = await BringUserinProject(
-//             validity,
-//             idBrinsh,
-//             type,
-//             element
-//           );
-
-//           if (Object.entries(datanew).length > 0) {
-//             arrayvalidityuser.push(datanew);
-//           }
-//         } else {
-//           const resultdata = validity.find((item) => {
-//             const isMatchingBranch =
-//               parseInt(item.idBrinsh) === parseInt(idBrinsh);
-//             return type === "justuser" || type === "Acceptingcovenant"
-//               ? isMatchingBranch
-//               : isMatchingBranch && item.job === type;
-//           });
-
-//           if (resultdata) {
-//             arrayvalidityuser.push({
-//               ...element,
-//               Validity: [],
-//             });
-//           }
-
-//           if (type !== "مدير الفرع") {
-//             const Admin = validity.find(
-//               (item) =>
-//                 parseInt(item.idBrinsh) === parseInt(idBrinsh) &&
-//                 item.job === "مدير الفرع"
-//             );
-
-//             if (Admin) {
-//               CountID = element.id;
-//             }
-//           }
-//         }
-//       }
-//     } else {
-//       if (select === "select_user_project") {
-//         const { checkGlobleuser, arrayvalidity } = await select_user_project(
-//           result,
-//           idBrinsh,
-//           type
-//         );
-//         checkGloble = checkGlobleuser;
-//         arrayvalidityuser = arrayvalidity;
-//       } else if (select === "select_user_bransh") {
-//         const { checkGlobleuser, arrayvalidity } =
-//           await AcceptingcovenantAndbransh(select, result, idBrinsh);
-//         checkGloble = checkGlobleuser;
-//         arrayvalidityuser = arrayvalidity;
-//       } else {
-//         const { checkGlobleuser, arrayvalidity } =
-//           await AcceptingcovenantAndbransh(select, result, idBrinsh);
-//         checkGloble = checkGlobleuser;
-//         arrayvalidityuser = arrayvalidity;
-//       }
-//     }
-
-//     const responseStatus = arrayvalidityuser.length > 0 ? 200 : 400;
-//     const responseMessage =
-//       arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
-
-//     res.status(responseStatus).send({
-//       success: responseMessage,
-//       data: arrayvalidityuser,
-//       checkGloble: checkGloble,
-//       idAdmin: CountID,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res
-//       .status(500)
-//       .send({ success: "error", message: "Internal Server Error" });
-//   }
-// };
 const select_user_project = async (result, idBrinsh, type) => {
   let checkGlobleuser = {};
   let arrayvalidity = [];

@@ -123,12 +123,13 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
   for (let index = 0; index < arrayBrinsh.length; index++) {
     const element = arrayBrinsh[index];
     const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
-    const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
+    // const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
     if (element !== undefined) {
       const ObjectBrinsh = {
         ...element,
         CountProject: Count[0]["COUNT(*)"],
-        Linkevaluation: Boolean(evaluation?.urlLink) ? evaluation?.urlLink : "",
+        // Linkevaluation: Boolean(evaluation?.urlLink) ? evaluation?.urlLink : "",
+        Linkevaluation: "",
       };
       ObjectData.push(ObjectBrinsh);
     }

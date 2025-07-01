@@ -1,11 +1,11 @@
 const db = require("../sqlite");
 
 //  مستخدمي الشركة
-const SELECTTableusersCompany = (id,type="",LIMIT="LIMIT 20") => {
+const SELECTTableusersCompany = (id,type="",LIMIT="LIMIT 20",kind="*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT * FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
+        `SELECT ${kind} FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
         [id],
         function (err, result) {
           if (err) {
@@ -63,6 +63,24 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
+        `SELECT * FROM usersCompany WHERE PhoneNumber=? AND Activation="true"`,
+        [PhoneNumber],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableusersCompanyVerificationobject = (PhoneNumber) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.get(
         `SELECT * FROM usersCompany WHERE PhoneNumber=? AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
@@ -258,11 +276,13 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
   });
 };
 
-const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="") => {
+
+const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="",LIMIT="LIMIT 10") => {
+
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m-%d",Dateday)=? AND pr.id > ? ${search} DESC LIMIT 10`,
+      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id > ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
         [IDCompany,Dateday,LastID],
         function (err, result) {
           if (err) {
@@ -312,6 +332,23 @@ const SELECTTABLEHRuser = async (IDCompany, idUser, DateDay) => {
     });
   });
 };
+const SELECTuserjustforHR = async (IDCompany, idUser) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT Dateday FROM Prepare WHERE IDCompany = ${IDCompany} AND idUser = ${idUser} AND Overtimeassignment="true"`,
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 module.exports = {
   SELECTTABLEHR,
@@ -327,5 +364,7 @@ module.exports = {
   SELECTTableusersCompanyVerificationIDUpdate,
   SELECTTableusersCompanyboss,
   SELECTusersCompany,
-  SELECTTABLEObjectHR
+  SELECTTABLEObjectHR,
+  SELECTuserjustforHR,
+  SELECTTableusersCompanyVerificationobject
 };

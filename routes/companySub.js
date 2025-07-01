@@ -25,6 +25,7 @@ const {
   BringStageTemplet,
   BringStageSubTemplet,
   BringStage,
+  BringStagev2,
   BringStagesub,
   BringStageNotes,
   BringExpense,
@@ -129,6 +130,7 @@ const companySub = ({ uploadQueue }) => {
   router.get("/BringStageTemplet", BringStageTemplet(uploadQueue));
   router.get("/BringStageSubTemplet", BringStageSubTemplet(uploadQueue));
   router.get("/BringStage", BringStage(uploadQueue));
+  router.get("/v2/BringStage", BringStagev2(uploadQueue));
   router.get("/BringStageOneObject", BringStageOneObject(uploadQueue));
   router.get("/BringStagesub", BringStagesub(uploadQueue));
   router.get("/BringStageNotes", BringStageNotes(uploadQueue));

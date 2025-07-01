@@ -113,52 +113,7 @@ font-size: 11px;
 border: 1px solid  #1b1818;
 font-weight: bold;
 }
-.footer{
-  /* height: 70px; */
-  display: flex;
-  flex-direction: row-reverse;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 100px;
-}
-.footerone{
-  font-size: 27px;
-  font-family: "Tajawal";
-  text-align: center;
-}
-h4{
-  font-family:'Tajawal';
-}
-h5 {
-  font-family:'Tajawal';
-  margin: auto;
-}
-p{
-  margin: 5px;
-  font-family:'Tajawal';
-}
-.number{
-  background-color: #447dee;
-  color:#fff
-}
-span{
-  height: 80%;
-  margin: auto;
-  margin-left: 10px;
-  text-align: center;
-}
-.header-clint{
-  background-color:hsl(220, 83%, 60%);
-  margin:10px;
-  margin-top: 30px;
-  color:#fff;
-  height: 33px;
-  /* padding: 1px; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+
 </Style>
 <body>
   <div class="page">
@@ -169,20 +124,17 @@ span{
 
     <div class="header-medium">
         <h1>شفق البنيان للمقاولات العامة</h1>
-        <h1 style="font-size: 17px;">الفرع:شمال الرياض</h1>
-        <h1 style="font-size: 17px;"> المشروع: فلة تجريبية</h1>
-        <h1 style="font-size: 17px;">كشف حساب حسب التصنيف</h1>
+        <h1 style="font-size: 17px;">كشف حضوري شهري</h1>
       </div>
     <div class="header-left">
-      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
       <h1>منصة مشرف</h1>
     </div>
   
   </div>
 
-<div class="header-clint">
-  <h4>إيرادات العميل</h4>
-</div>
+
+
 <table>
    <thead>
         <tr>
@@ -190,50 +142,16 @@ span{
             <tbody>
             <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
                 <tr>
-                
-                    <th scope="col" rowspan="3">البيان </th>
-                    <th scope="col" rowspan="2">تاريخ الإيراد </th>
-                    <th scope="col" rowspan="2">المبلغ</th>
+                    <th scope="col" rowspan="2" >Date </th>
+                    <th scope="col" rowspan="2">Check In </th>
+                    <th scope="col" rowspan="2">Check Out </th>
+                    <th scope="col" rowspan="2">Work Time</th>
+                    <th scope="col" rowspan="2">Down Time</th>
+                    <th scope="col" rowspan="2">Absent</th>
+                    <th scope="col" rowspan="2">Extra Overtime</th>
+                    <th scope="col" rowspan="2">Duty Locaton</th>
                     <!-- rowspan="2" هذه للدمج عمودي -->
                 </tr>
-                                               
-            </tbody>
-    </thead>
-    </tr>         
-    <tbody>
-      
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-  
-      <!-- Add more rows as needed -->
-    </tbody>
-  </table>
-<div class="header-clint">
-  <h4>مصروفات العميل</h4>
-</div>
-<table>
-   <thead>
-        <tr>
-    <thead>
-            <tbody>
-            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
-                <tr>
-                
-                    <th scope="col" rowspan="2" >الفاتورة </th>
-                    <th scope="col" rowspan="3">البيان </th>
-                    <th scope="col" rowspan="2">التاريخ </th>
-                    <th scope="col" rowspan="2">المبلغ</th>
-                    <!-- rowspan="2" هذه للدمج عمودي -->
-                </tr>
-                                               
             </tbody>
     </thead>
     </tr>         
@@ -244,22 +162,19 @@ span{
         <td></td>
         <td></td>
         <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td> <a href="#">موقع التحضير</a></td>
       </tr>
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
+  
   
       <!-- Add more rows as needed -->
     </tbody>
   </table>
 
 
-  <div class="header-clint">
-    <h4>مرتجعات العميل</h4>
-  </div>
+
   <table>
     <thead>
           <tr>
@@ -268,44 +183,32 @@ span{
               <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
                   <tr>
                   
-                      <th scope="col" rowspan="3">البيان </th>
-                      <th scope="col" rowspan="2">تاريخ المرتجع </th>
-                      <th scope="col" rowspan="2">المبلغ</th>
+                      <th >work Days:</th>
+                      <th style="background-color: #fff;color: #1b1818;">0.00</th>
+                      <th >Absent Days:  </th>
+                      <th style="background-color: #fff;color: #1b1818;">0</th>
+                      <!-- <th >Deducions: </th>
+                      <th style="background-color: #fff;color: #1b1818;">0</th> -->
                       <!-- rowspan="2" هذه للدمج عمودي -->
                   </tr>
+                  <tr>
+                      <!-- <th >Downtime:</th>
+                      <th style="background-color: #fff;color: #1b1818;">0.00</th> -->
+                      <th>Paid Overtime:  </th>
+                      <th style="background-color: #fff;color: #1b1818;">0.00</th>
+                      <th>Work Time: </th>
+                      <th style="background-color: #fff;color: #1b1818;">0.00</th>
+                  </tr>
+                  <!-- <tr>
+                      <th >Unpaid teaye:</th>
+                      <th style="background-color: #fff;color: #1b1818;">0.00</th>
+                  </tr> -->
               </tbody>
       </thead>
       </tr>         
-      <tbody>
-        
-        <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-    
-        <!-- Add more rows as needed -->
-      </tbody>
+ 
     </table>
-<div class="footer">
-  <div class="footerone">
-    <h6>اجمالي مبلغ الإيرادات</h6>
-    <h6 class="number">343423434323</h6>
-  </div>
-  <div class="footerone">
-    <h6>اجمالي مبلغ المصروفات</h6>
-    <h6 class="number">35345343344</h6>
-  </div>
-  <div class="footerone">
-    <h6>اجمالي مبلغ المرتجعات</h6>
-    <h6 class="number">2343445566</h6>
-  </div>
-</div>
+
 
         </div>
 </body>

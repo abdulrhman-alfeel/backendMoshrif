@@ -6,6 +6,7 @@ const {
   SELECTTablePostPublicSearch,
   SELECTTablePostPublicOneObject,
   SELECTTablecompanySub,
+  SELECTTablepostAll,
 } = require("../../sql/selected/selected");
 const { SELECTTableusersCompanyonObject, SELECTusersCompany } = require("../../sql/selected/selectuser");
 
@@ -79,33 +80,47 @@ const BringCommentinsert =  () => {
 // وظيفة جلب المنشورات لاعضاء الشركة 
 const BringPostforEmploaysCompany =async (id, formattedDate, PostID,user,where ="") =>{
   try{   
-    const result = await SELECTTablePostPublic(id, formattedDate, PostID,where);
-    let arrayPosts = [];
-    for (let index = 0; index < result.length; index++) {
-      const element = result[index];
-      const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
-        element.PostID,
-        "Comment"
-      );
-      const Likeuser = await SELECTTableLikesPostPublicotherroad(
-        element.PostID,
-        user
-      );
-      const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(element.PostID, "Likes");
-
-      let data = {
-        ...element,
-        Likeuser:
-          Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
-        Comment: Comment["COUNT(userName)"],
-        Likes: Likes["COUNT(userName)"],
-      };
-      arrayPosts.push(data);
-    }
+    const result = await SELECTTablepostAll(id, formattedDate, PostID,user,where);
+     // تحويل UserLiked من عدد إلى قيمة منطقية
+    const arrayPosts = result.map(element => ({
+      ...element,
+      Likeuser: element.UserLiked > 0,
+      Comment: element.CommentCount,
+      Likes: element.LikesCount,
+    }));
     return arrayPosts;
   }catch(error){console.log(error)}
 }
 
+
+// const BringPostforEmploaysCompany =async (id, formattedDate, PostID,user,where ="") =>{
+//   try{   
+//     const result = await SELECTTablePostPublic(id, formattedDate, PostID,where);
+//     let arrayPosts = [];
+//     for (let index = 0; index < result.length; index++) {
+//       const element = result[index];
+//       const Comment = await SELECTCOUNTCOMMENTANDLIKPOST(
+//         element.PostID,
+//         "Comment"
+//       );
+//       const Likeuser = await SELECTTableLikesPostPublicotherroad(
+//         element.PostID,
+//         user
+//       );
+//       const Likes = await SELECTCOUNTCOMMENTANDLIKPOST(element.PostID, "Likes");
+
+//       let data = {
+//         ...element,
+//         Likeuser:
+//           Likeuser !== false && Likeuser !== undefined ? true : Likeuser,
+//         Comment: Comment["COUNT(userName)"],
+//         Likes: Likes["COUNT(userName)"],
+//       };
+//       arrayPosts.push(data);
+//     }
+//     return arrayPosts;
+//   }catch(error){console.log(error)}
+// }
 
 
 const BringPostforUsersinCompany = async (PhoneNumber) => {

@@ -609,7 +609,7 @@ const inserttableAvailabilityday = (data) => {
   try {
     db.serialize(function () {
       db.run(
-        "INSERT INTO Prepare (IDCompany,idUser,Overtimeassignment) VALUES (?,?,?)",
+        "INSERT INTO Prepare (IDCompany,idUser,Overtimeassignment,DateDay) VALUES (?,?,?,?)",
         data,
         function (err) {
           if (err) {

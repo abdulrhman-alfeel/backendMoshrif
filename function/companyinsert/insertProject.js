@@ -22,6 +22,10 @@ const {
   SELECTTablecompanySubProjectStagesSubSingl,
   SELECTTablecompanySubProjectStageCUSTONe,
   SELECTTablecompanySubProjectexpenseObjectOne,
+  SELECTTablecompanybrinshStagesSubAll,
+  SELECTSUMAmountandBring,
+  SELECTProjectid,
+  SELECTStageid,
 } = require("../../sql/selected/selected");
 const { uploaddata, bucket } = require("../../bucketClooud");
 
@@ -29,10 +33,14 @@ const {
   UPDATETablecompanySubProjectStagesSub,
   UPDATEStopeProjectStageCUST,
   UPDATETablecompanySubProjectarchivesFolderinChildern,
+  UpdateMoveingDataBranshtoBrinsh,
+  Updaterateandcost,
+  UpdaterateandcostStage,
 } = require("../../sql/update");
 
 const {
   PercentagecalculationforSTage,
+  BringCountUserinProject,
 } = require("../companyselect/bringProject");
 const {
   Projectinsert,
@@ -344,6 +352,7 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
 };
 
 const xlsx = require("xlsx");
+const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
 
 const StageTempletXsl = async (type, kind = "all") => {
   try {
@@ -578,6 +587,7 @@ const InsertStage = (uploadQueue) => {
           ]);
 
           res.send({ success: "تمت العملية بنجاح" }).status(200);
+          await UpdaterateCost(ProjectID);
           await Stageinsert(ProjectID, 0, userSession.userName);
         } else {
           res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
@@ -619,6 +629,8 @@ const insertStageSub = (uploadQueue) => {
             StageSubName,
           ]);
           res.send({ success: "تمت العملية بنجاح" }).status(200);
+          await UpdaterateCost(ProjectID);
+          await UpdaterateStage(ProjectID, StageID)
           await StageSubinsert(ProjectID, StageID, userSession.userName);
         } else {
           res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
@@ -867,6 +879,10 @@ const EditNote = async (
 
 // وظيفة تقوم باضافة الانجازات او إلغائها
 
+
+
+// استيراد النسبئة المئوية للمشروع
+
 const AddORCanselAchievment = (uploadQueue) => {
   return async (req, res) => {
     try {
@@ -878,8 +894,18 @@ const AddORCanselAchievment = (uploadQueue) => {
       const StageSubID = req.body.StageSubID;
       const userName = userSession.userName;
       const PhoneNumber = userSession.PhoneNumber;
-      await opreationAddAchivevment(StageSubID, userName, PhoneNumber);
+      const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+        StageSubID
+      );
+      await opreationAddAchivevment(
+        StageSubID,
+        userName,
+        PhoneNumber,
+        bringData
+      );
       res.send({ success: "تمت العملية بنجاح" }).status(200);
+      await UpdaterateCost(bringData?.ProjectID);
+      await UpdaterateStage(bringData?.ProjectID,bringData?.StagHOMID)
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -908,12 +934,34 @@ const AddORCanselAchievmentarrayall = (uploadQueue) => {
         (item) => !selectAllarray.includes(item)
       );
       for (const element of arraycansle) {
-        await opreationAddAchivevment(element, userName, PhoneNumber);
+        const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+          element
+        );
+        await opreationAddAchivevment(
+          element,
+          userName,
+          PhoneNumber,
+          bringData
+        );
       }
       for (const element of selectAllarray) {
-        await opreationAddAchivevment(element, userName, PhoneNumber, "alladd");
+        const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+          element
+        );
+        await opreationAddAchivevment(
+          element,
+          userName,
+          PhoneNumber,
+          bringData,
+          "alladd"
+        );
       }
       res.send({ success: "تمت العملية بنجاح" }).status(200);
+      const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
+        selectAllarray[0]
+      );
+      await UpdaterateCost(bringData?.ProjectID);
+      await UpdaterateStage(bringData?.ProjectID,bringData?.StagHOMID);
     } catch (error) {
       res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
@@ -924,6 +972,7 @@ const opreationAddAchivevment = async (
   StageSubID,
   userName,
   PhoneNumber,
+  bringData,
   type = "single"
 ) => {
   try {
@@ -933,9 +982,7 @@ const opreationAddAchivevment = async (
       PhoneNumber: PhoneNumber,
       Date: new Date().toDateString(),
     };
-    const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
-      StageSubID
-    );
+
     if (type === "single") {
       await opreationpartoneAchivement(data, bringData, StageSubID, userName);
     } else {
@@ -1074,161 +1121,167 @@ const CloaseOROpenStage = async (Note, RecordedBy, StageID, ProjectID) => {
   }
 };
 // ادخال بيانات المصروفات
-const ExpenseInsert =  (uploadQueue) => {
+const ExpenseInsert = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const projectID = req.body.projectID;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    const ClassificationName = req.body.ClassificationName;
-    const Taxable = 15;
-
-    if (Boolean(Amount) && Boolean(Data)) {
-      const totaldataproject =
-        await SELECTTablecompanySubProjectexpenseObjectOne(projectID, "count");
-      const InvoiceNo = totaldataproject["COUNT(*)"] + 1;
-      // console.log(projectID);
-      let arrayImage = [];
-      if (req.files && req.files.length > 0) {
-        for (let index = 0; index < req.files.length; index++) {
-          const element = req.files[index];
-          await uploaddata(element);
-          deleteFileSingle(element.filename, "upload");
-
-          arrayImage.push(element.filename);
-        }
-      } else {
-        arrayImage = null;
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-      // console.log(arrayImage);
-      await insertTablecompanySubProjectexpense([
-        projectID,
-        Amount,
-        Data,
-        ClassificationName,
-        arrayImage !== null ? JSON.stringify(arrayImage) : null,
-        InvoiceNo,
-        Taxable,
-      ]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Financeinsertnotification(
-        projectID,
-        "مصروفات",
-        "إضافة",
-        userSession.userName
-      );
-    } else {
-      res.send({ success: "يجب اكمال البيانات" }).status(200);
+      const projectID = req.body.projectID;
+      const Amount = req.body.Amount;
+      const Data = req.body.Data;
+      const ClassificationName = req.body.ClassificationName;
+      const Taxable = 15;
+
+      if (Boolean(Amount) && Boolean(Data)) {
+        const totaldataproject =
+          await SELECTTablecompanySubProjectexpenseObjectOne(
+            projectID,
+            "count"
+          );
+        const InvoiceNo = totaldataproject["COUNT(*)"] + 1;
+        // console.log(projectID);
+        let arrayImage = [];
+        if (req.files && req.files.length > 0) {
+          for (let index = 0; index < req.files.length; index++) {
+            const element = req.files[index];
+            await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
+            arrayImage.push(element.filename);
+          }
+        } else {
+          arrayImage = null;
+        }
+        // console.log(arrayImage);
+        await insertTablecompanySubProjectexpense([
+          projectID,
+          Amount,
+          Data,
+          ClassificationName,
+          arrayImage !== null ? JSON.stringify(arrayImage) : null,
+          InvoiceNo,
+          Taxable,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Financeinsertnotification(
+          projectID,
+          "مصروفات",
+          "إضافة",
+          userSession.userName
+        );
+      } else {
+        res.send({ success: "يجب اكمال البيانات" }).status(200);
+      }
+      await UpdaterateCost(projectID, "cost");
+    } catch (err) {
+      console.log(err);
+      res.send({ success: "فشل تنفيذ العملية" }).status(401);
     }
-  } catch (err) {
-    console.log(err);
-    res.send({ success: "فشل تنفيذ العملية" }).status(401);
-  }
-}
+  };
 };
 
 // ادخال بييانات العهد
-const RevenuesInsert =  (uploadQueue) => {
+const RevenuesInsert = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const projectID = req.body.projectID;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    const Bank = req.body.Bank;
-    let arrayImage = [];
-    if (Boolean(Amount) && Boolean(Data)) {
-      if (req.files && req.files.length > 0) {
-        for (let index = 0; index < req.files.length; index++) {
-          const element = req.files[index];
-          await uploaddata(element);
-          deleteFileSingle(element.filename, "upload");
-
-          arrayImage.push(element.filename);
-        }
-      } else {
-        arrayImage = null;
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-      await insertTablecompanySubProjectREVENUE([
-        projectID,
-        Amount,
-        Data,
-        Bank,
-        arrayImage !== null ? JSON.stringify(arrayImage) : null,
-      ]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Financeinsertnotification(
-        projectID,
-        "عهد",
-        "إضافة",
-        userSession.userName
-      );
-    } else {
-      res.send({ success: "يحب اكمال البيانات" }).status(200);
+      const projectID = req.body.projectID;
+      const Amount = req.body.Amount;
+      const Data = req.body.Data;
+      const Bank = req.body.Bank;
+      let arrayImage = [];
+      if (Boolean(Amount) && Boolean(Data)) {
+        if (req.files && req.files.length > 0) {
+          for (let index = 0; index < req.files.length; index++) {
+            const element = req.files[index];
+            await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
+
+            arrayImage.push(element.filename);
+          }
+        } else {
+          arrayImage = null;
+        }
+        await insertTablecompanySubProjectREVENUE([
+          projectID,
+          Amount,
+          Data,
+          Bank,
+          arrayImage !== null ? JSON.stringify(arrayImage) : null,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Financeinsertnotification(
+          projectID,
+          "عهد",
+          "إضافة",
+          userSession.userName
+        );
+      } else {
+        res.send({ success: "يحب اكمال البيانات" }).status(200);
+      }
+      await UpdaterateCost(projectID, "cost");
+    } catch (err) {
+      console.log(err);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
-  } catch (err) {
-    console.log(err);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
-  }
-}
+  };
 };
 
 // ادخال بيانات المرتجع
-const ReturnsInsert =  (uploadQueue) => {
+const ReturnsInsert = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const projectID = req.body.projectID;
-    const Amount = req.body.Amount;
-    const Data = req.body.Data;
-    let arrayImage = [];
-    if (Boolean(Amount) && Boolean(Data)) {
-      if (req.files && req.files.length > 0) {
-        for (let index = 0; index < req.files.length; index++) {
-          const element = req.files[index];
-          await uploaddata(element);
-          deleteFileSingle(element.filename, "upload");
-
-          arrayImage.push(element.filename);
-        }
-      } else {
-        arrayImage = null;
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-      await insertTablecompanySubProjectReturned([
-        projectID,
-        Amount,
-        Data,
-        arrayImage !== null ? JSON.stringify(arrayImage) : null,
-      ]);
+      const projectID = req.body.projectID;
+      const Amount = req.body.Amount;
+      const Data = req.body.Data;
+      let arrayImage = [];
+      if (Boolean(Amount) && Boolean(Data)) {
+        if (req.files && req.files.length > 0) {
+          for (let index = 0; index < req.files.length; index++) {
+            const element = req.files[index];
+            await uploaddata(element);
+            deleteFileSingle(element.filename, "upload");
 
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Financeinsertnotification(
-        projectID,
-        "مرتجعات",
-        "إضافة",
-        userSession.userName
-      );
-    } else {
-      res.send({ success: "يجب اكمال البيانات" }).status(200);
+            arrayImage.push(element.filename);
+          }
+        } else {
+          arrayImage = null;
+        }
+        await insertTablecompanySubProjectReturned([
+          projectID,
+          Amount,
+          Data,
+          arrayImage !== null ? JSON.stringify(arrayImage) : null,
+        ]);
+
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Financeinsertnotification(
+          projectID,
+          "مرتجعات",
+          "إضافة",
+          userSession.userName
+        );
+      } else {
+        res.send({ success: "يجب اكمال البيانات" }).status(200);
+      }
+      await UpdaterateCost(projectID, "cost");
+    } catch (err) {
+      console.log(err);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
-  } catch (err) {
-    console.log(err);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
-  }
-}
+  };
 };
 
 // ************************************************************************************************
@@ -1237,69 +1290,72 @@ const ReturnsInsert =  (uploadQueue) => {
 
 // اضافة مجلد جديد في ارشيف ملف المشروع
 
-const AddFolderArchivesnew =  (uploadQueue) => {
+const AddFolderArchivesnew = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const ProjectID = req.body.ProjectID;
-    const FolderName = req.body.FolderName;
-    if (Boolean(FolderName)) {
-      await insertTablecompanySubProjectarchivesFolder([ProjectID, FolderName]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-    } else {
-      res.send({ success: "يجب ادخال اسم المجلد" }).status(200);
+    try {
+      const ProjectID = req.body.ProjectID;
+      const FolderName = req.body.FolderName;
+      if (Boolean(FolderName)) {
+        await insertTablecompanySubProjectarchivesFolder([
+          ProjectID,
+          FolderName,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+      } else {
+        res.send({ success: "يجب ادخال اسم المجلد" }).status(200);
+      }
+    } catch (err) {
+      console.log(err);
+      res.send({ success: "فشل في تنفيذ العملية " }).status(400);
     }
-  } catch (err) {
-    console.log(err);
-    res.send({ success: "فشل في تنفيذ العملية " }).status(400);
-  }
-}
+  };
 };
 
 //  إضافة ملف فرعي داخل الملف الرئيسي
-const AddfileinFolderHomeinArchive =  (uploadQueue) => {
+const AddfileinFolderHomeinArchive = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const ArchivesID = req.body.ArchivesID;
-    const idsub = req.body.id;
-    let type = req.body.type;
-    let name;
-    let size = 0;
-    if (type === "folder") {
-      name = req.body.name;
-    } else {
-      await uploaddata(req.file);
-      name = req.file?.filename;
-      type = req.file?.mimetype;
-      size = req.file?.size;
-    }
-    if (Boolean(name)) {
-      const children = await SELECTTablecompanySubProjectarchivesotherroad(
-        ArchivesID
-      );
-      let Children =
-        children.children !== null ? JSON.parse(children.children) : [];
+    try {
+      const ArchivesID = req.body.ArchivesID;
+      const idsub = req.body.id;
+      let type = req.body.type;
+      let name;
+      let size = 0;
+      if (type === "folder") {
+        name = req.body.name;
+      } else {
+        await uploaddata(req.file);
+        name = req.file?.filename;
+        type = req.file?.mimetype;
+        size = req.file?.size;
+      }
+      if (Boolean(name)) {
+        const children = await SELECTTablecompanySubProjectarchivesotherroad(
+          ArchivesID
+        );
+        let Children =
+          children.children !== null ? JSON.parse(children.children) : [];
 
-      const childrenNew = await handlerOpreation(
-        name,
-        type,
-        size,
-        Children,
-        idsub,
-        ArchivesID
-      );
-      await UPDATETablecompanySubProjectarchivesFolderinChildern([
-        JSON.stringify(childrenNew),
-        ArchivesID,
-      ]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-    } else {
-      res.send({ success: "يجب ادخال اسم الملف" }).status(200);
+        const childrenNew = await handlerOpreation(
+          name,
+          type,
+          size,
+          Children,
+          idsub,
+          ArchivesID
+        );
+        await UPDATETablecompanySubProjectarchivesFolderinChildern([
+          JSON.stringify(childrenNew),
+          ArchivesID,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+      } else {
+        res.send({ success: "يجب ادخال اسم الملف" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية" }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل تنفيذ العملية" }).status(401);
-  }
-}
+  };
 };
 
 const handlerOpreation = async (
@@ -1395,52 +1451,52 @@ const CreatChild = (updates, children, idsub) => {
 // ******************************************************************
 // ********************* الطلبيات **********************************
 
-const InsertDatainTableRequests =  (uploadQueue) => {
+const InsertDatainTableRequests = (uploadQueue) => {
   return async (req, res) => {
-  try {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    const ProjectID = req.body.ProjectID;
-    const Type = req.body.Type;
-    const Data = req.body.Data;
-    const user = req.body.user;
-    let arrayImage = [];
-    if (Type !== "تصنيف الإضافة" && Boolean(Type) && Boolean(Data)) {
-      if (req.files && req.files.length > 0) {
-        for (let index = 0; index < req.files.length; index++) {
-          const element = req.files[index];
-          await uploaddata(element);
-          arrayImage.push(element.filename);
-        }
-      } else {
-        arrayImage = null;
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
       }
-      await insertTablecompanySubProjectRequestsForcreatOrder([
-        ProjectID,
-        Type,
-        Data,
-        user,
-        arrayImage !== null ? JSON.stringify(arrayImage) : null,
-        `${new Date()}`,
-      ]);
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
-      await Financeinsertnotification(
-        ProjectID,
-        "طلب",
-        "إضافة",
-        userSession.userName
-      );
-    } else {
-      res.send({ success: "يجب ادخال التصنيف" }).status(401);
+      const ProjectID = req.body.ProjectID;
+      const Type = req.body.Type;
+      const Data = req.body.Data;
+      const user = req.body.user;
+      let arrayImage = [];
+      if (Type !== "تصنيف الإضافة" && Boolean(Type) && Boolean(Data)) {
+        if (req.files && req.files.length > 0) {
+          for (let index = 0; index < req.files.length; index++) {
+            const element = req.files[index];
+            await uploaddata(element);
+            arrayImage.push(element.filename);
+          }
+        } else {
+          arrayImage = null;
+        }
+        await insertTablecompanySubProjectRequestsForcreatOrder([
+          ProjectID,
+          Type,
+          Data,
+          user,
+          arrayImage !== null ? JSON.stringify(arrayImage) : null,
+          `${new Date()}`,
+        ]);
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+        await Financeinsertnotification(
+          ProjectID,
+          "طلب",
+          "إضافة",
+          userSession.userName
+        );
+      } else {
+        res.send({ success: "يجب ادخال التصنيف" }).status(401);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
-  } catch (error) {
-    console.log(error);
-    res.send({ success: "فشل في تنفيذ العملية" }).status(401);
-  }
-}
+  };
 };
 
 //  updatechild folder

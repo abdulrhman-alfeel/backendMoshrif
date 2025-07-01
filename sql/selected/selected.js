@@ -296,7 +296,8 @@ const SELECTTablecompanySubProject = (
   IDfinlty,
   kind = "all",
   Disabled = "true",
-  type = ""
+  type = "",
+  Limit='LIMIT 2'
 ) => {
   return new Promise((resolve, reject) => {
     let stringSql =
@@ -317,7 +318,10 @@ FROM (
         EX.Cost AS ConstCompany,
         Li.urlLink AS Linkevaluation,
         ca.Disabled,
-        ca.Referencenumber 
+        ca.Referencenumber, 
+        ca.rate,
+        ca.cost,
+        ca.countuser
     FROM companySubprojects ca
     LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub
     LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub
@@ -326,7 +330,7 @@ FROM (
         ca.IDcompanySub = ? AND (ca.id) > ?   AND (ca.Disabled) =?
           ${type}
     ORDER BY ca.id ASC
-    LIMIT 5
+    ${Limit}
 ) AS subquery
 ORDER BY id ASC, datetime(Contractsigningdate) ASC`
         : kind === "difference"
@@ -334,7 +338,7 @@ ORDER BY id ASC, datetime(Contractsigningdate) ASC`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=?  `
         : kind === "forchatAdmin"
-        ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE RE.NumberCompany=? AND (ca.id) > ?   AND (ca.Disabled) =?      ORDER BY ca.id ASC
+        ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE RE.NumberCompany=? AND (ca.id) > ?   AND (ca.Disabled) =?   ${type}    ORDER BY ca.id ASC
     LIMIT 10`
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=? AND Disabled =?`;
 
@@ -447,6 +451,60 @@ const SELECTProjectStartdateapis = (id, idSub) => {
       db.get(
         `SELECT ProjectStartdate,Contractsigningdate,Nameproject,numberBuilding,id,IDcompanySub FROM companySubprojects   WHERE Referencenumber=? AND IDcompanySub=? `,
         [id, idSub],
+        function (err, result) {
+          if (err) {
+            // console.error(err.message);
+            // reject(err);
+            resolve(false);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTProjectid = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT id FROM companySubprojects  `,
+        function (err, result) {
+          if (err) {
+            // console.error(err.message);
+            // reject(err);
+            resolve(false);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTStageid = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT ProjectID, StageID FROM StagesCUST  `,
+        function (err, result) {
+          if (err) {
+            // console.error(err.message);
+            // reject(err);
+            resolve(false);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTStageSubid = (type="StagesCUST",data="ProjectID, StageID" , WHERE="StageID=?") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT ${data} FROM ${type} WHERE  ${WHERE} `,
         function (err, result) {
           if (err) {
             // console.error(err.message);
@@ -603,6 +661,27 @@ const SELECTTablecompanySubProjectStageCUST = (
     });
   });
 };
+const SELECTTablecompanySubProjectStageCUSTv2 = (
+  id,
+  kind = "",
+
+) => {
+  let stringSql = `SELECT cu.*  FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE ProjectID=?  ${kind}`
+    
+  let data = [id] ;
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(stringSql, data, function (err, result) {
+        if (err) {
+          reject(err);
+          // console.error(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
 
 // جلب كائن واحد من المراحل
 const SELECTTablecompanySubProjectStageCUSTONe = (
@@ -613,7 +692,7 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
 ) => {
   const stringSql =
     kind === "all"
-      ? `SELECT pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE  cu.ProjectID=? AND cu.StageID=? `
+      ? `SELECT cu.rate,pr.cost, pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE  cu.ProjectID=? AND cu.StageID=? `
       : kind === "notifcation"
       ? `SELECT max(cu.StageID) AS StageID,pr.Nameproject,pr.IDcompanySub, cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed ,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE cu.StageID != 'A1' AND ${type} `
       : `SELECT Done,Days FROM StagesCUST WHERE ProjectID=? AND Done = "true"`;
@@ -790,12 +869,13 @@ const SELECTTablecompanySubProjectStagesSub = (
   ProjectID,
   StageID,
   kind = "all",
-  type = "su.StagHOMID=? AND su.ProjectID=?"
+  type = "su.StagHOMID=? AND su.ProjectID=?",
+  where=""
 ) => {
   return new Promise((resolve, reject) => {
     let stringSql =
       kind === "all"
-        ? `SELECT * FROM StagesSub WHERE StagHOMID=? AND ProjectID=?`
+        ? `SELECT * FROM StagesSub WHERE StagHOMID=? AND ProjectID=? ${where}`
         : kind === "accomplished"
         ? `SELECT closingoperations FROM StagesSub WHERE Done="true" AND ProjectID=?`
         : kind === "notification"
@@ -1338,15 +1418,15 @@ const SELECTallDatafromTableRequestsV2 = async (
     db.serialize(async () => {
       db.all(
         type === "part"
-          ? "SELECT * FROM Requests WHERE  ProjectID=? AND Type LIKE '%" +
+          ? "SELECT re.* FROM Requests re  WHERE  re.ProjectID=? AND re.Type LIKE '%" +
               Type +
-              "%'  AND Done= '" +
+              "%'  AND re.Done= '" +
               Done +
-              "' AND RequestsID " +
+              "' AND re.RequestsID " +
               plus +
               " '" +
               parseInt(lastID) +
-              "' ORDER BY RequestsID DESC,datetime(Date) DESC LIMIT 10"
+              "' ORDER BY re.RequestsID DESC,datetime(re.Date) DESC LIMIT 10"
           : "SELECT  RequestsID,Nameproject,ProjectID,Type,Data,Date,Done,InsertBy,Implementedby,Image,checkorderout,DateTime FROM Requests re LEFT JOIN companySubprojects PR ON PR.id = re.ProjectID WHERE PR.IDcompanySub=? AND Type LIKE '%" +
               Type +
               "%'  AND Done='" +
@@ -1770,6 +1850,8 @@ const SELECTTableCommentPostPublic = (PostId, count) => {
     });
   });
 };
+
+
 //  جلب معرف التعليق
 const SELECTTableCommentID = (PostId) => {
   return new Promise((resolve, reject) => {
@@ -1789,6 +1871,7 @@ const SELECTTableCommentID = (PostId) => {
     });
   });
 };
+
 
 //  جلب الاعجابات المنشورات للصفحة العامة
 const SELECTTableLikesPostPublic = (PostId) => {
@@ -1827,6 +1910,37 @@ const SELECTTableLikesPostPublicotherroad = (PostId, userName) => {
         }
       );
     });
+  });
+};
+const SELECTTablepostAll = (id, formattedDate, PostID, user, where = "") => {
+  return new Promise((resolve, reject) => {
+      let plus = parseInt(PostID) === 0 ? ">" : "<";
+      db.serialize(function () {
+        db.all(
+          `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, 
+                  EX.NameCompany, RE.NameSub, PR.Nameproject,
+                  (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
+                  (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
+                  (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS UserLiked
+            FROM Post ca
+           LEFT JOIN company EX ON EX.id = ca.CommpanyID
+           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+           WHERE ca.CommpanyID = ?
+           AND Date(ca.Date) = ? AND (ca.PostID) ${plus} ? ${where}
+           ORDER BY ca.PostID ASC) AS subquery
+           ORDER BY PostID DESC, datetime(Date) DESC LIMIT 5`,
+          [user, id, formattedDate, PostID],
+          function (err, result) {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+
   });
 };
 //
@@ -2388,4 +2502,9 @@ module.exports = {
   SELECTTablearchivesNamefolder,
   SELECTTableBranchdeletionRequests,
   SELECTTABLEcompanyProjectall,
+  SELECTProjectid,
+  SELECTStageid,
+  SELECTTablecompanySubProjectStageCUSTv2,
+  SELECTStageSubid,
+  SELECTTablepostAll
 };

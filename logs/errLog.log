@@ -1,1 +1,8 @@
 20250519	13:34:27	f11ec23b-3c31-4ca3-aba6-6a5fea5739dd	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/user/BringUserCompanyinv2?IDCompany=1&idBrinsh=1&type=1&select=%22select_user_project%22	undefined
+20250630	14:42:30	fea0b1bd-0022-436c-a0d8-0d837796a752	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\mushrf-build\.next\server\app\index.html'	GET	/	undefined
+20250630	14:50:04	bb51ef87-b3e1-49e8-b164-2981f986965a	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\mushrf-build\next\server\app\index.html'	GET	/	undefined
+20250630	14:51:34	97d2dab6-2640-4253-b4f7-534e0c0e5f96	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\mushrf-build\next\server\app\index.html\index.html'	GET	/	undefined
+20250701	10:57:02	6ecc5561-0307-4d3a-8d02-eabd89de008c	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
+20250701	10:57:03	4a997223-b6ac-4bdf-85f1-49bed72ad7c1	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
+20250701	10:57:14	c285f235-f096-48e5-972b-0e165e874013	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
+20250701	10:57:21	031124b8-7190-4da4-a692-027ab2449d43	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined

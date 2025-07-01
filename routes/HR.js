@@ -1,7 +1,7 @@
 const express = require('express');
 const { verifyJWT } = require('../middleware/jwt');
 const { opreationPreparation } = require('../function/HR/opreationPreparation');
-const { BringHR, SearchHR, Userverification } = require('../function/HR/bringHR');
+const { BringHR, SearchHR, Userverification, BringUsersjustforHR, createstatementPdf } = require('../function/HR/bringHR');
 
 
 
@@ -16,7 +16,9 @@ const HR = ({ uploadQueue }) => {
   // Example route for updating HR data
   router.get('/BringHR',BringHR(uploadQueue));
   router.get('/SearchHR',SearchHR(uploadQueue));
+  router.get('/BringuserHR',BringUsersjustforHR(uploadQueue));
   router.get('/Userverification',Userverification(uploadQueue));
+  router.get('/HRpdf',createstatementPdf(uploadQueue));
 
   return router;
 }

@@ -79,7 +79,7 @@ async function convertHtmlToPdf(htmlContent, outputPath) {
         // &&
         // (imgLogopm && imgLogopm.complete && imgLogopm.naturalHeight !== 0);
       },
-      { timeout: 2000 }
+      { timeout: 3000 }
     ); // Wait for up to 10 seconds
 
 

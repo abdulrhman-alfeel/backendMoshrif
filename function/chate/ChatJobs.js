@@ -59,10 +59,10 @@ const filterProjectforaddinsertArray = (PhoneNumber, IDfinlty = 0) => {
   try {
     return new Promise(async (resolve, reject) => {
       const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
+      let result = [];
 
       let validity =
         Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
-      let arrayData = [];
       if (Datausere.job !== "Admin") {
         await Promise.all(
           validity.map(async (element) => {
@@ -73,23 +73,24 @@ const filterProjectforaddinsertArray = (PhoneNumber, IDfinlty = 0) => {
             result = await SELECTTablecompanySubProject(
               element.idBrinsh,
               IDfinlty,
-              "all",
+              "forchatAdmin",
               "true",
-              typeproject
+              typeproject,
+              "LIMIT 10"
             );
           })
         );
-
-        resolve(arrayData);
       } else {
-        const result = await SELECTTablecompanySubProject(
+        result = await SELECTTablecompanySubProject(
           Datausere?.IDCompany,
           IDfinlty,
-          "forchatAdmin"
+          "forchatAdmin",
+          "true",
+          "",
+          "LIMIT 10"
         );
-
-        resolve(result);
       }
+      resolve(result);
     });
   } catch (error) {
     console.log(error);

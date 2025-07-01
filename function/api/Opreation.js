@@ -24,6 +24,7 @@ const { OpreationProjectInsertv2 } = require("../companyinsert/insertProject");
 const {
   RearrangeStageID,
   Switchbetweendeleteorupdatefiles,
+  UpdaterateCost,
 } = require("../companyinsert/UpdateProject");
 const {
   Projectinsert,
@@ -211,6 +212,7 @@ const FinancialOperationsDatainsert =  () => {
             success: "تم اضافة البيانات  بنجاح",
           })
           .status(200);
+          await UpdaterateCost(projectID,'cost');
       } else {
         res
           .send({
@@ -263,6 +265,7 @@ const OpreationExpensedatainsert = async (
       Taxables,
       Date,
     ]);
+    
   }
 };
 
@@ -332,6 +335,7 @@ const FinancialOperationsDataUpdate =  () => {
         success: "تم تعديل  بنجاح",
       })
       .status(200);
+      await UpdaterateCost(Referencenumber,'cost',"Referencenumber");
   } catch (error) {
     console.log(error);
     res
@@ -572,6 +576,7 @@ const DeleteOperationsFinancial =  () => {
       Referencenumber
     );
     res.status(200).send({ success: "تمت العملية بنجاح" });
+  await UpdaterateCost(Referencenumber,'cost',"Referencenumber");
   } catch (error) {
     return res.status(500).json({ error: "Something went wrong" });
   }

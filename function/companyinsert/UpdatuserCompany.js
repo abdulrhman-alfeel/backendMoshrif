@@ -15,6 +15,7 @@ const {
   UpdateTableuserComppany,
   UpdateTableLoginActivatytoken,
 } = require("../../sql/update");
+const { UpdaterateCost } = require("./insertProject");
 // const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
 
 const userCompanyUpdat = () => {
@@ -22,16 +23,11 @@ const userCompanyUpdat = () => {
     try {
       const userSession = req.session.user;
       if (!userSession) {
-        res.status(401).send("Invalid session")}
+        res.status(401).send("Invalid session");
+      }
       // console.log(req.body);
-      const {
-        userName,
-        IDNumber,
-        PhoneNumber,
-        jobdiscrption,
-        job,
-        id,
-      } = req.body;
+      const { userName, IDNumber, PhoneNumber, jobdiscrption, job, id } =
+        req.body;
       let number = String(PhoneNumber);
 
       if (number.startsWith(0)) {
@@ -41,7 +37,7 @@ const userCompanyUpdat = () => {
         await SELECTTableusersCompanyVerificationIDUpdate(number, id);
       const findRegistrioncompany =
         await SelectVerifycompanyexistencePhonenumber(number);
-      
+
       if (
         verificationFinduser.length <= 0 &&
         findRegistrioncompany === undefined
@@ -131,6 +127,7 @@ const UpdatUserCompanyinBrinshV2 = () => {
       }
       // console.log(req.body);
       const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
+
       // const result = await SELECTTableusersCompany(IDCompany);
       let arraykind = ["Acceptingcovenant", "user", "justuser"];
       if (arraykind.includes(kind)) {
@@ -154,6 +151,9 @@ const UpdatUserCompanyinBrinshV2 = () => {
       // console.log(result,'updatusercompanyinbrinsh')
       // }
       res.send({ success: "successfuly" }).status(200);
+      if (Number(type)) {
+        await UpdaterateCost(type, "countuser", "id", userSession?.IDCompany);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -277,8 +277,6 @@ const Updatchackglobluserinbrinsh = async (
   checkGlobleold,
   userName
 ) => {
-  // console.log(checkGloblenew, checkGlobleold, "mmmmmmmm");
-
   const deletedkeys = Object.keys(checkGlobleold).filter(
     (key) => !Object.keys(checkGloblenew).includes(key)
   );
@@ -442,7 +440,7 @@ const Updatchackglobluserinbrinshv2 = async (
   // const newvalidy = Object.keys(checkGloblenew).filter(
   //   (key) => !Object.keys(checkGlobleold).includes(key)
   // );
-  const newvalidy = Object.keys(checkGloblenew);
+  const newvalidy = Object.values(checkGloblenew);
   //  المضاف الجديد
 
   if (deletedkeys.length > 0) {
@@ -459,9 +457,9 @@ const Updatchackglobluserinbrinshv2 = async (
       );
     }
   }
-
   for (let index = 0; index < newvalidy.length; index++) {
     const element = newvalidy[index];
+
     await opreationAddvalidityuserBrinshorCovenant(type, idBrinsh, element);
   }
 };
@@ -564,7 +562,6 @@ const opreationAddvalidityuserBrinshorCovenant = async (
       let validity = pic?.Validity?.length > 0 ? JSON.parse(pic?.Validity) : [];
       let Booleans = false;
       let arrayBrinshs;
-      // console.log(type);
 
       try {
         if (Number(type)) {

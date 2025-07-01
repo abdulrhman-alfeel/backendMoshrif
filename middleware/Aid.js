@@ -46,9 +46,15 @@ function calculateHoursBetween(startTime, endTime) {
     
     return diffHours;
 }
+
+const dates = (time) => (String(time).length > 1 ? time : `0${time}`);
+const DateDay = (date) =>  `${date.getUTCFullYear()}-${dates(
+        date.getUTCMonth() + 1
+      )}-${dates(date.getUTCDate())}`;
+
 // Example usage:
 // const hoursBetween = calculateHoursBetween('2023-01-01T08:00:00', '2023-01-01T17:30:00');
 // console.log(`Hours between: ${hoursBetween.toFixed(2)}`); // Output: 9.50
 
 
-module.exports = { convertArabicToEnglish, verificationfromdata,calculateHoursBetween };
+module.exports = {dates,DateDay, convertArabicToEnglish, verificationfromdata,calculateHoursBetween };

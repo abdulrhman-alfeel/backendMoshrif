@@ -158,6 +158,22 @@ const CreateTable = () => {
   // db.run(`
   //   ALTER TABLE Returns
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+
+
+  // db.run(`
+  //   ALTER TABLE companySubprojects
+  //   ADD COLUMN cost INTEGER NULL `)
+  // db.run(`
+  //   ALTER TABLE companySubprojects
+  //   ADD COLUMN rate INTEGER NULL `)
+  // db.run(`
+  //   ALTER TABLE companySubprojects
+  //   ADD COLUMN countuser INTEGER NULL  `)
+  // db.run(`
+  //   ALTER TABLE StagesCUST
+  //   ADD COLUMN rate DATE NULL ;`  )
+
+
   // db.run(`
   //   ALTER TABLE Requests
   //   ADD COLUMN DateTime DATE NULL ;`  )
