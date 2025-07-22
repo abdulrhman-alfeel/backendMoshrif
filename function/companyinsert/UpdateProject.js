@@ -27,6 +27,7 @@ const {
   SELECTStageid,
   SELECTTablecompanybrinshStagesSubAll,
   SELECTStageSubid,
+  SELECTStageallid,
 } = require("../../sql/selected/selected");
 const {
   UpdateTablecompanySubProject,
@@ -51,13 +52,14 @@ const {
   RearrangeStageProject,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const { Stage, StageTempletXsl, AccountDays } = require("./insertProject");
-
 const { deleteFileSingle } = require("../../middleware/Fsfile");
 const {
   BringCountUserinProject,
   PercentagecalculationforSTage,
 } = require("../companyselect/bringProject");
+
+const { StageTempletXsl,Stage,AccountDays } = require("../../middleware/Aid");
+
 
 const UpdaterateCost = async (
   id,
@@ -88,7 +90,7 @@ const addallcostandrate = async () => {
   const result = await SELECTProjectid();
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
-    console.log(element.id);
+    // console.log(element.id);
     await UpdaterateCost(element.id);
     await UpdaterateCost(element.id, "cost");
     await UpdaterateCost(element.id, "countuser", "id", 1);
@@ -99,12 +101,28 @@ const addrateallinstage = async () => {
   const result = await SELECTStageid();
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
-    console.log(element.ProjectID, element.StageID);
+    // console.log(element.ProjectID, element.StageID);
     await UpdaterateStage(element.ProjectID, element.StageID);
   }
 };
-addallcostandrate()
-addrateallinstage();
+
+const updatelastproject = async () => {
+  await Updaterateandcost(149, 0, "companySubprojects", 'rate', 'id');
+  await Updaterateandcost(149, 0, "companySubprojects", 'countuser', 'id');
+
+  const result = await SELECTStageallid(149);
+  for (let index = 0; index < result.length; index++) {
+    const element = result[index];
+    
+    await Updaterateandcost(element.StageCustID,0, "StagesCUST", 'rate', 'StageCustID');
+  }
+
+};
+// updatelastproject();
+
+
+// addallcostandrate()
+// addrateallinstage();
 
 const PercentagecalculationforProject = async (id) => {
   try {
@@ -205,6 +223,7 @@ const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
       const element = DataSTage[index];
 
       const dataSimble = await StageTempletXsl(element.StageID, "update");
+      console.log(dataSimble, "dataSimble");
       let Days = await AccountDays(numberBuilding, dataSimble.Days);
 
       tables.push({
@@ -235,13 +254,10 @@ const DeletProjectwithDependencies = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      if (userSession.PhoneNumber !== "502464530") {
         const id = req.query.idProject;
         await opreationDeletProject(id);
         res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
-      } else {
-        res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-      }
+   
     } catch (error) {
       console.log(error);
       res.send({ success: "فشلت عملية حذف الرسالة" }).status(200);
@@ -279,6 +295,7 @@ const UpdateStartdate = (uploadQueue) => {
       dataItem = await SELECTTablecompanySubProjectStageCUST(ProjectID);
       await DeleteTablecompanySubProjectphase(ProjectID);
       await Stage(dataItem, ProjectStartdate, "update");
+
       res.send({ success: "تمت العملية بنجاح" }).status(200);
     } catch (error) {
       console.log(error);
@@ -406,7 +423,6 @@ const UpdateDataStage = (uploadQueue) => {
         }
         const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
         await DeleteTablecompanySubProjectphase(ProjectID);
-        // console.log(table)
         await Stage(table, date, "update");
       }
 
@@ -429,7 +445,6 @@ const DeleteStageHome = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      if (userSession.PhoneNumber !== "502464530") {
         const { ProjectID, StageID } = req.query;
         await DeleteTablecompanyStageHome(ProjectID, StageID);
         await DeleteTablecompanyStageSub(ProjectID, StageID);
@@ -459,9 +474,7 @@ const DeleteStageHome = (uploadQueue) => {
         res.send({ success: "نجح تنيفذ العملية" }).status(200);
         await UpdaterateCost(ProjectID);
         await UpdaterateStage(ProjectID, StageID);
-      } else {
-        res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-      }
+   
     } catch (error) {
       console.log(error);
     }
@@ -490,7 +503,6 @@ const DeleteStageSub = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      if (userSession.PhoneNumber !== "502464530") {
         const StageSubID = req.query.StageSubID;
         await DeleteTablecompanySubProjectall(
           "StagesSub",
@@ -505,9 +517,7 @@ const DeleteStageSub = (uploadQueue) => {
         );
         await UpdaterateCost(result?.ProjectID);
         await UpdaterateStage(result?.ProjectID, result?.StagHOMID);
-      } else {
-        res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-      }
+     
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية" }).status(501);
@@ -924,8 +934,7 @@ const DeleteFinance = (uploadQueue) => {
 
       const data = await SELECTTablecompany(userSession?.IDCompany);
       if (
-        data.DisabledFinance === "true" &&
-        userSession.PhoneNumber !== "502464530"
+        data.DisabledFinance === "true"
       ) {
         const { id, type } = req.query;
         let nametype;
@@ -1083,7 +1092,6 @@ const DeleteRequests = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      if (userSession.PhoneNumber !== "502464530") {
         const RequestsID = req.query.RequestsID;
         await DeleteTablecompanySubProjectall(
           "Requests",
@@ -1091,9 +1099,7 @@ const DeleteRequests = (uploadQueue) => {
           RequestsID
         );
         res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
-      } else {
-        res.send({ success: "لايمكنك تنفيذ العملية" }).status(200);
-      }
+  
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية" }).status(501);

@@ -71,7 +71,7 @@ const { verifyJWT } = require("../middleware/jwt");
 const companySub = ({ uploadQueue }) => {
   const router = express.Router();
 
-  router.use(verifyJWT);
+  // router.use(verifyJWT);
   //  عمليات الادخال
   // router.route("/project").post(uploads.single("image"), projectBrinsh);
   router.post("/project", projectBrinsh(uploadQueue));

@@ -15,7 +15,7 @@ const {
   UpdateTableuserComppany,
   UpdateTableLoginActivatytoken,
 } = require("../../sql/update");
-const { UpdaterateCost } = require("./insertProject");
+const { UpdaterateCost } = require("./UpdateProject");
 // const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
 
 const userCompanyUpdat = () => {
@@ -127,14 +127,12 @@ const UpdatUserCompanyinBrinshV2 = () => {
       }
       // console.log(req.body);
       const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
-
       // const result = await SELECTTableusersCompany(IDCompany);
       let arraykind = ["Acceptingcovenant", "user", "justuser"];
       if (arraykind.includes(kind)) {
         await Updatchackglobluserinbrinshv2(
           idBrinsh,
           type,
-          // kind === "user" ? type : kind,
           checkGloblenew,
           checkGlobleold,
           userSession.userName
@@ -348,7 +346,7 @@ const UpdatchackAdmininbrinshv2 = async (
             (item) => item.job === "مدير الفرع"
           );
           let job = pic.job;
-          if (!chackfromJob) {
+          if (find) {
             job = pic.jobHOM;
             // await AddOrUpdatuser(
             //   pic.PhoneNumber,
@@ -623,7 +621,7 @@ const opreationAddvalidityuserBrinshorCovenant = async (
 
 // إضافة مستخدم للفرع او تعديل صلاحيته في العهد
 const AddUserInBrinsh = (validity, idBrinsh, type = "brinshuser") => {
-  let arrayBrinsh = type !== "brinshuser" ? validity : {};
+  let arrayBrinsh = type !== "brinshuser" ? validity : [];
   let Boolen = false;
   try {
     const findValidity = validity.find(

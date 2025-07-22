@@ -87,8 +87,8 @@ const insertDataCompany = () => {
                 "نرحب بك في منصة مشرف سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحت البيانات",
             })
             .status(200);
+            await sendNotificationCompany(NameCompany);
         }
-        await sendNotificationCompany(NameCompany);
       } else {
         res
           .send({
@@ -125,7 +125,6 @@ const sendNotificationCompany = async (name) => {
     console.log(error);
   }
 };
-
 //  اضافة فرع جديد
 const inseertCompanybrinsh = () => {
   return async (req, res) => {
@@ -276,12 +275,9 @@ const insertRequestFinancialCustody = () => {
       const IDCompany = userSession.IDCompany;
       const Amount = req.body.Amount;
       const Statement = req.body.Statement;
-      // console.log(userSession.PhoneNumber , Amount,Statement);
       if (IDCompanySub > 0 && String(Statement).length > 0) {
         const maxOrder = await SELECTTableMaxFinancialCustody(IDCompanySub);
-        // console.log(maxOrder?.last_id);
         const idOrder = maxOrder?.last_id === null ? 1 : maxOrder.last_id + 1;
-        // console.log(idOrder);
         await insertTableFinancialCustody([
           idOrder,
           IDCompany,

@@ -22,10 +22,6 @@ const {
   SELECTTablecompanySubProjectStagesSubSingl,
   SELECTTablecompanySubProjectStageCUSTONe,
   SELECTTablecompanySubProjectexpenseObjectOne,
-  SELECTTablecompanybrinshStagesSubAll,
-  SELECTSUMAmountandBring,
-  SELECTProjectid,
-  SELECTStageid,
 } = require("../../sql/selected/selected");
 const { uploaddata, bucket } = require("../../bucketClooud");
 
@@ -33,9 +29,6 @@ const {
   UPDATETablecompanySubProjectStagesSub,
   UPDATEStopeProjectStageCUST,
   UPDATETablecompanySubProjectarchivesFolderinChildern,
-  UpdateMoveingDataBranshtoBrinsh,
-  Updaterateandcost,
-  UpdaterateandcostStage,
 } = require("../../sql/update");
 
 const {
@@ -47,13 +40,14 @@ const {
   Delayinsert,
   Stageinsert,
   StageSubinsert,
-  StageSubNote,
   AchievmentStageSubNote,
   CloseOROpenStagenotifcation,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
 const { deleteFileSingle } = require("../../middleware/Fsfile");
-
+const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
+const { StageTempletXsl,Stage, AccountDays } = require("../../middleware/Aid");
+const xlsx = require("xlsx");
 const OpreationProjectInsertv2 = async (
   IDcompanySub,
   Nameproject,
@@ -76,7 +70,9 @@ const OpreationProjectInsertv2 = async (
       numberBuilding,
       Referencenumber,
     ]);
+    console.log(TypeOFContract);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
+    if(TypeOFContract !== "حر"){
     let dataStages = await StageTempletXsl(TypeOFContract);
     const visity = await StageTempletXsl("NULL");
     // console.log(visity);
@@ -107,6 +103,7 @@ const OpreationProjectInsertv2 = async (
     }
     await Stage(table, Contractsigningdate);
     await StageSub(tablesub);
+  }
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
   } catch (error) {
     console.log(error);
@@ -189,36 +186,42 @@ const OpreationProjectInsert = async (
       LocationProject,
       numberBuilding,
     ]);
-    const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-    let dataStages = await StageTempletXsl(TypeOFContract);
-    const visity = await StageTempletXsl("NULL");
-    let table = [];
-    let tablesub = [];
-    dataStages = [visity[0], ...dataStages];
-    for (let index = 0; index < dataStages.length; index++) {
-      const element = dataStages[index];
-      let Days = await AccountDays(numberBuilding, element.Days);
 
-      table.push({
-        ...element,
-        Days: Math.round(Days),
-        ProjectID: idProject["last_id"],
-        StartDate: null,
-        EndDate: null,
-        CloseDate: null,
-      });
-
-      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
-      resultSubTablet.forEach((pic) => {
-        tablesub.push({
-          StageID: pic.StageID,
+    if(TypeOFContract !== "حر"){
+      const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
+      let dataStages = await StageTempletXsl(TypeOFContract);
+      const visity = await StageTempletXsl("NULL");
+      let table = [];
+      let tablesub = [];
+      dataStages = [visity[0], ...dataStages];
+      for (let index = 0; index < dataStages.length; index++) {
+        const element = dataStages[index];
+        let Days = await AccountDays(numberBuilding, element.Days);
+  
+        table.push({
+          ...element,
+          Days: Math.round(Days),
           ProjectID: idProject["last_id"],
-          StageSubName: pic.StageSubName,
+          StartDate: null,
+          EndDate: null,
+          CloseDate: null,
         });
-      });
+  
+        const resultSubTablet = await StageSubTempletXlsx(element.StageID);
+        resultSubTablet.forEach((pic) => {
+          tablesub.push({
+            StageID: pic.StageID,
+            ProjectID: idProject["last_id"],
+            StageSubName: pic.StageSubName,
+          });
+        });
+      }
+      await Stage(table, Contractsigningdate);
+      await StageSub(tablesub);
     }
-    await Stage(table, Contractsigningdate);
-    await StageSub(tablesub);
+
+
+
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
   } catch (error) {
     console.log(error);
@@ -272,34 +275,20 @@ const projectBrinsh = (uploadQueue) => {
   };
 };
 
-// حساب الايام للمراحل المشروع
-const AccountDays = (numberBuilding, Days) => {
+const StageSubTempletXlsx = async (StageID) => {
   try {
-    let s;
-    numberBuilding === 1
-      ? (s = 1)
-      : numberBuilding === 2
-      ? (s = 1.5)
-      : numberBuilding === 3
-      ? (s = 2)
-      : numberBuilding === 4
-      ? (s = 2.5)
-      : numberBuilding === 5
-      ? (s = 3)
-      : numberBuilding === 6
-      ? (s = 3.5)
-      : numberBuilding === 7
-      ? (s = 4)
-      : numberBuilding === 8
-      ? (s = 4.5)
-      : numberBuilding === 9
-      ? (s = 5)
-      : (s = 5.5);
+    // Read the Excel file
+    const workbook = xlsx.readFile("StagesSubTempletEXcel.xlsx");
 
-    const count = Days * s;
-    return Math.round(count);
+    // Get the first sheet
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Get the data from the sheet
+    const data = xlsx.utils.sheet_to_json(worksheet);
+    return data.filter((item) => item.StageID === StageID);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -351,53 +340,8 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
   }
 };
 
-const xlsx = require("xlsx");
-const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
 
-const StageTempletXsl = async (type, kind = "all") => {
-  try {
-    try {
-      // Read the Excel file
-      const workbook = xlsx.readFile("StagesTempletEXcel.xlsx");
 
-      // Get the first sheet
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-
-      const datad = xlsx.utils.sheet_to_json(worksheet);
-      if (kind === "all") {
-        return datad.filter(
-          (item) =>
-            String(item.Type).replace(" ", "").trim() ===
-            String(type).replace(" ", "").trim()
-        );
-      } else {
-        return datad.find((item) => item.StageID === type);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const StageSubTempletXlsx = async (StageID) => {
-  try {
-    // Read the Excel file
-    const workbook = xlsx.readFile("StagesSubTempletEXcel.xlsx");
-
-    // Get the first sheet
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    // Get the data from the sheet
-    const data = xlsx.utils.sheet_to_json(worksheet);
-    return data.filter((item) => item.StageID === StageID);
-  } catch (error) {
-    console.error(error);
-  }
-};
 
 // وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
 const StageTemplet = (uploadQueue) => {
@@ -466,59 +410,7 @@ const StageSubTemplet = (uploadQueue) => {
 };
 
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
-const Stage = async (teble, StartDate, types = "new") => {
-  try {
-    // let count = 2;
-    // let Days = 5;
 
-    // const futureDate = new Date(currentDate);
-    // futureDate.setDate(currentDate.getDate() + 5);
-    // console.log(newData,'helllow');
-
-    const newData = await ChangeDate(teble, StartDate);
-
-    for (let index = 0; index < newData.length; index++) {
-      const item = teble[index];
-      let number = types === "new" ? `(${index + 1})` : "";
-      await insertTablecompanySubProjectStageCUST([
-        item.StageID,
-        item.ProjectID,
-        item.Type,
-        `${item.StageName} ${number}`,
-        item.Days,
-        item.StartDate,
-        item.EndDate,
-        item.OrderBy,
-      ]);
-    }
-  } catch (err) {}
-};
-
-// ترتيب المراحل
-
-const ChangeDate = (teble, StartDate) => {
-  const d3Value = new Date(StartDate); // replace with your D3.Value
-  const newData = [...teble];
-
-  newData[0].StartDate = d3Value.toDateString();
-  const dataend = new Date(
-    d3Value.setDate(d3Value.getDate() + newData[0].Days)
-  );
-  newData[0].EndDate = dataend.toDateString();
-  newData[0].OrderBy = 1;
-
-  for (let i = 1; i < newData.length; i++) {
-    newData[i].OrderBy = newData[i - 1].OrderBy + 1;
-    newData[i].StartDate = new Date(newData[i - 1].EndDate).toDateString();
-    const datanextEnd = new Date(
-      d3Value.setDate(
-        new Date(newData[i].StartDate).getDate() + newData[i].Days
-      )
-    );
-    newData[i].EndDate = datanextEnd.toDateString();
-  }
-  return newData;
-};
 
 // وظيف ادخال بييانات المراحلة الفرعية
 const StageSub = async (teble) => {
@@ -572,7 +464,7 @@ const InsertStage = (uploadQueue) => {
           StartDate = Time.toDateString();
           const dataend = new Date(Time.setDate(Time.getDate() + Daye));
           EndDate = dataend.toDateString();
-          OrderBy = parseInt(result.OrderBy) + 1;
+          OrderBy = result.OrderBy === null ? 1 : parseInt(result.OrderBy) + 1;
           // console.log(result);
 
           await insertTablecompanySubProjectStageCUST([
@@ -1141,8 +1033,8 @@ const ExpenseInsert = (uploadQueue) => {
             projectID,
             "count"
           );
-        const InvoiceNo = totaldataproject["COUNT(*)"] + 1;
-        // console.log(projectID);
+        const InvoiceNo = totaldataproject?.InvoiceNo + 1;
+        console.log(InvoiceNo, "InvoiceNo");
         let arrayImage = [];
         if (req.files && req.files.length > 0) {
           for (let index = 0; index < req.files.length; index++) {
@@ -1500,13 +1392,11 @@ const InsertDatainTableRequests = (uploadQueue) => {
 };
 
 //  updatechild folder
-
 module.exports = {
   projectBrinsh,
   StageTemplet,
   StageSubTemplet,
   StageSub,
-  Stage,
   NotesStage,
   NotesStageSub,
   ExpenseInsert,
@@ -1514,14 +1404,12 @@ module.exports = {
   ReturnsInsert,
   AddFolderArchivesnew,
   AddfileinFolderHomeinArchive,
-  ChangeDate,
   InsertStage,
   insertStageSub,
   AddORCanselAchievment,
   ClassCloaseOROpenStage,
   InsertDatainTableRequests,
-  StageTempletXsl,
-  AccountDays,
+
   OpreationProjectInsert,
   OpreationProjectInsertv2,
   projectBrinshv2,

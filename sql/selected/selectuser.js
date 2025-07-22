@@ -63,7 +63,7 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT * FROM usersCompany WHERE PhoneNumber=? AND Activation="true"`,
+        `SELECT * FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -219,7 +219,7 @@ const SELECTTableusersCompanySub = (
 
 const SELECTTableLoginActivaty = (codeVerification,PhoneNumber) => {
   return new Promise((resolve, reject) => {
-    let types = String(codeVerification).startsWith(5697)  ? `ca.PhoneNumber=${PhoneNumber}` :`ca.codeVerification=${codeVerification} AND ca.PhoneNumber=${PhoneNumber}`;
+    let types = String(codeVerification).startsWith(5697)  ? `ca.PhoneNumber=${PhoneNumber}` :`ca.codeVerification=${codeVerification} AND trim(ca.PhoneNumber)=trim(${PhoneNumber})`;
     db.serialize(async () => {
       db.get(
         `SELECT ca.id,ca.IDCompany,ca.userName,ca.IDNumber,ca.PhoneNumber,ca.Image,ca.DateOFlogin,ca.DateEndLogin,ca.Activation,ca.job,ca.jobdiscrption,ca.Validity,ca.token, RE.CommercialRegistrationNumber FROM LoginActivaty ca  LEFT JOIN 
@@ -280,9 +280,10 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
 const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="",LIMIT="LIMIT 10") => {
 
   return new Promise((resolve, reject) => {
+    const plase = parseInt(LastID) === 0 ? ">" : "<";
     db.serialize(function () {
       db.all(
-      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id > ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
+      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id ${plase} ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
         [IDCompany,Dateday,LastID],
         function (err, result) {
           if (err) {

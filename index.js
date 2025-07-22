@@ -27,6 +27,21 @@
 // https://www.youtube.com/watch?v=sTDVsMUegL8
 // https://www.youtube.com/watch?v=XbFQj7NYjZQ
 
+
+
+// selected.js
+// insertProject.js
+// writHtml.js
+// ChatJobsClass.js
+// UpdatuserCompany.js
+
+
+
+// bringProject.js
+// insertuserCompany.js
+// selected.js
+
+
 const { express, app, server, io } = require("./importMIn");
 
 const cors = require("cors");
@@ -78,7 +93,7 @@ app.use(
   })
 );
 
-PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
 
 const uploadQueue = new Queue("project-requests", {
   connection: config.redis,
@@ -117,6 +132,31 @@ app.use("/api/brinshCompany", companySub({ uploadQueue }));
 app.use("/api/posts", postpublic({ uploadQueue }));
 app.use("/api/Chate", chatroute({ uploadQueue }));
 app.use("/api/HR", HR({ uploadQueue }));
+// app.use("/api/dashbord", require("./routes/DashbordMoshrif"));
+
+
+
+
+
+
+const simpleCompanies = require("./DashbordMoshrif/routes/simple-companies");
+const simpleAuth = require("./DashbordMoshrif/routes/simple-auth");
+const simpleDashboard = require("./DashbordMoshrif/routes/simple-dashboard");
+const stageTemplates = require("./DashbordMoshrif/routes/stageTemplates");
+const subscriptions = require("./DashbordMoshrif/routes/subscriptions");
+const loginActivity = require("./DashbordMoshrif/routes/loginActivity");
+
+// تسجيل الـ routes
+app.use("/api/auth", simpleAuth);
+app.use("/api/companies", simpleCompanies);
+app.use("/api/dashboard", simpleDashboard);
+app.use("/api/stage-templates", stageTemplates);
+app.use("/api/subscriptions", subscriptions);
+app.use("/api/login-activity", loginActivity);
+
+
+
+
 
 
 
@@ -126,6 +166,14 @@ app.use("/api/HR", HR({ uploadQueue }));
 
 
 // لاستقبال الملفات والصور
+app.post("/companies/delete", async (req, res) => {
+  const {id,phone,reason} = req.body;
+  if(String(id).length > 0 && String(phone).length > 0 && String(reason).length > 0){
+    res.send({ok:true,message:'طلبك قيد المراجعه سوف يتم ابلاغك عند اتمام عملية الحذف'}).status(200);
+  }else{
+    res.send({ok:true,message:'نرجو اكمال البيانات '}).status(200);
+  }
+});
 app.get("/UploadDatabase", async (req, res) => {
   try {
     await bucket.upload("./mydatabase.db");

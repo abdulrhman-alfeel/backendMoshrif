@@ -6,3 +6,322 @@
 20250701	10:57:03	4a997223-b6ac-4bdf-85f1-49bed72ad7c1	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
 20250701	10:57:14	c285f235-f096-48e5-972b-0e165e874013	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
 20250701	10:57:21	031124b8-7190-4da4-a692-027ab2449d43	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\views\index.html'	GET	/loader.gif	undefined
+20250703	10:45:05	1740f6f9-c161-4fa0-ba3f-32b97e59b51d	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\build\index.html'	GET	/	undefined
+20250703	10:45:05	b034c53b-988a-4bbd-aa27-d0c263926194	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\39\backend\routes\build\index.html'	GET	/favicon.ico	undefined
+20250720	12:17:18	5cd88ee6-ef38-4cc7-8ab7-cea3e8955e43	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:17:31	2ea82ece-09c8-4dc6-a2bc-2e98377ad758	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:17:32	0255097a-950d-44ca-bc92-c1a3fe905967	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:18	f1122c5f-28a7-4ae4-b5a4-da20ffcdd41c	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:19	2efece77-b170-4075-a398-c07a826f7f90	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:20	dc42c73e-7c9a-4a11-a628-e20aab58b0bf	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:20	161fa98c-1d24-48c9-ad7e-5107eaee616b	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:20	46b94663-bc99-4eca-a612-2536b2c6860b	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:18:20	71d1a664-05f4-4b42-8f89-34b58326228b	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:41:27	5f68020c-8e43-47b9-9a03-a003b932a93c	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:41:29	584ee3e7-016f-4a89-9a5c-d0670a526bb5	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:41:30	dc475f72-d952-4c71-a7ff-74d9dcdf1082	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:41:51	a3e71a00-b5e0-46bb-9350-0b1fce18129e	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:41:53	72796f8d-c419-4fa2-b1d3-011aa581a236	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:46:42	0f6fc8cf-d12a-4fff-bb35-9e77cf549949	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:46:55	0a6be144-b206-459d-9d4c-ad5e17d33cc0	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:47:28	cefc629a-5b07-45fb-9ed0-7cb0778af291	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:47:33	230c6825-b4c6-4543-a16f-c94ec7acfaa7	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:49:01	f76cb886-162f-4285-a9cc-2be42408bb1f	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:49:12	47c26fe3-55d3-4e57-b955-052cd1c8c025	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:49:33	6e1d9b21-544d-47ab-bfbc-211dd3d107c3	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:49:34	d28d62a7-902e-44f2-8b28-8cbf15928d6c	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:49:42	243926b3-c953-48b5-9167-9b558443f1d2	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:50:15	7c85dbca-8dfc-44a2-b784-6a748816446b	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:50:35	3a2c0c3d-78d2-4e46-a5e8-ac13f36e8d13	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:52:28	4dd7d563-128e-4e27-8c02-efada69b5fd1	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:52:51	27a0e885-6eb9-47dc-8927-53c603422cef	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:52:57	7edd1b20-74b1-4d5a-82d8-93c0dba89f3e	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:52:59	e9b6cb52-6ca4-4d9a-81a5-4c06db3bd685	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:53:26	dd7d253f-7f38-44b4-8c7b-00d43b3f1b9c	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:53:30	951861b1-b567-45ca-a331-31eed8cd7e6b	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:53:46	904b60a9-7678-4597-8af2-cf9b92935b4e	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:53:47	256d7a72-49ec-4e96-9542-5a62d05c4b5c	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/dashbord/login	http://localhost:3000
+20250720	12:54:44	1e669f7a-68eb-49c6-8986-1303fa9ee448	ReferenceError: SELECTTableusersCompanyVerification is not defined	POST	/api/dashbord/login	http://localhost:3000
+20250720	13:22:58	815763ea-167a-48d6-8114-018b8ab1b8dc	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:27:43	fdd429a9-9f8e-4a01-bd65-0d89350cd336	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:29:31	e6e5fbb6-4641-407d-8cf0-40450f98acfb	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:30:03	f8cd6558-0dc9-4fd7-b6d8-c3a80e3037bb	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:30:27	42b83567-426a-432d-80b5-c0907c755597	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:30:39	1e3cc447-dcfb-4481-8888-7e180e182b13	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:33:00	a0797507-1a88-40b2-b70c-1701b0f77871	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:47:11	f8f74e08-5aa6-4687-a536-203b535d64cf	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:47:11	5a58c429-62fe-426b-8047-39344a37e055	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:47:11	a2a37323-ecca-41d8-8f47-0a1e1e30ee69	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:47:11	4bd62268-2d0a-4860-a7a6-955211e48d04	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:47:11	cabc32e0-5fc8-4720-a793-bcaa280e3393	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:47:11	992aa273-2b8a-46f2-b3e0-5a28cc89fe40	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:47:31	6be80d2c-3921-43d0-8c63-2f7de5748917	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:47:31	43c2028f-d5ea-4947-a05d-4530f4ac4635	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:47:31	4d23a7e0-9473-4004-98af-130f234d6c56	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:47:51	ad8a98e4-e590-4105-953e-c2a8ca3ba16e	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:47:51	a6e83b24-99ed-4a7a-babe-82e83c54cff5	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:47:51	33c55c67-d594-45f6-97e2-2807128bf7fe	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:48:11	72927e9d-7cd6-423c-86e6-32db8a322c1c	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:48:11	8d0382e6-355b-4e9c-8dd7-afaec6f144ef	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:48:11	977cfaad-1489-4e75-93e1-c54de4b7f1bf	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:48:31	15ccd2a3-0a88-44ee-a2ed-b8f95997512e	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:48:31	d7c27f89-0e69-4e88-8c13-42ba84e75f8a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:48:31	c1a05a25-a76e-49b4-a96e-0bd32729928e	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:48:36	f40e6c7b-daa0-475b-9d0b-c736a5955745	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:48:36	63b0e852-6bd1-499e-9f5d-9fb4b637d14b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:48:36	bedc7c7d-a155-4460-aea2-cbc36e3ffb94	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:48:51	77007cd6-bb37-43a8-8148-bda13359fe37	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:49:06	a5316af5-3392-4d01-acb8-a7158b937a08	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:49:21	d87f0be9-a71f-4ce3-94e1-2840254dc094	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:49:46	a9cb2876-55d7-4c5a-a0a8-56862e7615f9	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:50:04	5344d915-968b-4a0d-8f07-69c6592d4b64	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:50:04	1077774d-ce2a-49a3-bf00-3d680c20bd0b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:50:04	0bce745e-971c-49fd-9c28-d7b4783cfb7f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:50:04	370e760e-dfaf-4433-9ce7-5f55953e6a2c	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:50:04	274500fd-65f9-4878-9c21-3234a57cd8e4	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:50:04	58547d05-d4f6-4c45-be5b-2f805397899a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:50:24	7b541afe-297d-4c30-9a05-8852e56588c3	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:50:24	991bb191-6be2-431a-97ec-cc27111adb3c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:50:24	fcab22f8-0412-4f1a-99d7-3b33ffdd6975	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:50:44	c713731b-f854-4d93-9c71-90e3631573a7	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:50:44	0b095f88-ac12-40e8-bdfd-9537929f5ee6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:50:44	f559412d-8c09-4e3d-a23b-9bb3b81ff760	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:51:04	121aec78-dd21-4df2-aaee-a4b3c7dcca31	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:51:04	0b801be4-9600-484f-b221-08fdfdfb6a65	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:51:04	b9b3262e-17ac-4fe2-8e7b-2bfea89935a0	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:51:24	06f2faa1-5893-46ef-ab00-e506b7bd2c3f	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:51:24	7163722b-2e36-4532-8467-c77d2d72e606	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:51:24	9b3632e9-6f84-41f7-8d6d-33ccdc34aabc	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:51:44	34989a68-782d-4fbc-866f-2075c82d5756	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:51:44	4c6945fc-cf8e-488d-8a65-6592ad1cd2b0	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:51:44	46107adf-6846-4c73-bbd1-29b7ff5ee457	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:52:04	33159191-04a0-427e-a4b5-5af3f4cd5993	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:52:21	c6d716d0-acd9-4b86-9a46-eee9a2eba9f4	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:52:21	b124f5e3-93dc-44ab-bf38-5d0c9492934b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:52:21	81355ea9-134d-4026-a836-9644b6287b88	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:52:21	d28ea4f5-e405-4a99-a826-35d657918db1	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:52:21	d2c66c67-e3cc-4e8f-8316-f0cdc5401afa	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:52:21	51d778c6-e36e-4e3f-922b-d9036d54177d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:52:41	b9aa01fc-d216-4499-8edb-84dc1b031b12	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:52:41	15c81351-56dc-42a5-9997-528757f1208d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:52:41	a6349045-021c-4d9f-95a9-a57c0211b89a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:53:01	14a9d66f-97a0-4754-a1a0-d1dc8dbf0b73	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:53:01	1a32096a-e0a4-48c5-bd2a-9b5e612c333d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:53:01	0bfd78a4-9b20-4e3c-a5e8-6cd66fca172c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:53:21	1c165e0e-46c1-4371-8e37-529d81c3d8ee	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:53:21	6b76f461-27e9-4bc2-8bc7-d6e3f7a0f679	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:53:21	cae92936-b84b-4ed1-9b80-b0a69b868f9f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:53:41	8bdef844-80fa-4e5b-9fe9-2c62de564f0d	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:53:41	80d86513-05cf-45e1-8f6a-8f8f99b5abd9	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:53:41	ae2552e8-069b-4ddd-952a-758b0402f17a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:54:50	c46fe282-b20e-437e-b686-4be9ac64868d	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	13:55:09	35f209b0-e0c0-4db9-ac38-81b1ad7966a2	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:55:09	15215371-334e-42cc-a3f2-ef3a72574a58	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:55:09	67777fe9-9ac9-4642-8413-24833129a887	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:09	269e07d9-2c55-4cba-af8b-9e63ea1cc895	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:55:09	0b0b194e-b591-4f46-a0fb-8a2c93ddf728	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:09	d2674ab9-db9c-4828-a461-d3c4465fef9d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:55:29	ded3eace-67ef-459c-85ce-4c1ae688b599	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:55:29	d5bb86d2-a727-44d8-b382-3fe11d826da3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:29	1406097c-6000-4878-a590-7c5cb81a2727	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:55:49	ef4c9274-47ff-4462-830e-6458ed59962f	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	13:55:49	1a85fc5f-ae68-4fb8-9392-70e0230b0a88	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	13:55:49	0dc6411d-667d-4657-bd17-aafb99b321e0	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:55	4962bcb6-9b0e-4de7-ac57-f946845b2fbb	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:55	9697a519-8fe7-4beb-8115-d00ed723778f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:55:55	0e2cc328-60fc-4e1e-8425-ded4f7e4434c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:56:10	14019e12-c63b-4483-a0b6-e30928993aaf	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:56:25	d6c3eb24-f1c0-4b4a-a7d9-270a9cfe1f16	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:56:40	61b00871-a657-4a05-9cd2-8fa220011cc3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:56:55	92f535e4-b29e-4600-9ad7-94810838cd2f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:57:10	91bca23a-00f0-4a26-bfcc-c1652e2a5b73	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:57:25	fbbbc4e2-ba91-4ab7-92a2-307dfe441b36	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:57:40	460bffe0-2a9b-4b37-9d20-46b85d92fa35	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:57:55	b0c24c06-3d19-4abd-971b-dd18d55adaab	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:10	633ca66d-34b4-4140-819b-7576682b09e7	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:25	c037ed07-e336-4f5e-87e8-e598872ca620	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:26	5f68d600-69a9-486e-82ca-4730424f6fac	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:41	6e2e111d-5570-4995-99da-5649d5d6fc81	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:41	df79c9cb-07b9-4550-bcc0-e7ccccaa0061	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:58:56	dd0306ac-b0d6-4b86-9239-6e37c474ffd8	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:59:11	45a0f999-d060-477b-a884-e326067cd5d3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:59:26	d645e406-784e-449c-a1b2-97b73034cad8	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:59:41	ab2f68f3-a9bd-4878-97fa-210b7a457fbb	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	13:59:56	5b278976-0490-4398-9f43-a9213eafc981	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:00:11	6ca33b45-6273-48ae-b99e-a1f95c2aa3a3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:00:26	c5eef9e7-b5eb-46d7-8c1d-3f2ca2a56990	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:00:41	41cae238-cb64-4f7f-8d78-b2d11b44621a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:00:56	e44625c3-8b71-40fc-80fb-76ce0c234e82	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:01:11	5ce29871-177a-4c6a-8160-3dcf3881d06e	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:01:26	ef272aef-ed04-460a-8b35-b0f0651e0627	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:01:41	4ef83903-691a-4e9b-aabd-378a2c0e8cd4	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:01:56	75b82176-d788-4812-aff6-5eb731c3db72	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:02:11	c3506332-0886-44c1-a500-bd4132a235ac	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:02:26	d3bfa203-5341-4667-b4ed-bcb18cc96187	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:02:41	e1f34f75-8f49-40c1-a039-518a56a57ba0	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:02:56	23620ab0-10d8-4c93-af33-749e7614f89d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:07	bf684773-36cc-4734-b571-fb9422bf8850	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:07	7d3265b7-50b0-458d-a225-5a22ad240dc5	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:22	2f7af248-f55f-4c9c-887f-5d0495bfa398	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:35	c4545c10-d66c-4750-aa12-2bdf5320c44d	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:03:35	1ae9d216-750c-4390-bd9e-e45d89a3c125	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:35	fc402e07-9e00-42ff-9bfa-0c8dc0a7844f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:03:35	22b89e36-066f-45a1-94cd-dec198a29b74	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:03:35	387af302-f639-4e75-9ace-2e0cb5cde31e	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:35	0c6baab0-a792-4e1d-9b13-6e44ae992c3b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:03:38	e6d70b36-3013-4cbd-b505-4049b8b9760f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:38	eb82827a-815b-4e92-8dcb-91e15d0c0686	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:51	1f3d1832-53cf-413a-86ba-4e4756bf7e20	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:03:51	e5265e09-f000-415c-8817-d67e22a61ec4	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:51	2d396926-2ba7-4eb1-978e-26e7a1ebd2c6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:03:51	ef665399-531d-489c-a84b-0a20839007bb	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:03:51	7417d067-d373-4c05-a33f-f55d66b6b90f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:51	a480855b-7e00-46e4-8f16-ed27462db29a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:03:56	77de0aac-64a7-4523-92fe-cb89c383c9c6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:03:56	5f634774-c7e3-4c47-a136-dda09672300c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:01	7da3e682-3e25-44c6-919c-996397a359dc	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:04:01	815a8ff3-14eb-4f2b-a717-0f5f2d9d5c9c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:01	2526ba3f-dfda-416b-8f2c-bec9a65d224f	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:04:01	f36230e2-f2f0-44a5-b279-da23b566c957	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:04:01	5fcbe88a-95b7-40f2-ba13-1bce1b534d46	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:01	2dba914d-745c-4cfa-8dc7-89ede93a3e50	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:04:05	37dca883-1930-4794-b262-4286f50cc53d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:05	5aacf8e8-ef94-420c-a7e8-c979a151f72a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:20	6b03ab1b-8603-4c45-a93b-af313dc7eb04	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:35	f6559195-93dd-4826-a359-76e88577872d	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:04:50	76a74f35-6637-4e3a-8eef-1e3171161f62	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:05	9ab169d9-6cdc-44a4-9120-df86bc40c831	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:20	eb201af5-d0d8-47d7-8976-ac2c752220e6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:35	3bb228e7-24b2-45ad-ac74-5ae5372649c1	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:49	a2cde7f2-7047-4799-b176-10e562ae3cde	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:05:49	336d83ba-04cb-4039-ad79-b1ceb507af9c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:49	a84e40ce-b62b-43c9-8422-f8d09682e0e6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:05:49	d8379846-3fa1-4950-8388-dadddaa18972	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:05:49	c0aaca99-2719-442a-8342-1adfaf124395	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:05:49	de81ed09-a40f-4d2c-91ab-7e2dcd939699	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:06:06	26251e5b-2942-4e89-9492-2511e4485e82	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:06	6a94afd7-1273-478c-9bbd-8af505a3c283	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:10	19e44c42-e070-4d37-a7e1-537fd5e69b70	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:10	de387234-aec2-44a6-8199-9b1275d658f6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:23	b7c23e17-3d4e-4270-a906-910eb599d7d8	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:06:23	29a5a46d-8305-41bd-a507-e462b21a1bc7	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:23	19601e70-8dd5-4987-9dfe-1da65fe04e34	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:06:23	115b1f59-a803-4219-a31f-b318e4d3e15d	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:06:23	19f6b107-72b9-413a-ad78-b55531c5e8c0	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:23	7db0a974-abfd-4567-96cf-ca846d812608	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:06:43	6f9c11b4-709d-4cd8-8fc8-f912cf2412ff	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:06:43	09595b58-f42a-4f8d-93bb-0bed06dee7a8	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:06:43	76f3391f-507b-46b2-882d-94107100f221	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:07:03	a52b5d51-d7f8-462c-95b0-a18a1d7ddf95	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:07:03	1109c83e-9bc6-4747-9a95-1d309a5f6481	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:07:03	07d2f635-57ac-47ad-8542-9d90971fa8ac	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:07:23	fc6b5b40-8a90-47fb-a486-ed4ab87a507d	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:07:23	1cff130d-43fe-4af5-9a20-00fc3042cef3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:07:23	6189e813-9e79-46b6-bf86-f235f020fc17	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:07:43	e8349256-8810-4f01-af87-b143b08393dd	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:07:43	2c33bd49-1010-42ea-8fcf-6d8de101309c	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:07:43	e32be631-1f34-4973-a3a2-d5053b02493f	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:08:03	ecddc1b4-7046-475e-a712-c7aac86b98c1	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:08:03	4a896dd9-1586-4280-9edd-9baff7242a31	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:08:03	ba988b98-1d2e-41ac-91da-2b54dcefb569	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:08:23	70e62387-aa68-4a1a-af6e-5b6c4135b348	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:08:23	70cef241-fa8e-4e4e-adfe-181828259d2e	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:08:23	ab5c9afb-490c-404f-9bd7-f6247dcb7002	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:08:43	8c17d64c-37d8-4689-9a5d-5b7c11f8bec5	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:08:43	f9c8d462-a43b-48a8-b9b0-7edf1aa33fe2	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:08:43	72ae47d3-aaac-45a6-bf3c-88c185edb991	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:09:03	a1ab067e-f466-4701-991a-448b16ac383c	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:09:03	243a7788-f1e8-4edf-be0d-7eb6e33d2ca3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:09:03	a3b4c51d-ed97-45c7-8e9b-557b930fbf02	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:09:04	36fe306a-56f2-4f53-b837-c05d4508e09a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%22%22	http://localhost:3000
+20250720	14:09:04	ad1b86a2-69db-46b2-a72e-2851bada28c1	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%22%22	http://localhost:3000
+20250720	14:09:19	bfe7c2f9-0225-4408-8238-ebec610384de	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%22%22	http://localhost:3000
+20250720	14:09:26	d409d73d-8510-4e6f-8ae2-521011a0ccc3	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:09:26	d69dfecf-d146-4c30-8c31-e591bc622511	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:09:26	85dfd943-7941-41cc-9199-7f2a0a733876	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:09:26	c08c90e1-a64d-4a01-ba7d-0a389fac6ab0	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:09:26	9af6d346-a3ec-42be-967b-2f9ead2661c1	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:09:26	36a2dedc-713e-4130-a1c7-b49615be17ce	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:09:26	8e85e975-ed23-4a6d-b7b8-32ca5dc6b7d8	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%22%22	http://localhost:3000
+20250720	14:09:26	80a5958d-28a2-440f-a7a8-505264c589e0	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%22%22	http://localhost:3000
+20250720	14:09:36	5c373c83-8268-43cd-905a-cd7ab026e1f2	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=%27%27	http://localhost:3000
+20250720	14:09:47	429dee53-a345-4036-ac03-6a2bf1baae9b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10	http://localhost:3000
+20250720	14:09:58	83bc29af-5092-4a89-aa69-e3994c2ee216	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:10:13	c05fc256-5ef0-4176-a0fe-54821a81cf8b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:10:28	a1d150c1-b9b4-4902-9d5b-f4b64163c0e4	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:10:43	8e266a79-bc2c-433b-b387-704d681506d3	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:10:58	7a9c9a09-37d5-4f64-8f57-fdd6ead4fb2a	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:11:12	672fbe6b-4e40-49e9-93ce-52cb759a6906	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:11:12	fb634fa5-3842-49db-92eb-7ac23e558efb	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:11:12	a9e9079e-4c8d-49f2-952e-ab8b3b714332	TypeError: db.getRow is not a function	GET	/api/dashbord/dashboard/stats	http://localhost:3000
+20250720	14:11:12	ab1de984-7004-45e4-aeec-90f17e9cbcd1	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:11:12	800f9529-e812-41ae-9dab-d1a672f0359c	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies	http://localhost:3000
+20250720	14:11:12	85280647-433c-4c33-9bb7-92d0f0691aba	TypeError: db.getAllRows is not a function	GET	/api/dashbord/dashboard/reports	http://localhost:3000
+20250720	14:11:14	bcdccb72-10c7-4a31-9165-bf7900ce198b	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:11:14	ad78598e-8e45-4b50-9056-4ec179fdbe67	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:11:29	1f524f0b-dbbf-485f-bab7-ea71b16e45d4	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:11:44	d785d832-eb93-4cc4-b240-49420b9077b6	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:11:59	ae50df42-2553-4984-9d17-70e51f340dd8	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:12:14	d3199d2e-db80-48ee-9e25-f6486b369a61	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:12:29	8c50679e-8727-4c57-9cda-480f36c8c117	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:12:44	5c888179-d758-47ae-9ebb-5ec6dc62e692	TypeError: db.getAllRows is not a function	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:14:33	eef9211a-dc53-466a-bd56-f1b24e1e6217	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:14:44	50e59489-d6b1-4833-9bda-f589d3db76da	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:14:59	e082cee0-dad7-49cd-9c54-d465e824b5a6	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:15:14	3552f7da-0cb3-4be9-96bc-4733f16ff97f	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:15:29	34675bd4-1774-42a4-927a-0a30e50a99f5	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:15:44	1e1fa287-18d8-463a-8c0d-0a23c3b6bb79	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:15:59	5e0f7962-b4e5-4533-a5ab-b3dc875203c3	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:16:14	458d5016-f13e-4b39-a84c-c61d564ba532	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:16:29	95e5b646-1c8b-4419-a4ab-fab3f5b2ad3f	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:16:44	50c14585-9d3f-4251-8cce-10480779d79d	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:16:59	2f6b9809-b50e-43b6-a948-494e24e3d574	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:17:14	b610c892-e846-4611-85d3-c43945d6c43e	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:17:29	c7c6f2f5-7ede-4aa3-a000-bd899a55d3a6	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:17:44	87effadf-c38d-46c4-8858-804e2f04af61	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:17:59	d3402802-1dbc-4da0-984b-4520bba78a8c	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:18:14	0b322cae-c838-4f4d-adc1-6eba93e05f7c	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:18:29	8f982a07-9dce-421e-8f45-d848bd2b72ab	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:18:44	a1508efb-3a7d-4a90-aea4-0700fd3c7048	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:18:59	3f290517-8fc3-4486-83c2-306c9cf3352f	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:19:14	ecd3f216-2e4b-4ae0-9793-4a35f49d836b	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:19:29	6b1e3e1b-ebfc-413d-896e-50eaaf1b7925	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:19:44	1da14d02-f872-4832-8476-38cab48a1c3e	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:19:59	905bacd9-ebb2-4d11-96f8-c9321a7a889c	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:20:14	0eb1a4ce-db3a-43e4-b71d-e017d59c218a	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:20:29	030c30d9-9b07-4f9d-aeb8-e28095317249	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:20:44	409e378a-e0c5-4ab1-b0e6-548cc3890e40	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:20:59	1b1fca32-d895-40eb-9472-eacd702008c7	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:21:14	dcada38b-c3e5-4370-8ea0-9a7a64a4f844	ReferenceError: companies is not defined	GET	/api/dashbord/companies?page=1&limit=10&search=null	http://localhost:3000
+20250720	14:34:45	b0a8316a-0808-4544-86f2-82dc228b7844	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	14:35:37	0d1c3ac8-060e-4741-b14a-92aed0e246b2	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250720	14:49:36	e80b3e1c-510b-4182-9bca-2ff3a0d5c231	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:09:00	2df405d2-ed61-4a7a-8acf-e8c05151e96d	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:11:07	bd8b5a8d-f737-4b5e-bf4e-5cb49ab33749	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:26:03	9c130167-4f98-43ce-ad27-dec36cbdcb83	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:31:08	d165fb68-ef24-40b8-a142-97a6dc9686bd	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:31:15	ce424f75-b441-4d4b-8af5-e3f4f26f3ada	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:31:15	4af57039-413e-4eec-be64-e51db9336250	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:31:17	dd09344b-ca3f-46cf-8a93-7759e738846d	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:31:17	a2db8d38-ea79-4525-a7ea-4fd36154be4a	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:31:31	d31103c8-0594-4e01-847e-93450dd1a7fc	TypeError: Promise constructor cannot be invoked without 'new'	GET	/api/dashbord/companies	http://localhost:3000
+20250721	11:38:23	68c6d23d-ca84-4183-9feb-669929450b78	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:47:52	1f64baa0-0cad-469a-96b1-493efb75d375	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:49:31	fda4af2d-877a-4cde-8675-f2a6866faae1	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	11:50:38	9ff7ca11-4997-4d78-b571-8cb5b6b08c2a	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250721	12:00:49	d6c9214e-b9bf-476e-9913-083b4faac97a	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:49	f64b046b-ec85-4799-bfbc-2c2ceda71442	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:51	c4c445b0-1b7a-420c-87b5-ccc47ce7d1be	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:51	260a7550-7ba0-4281-bae3-e9a284134515	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:51	8573b0b9-33bc-4e8e-adc5-03c813d46b2c	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:56	23dd3b85-0b42-4c5b-9335-1f93baa71975	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:56	5037bfbf-1d6f-44bc-9ee2-f76f1ba09619	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:57	eb5dd4d8-fdf7-4ba3-9dc7-e4a48fed30cd	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	12:00:57	cf729dcb-e7ac-407b-8b5d-5245c4937807	Error: SQLITE_MISMATCH: datatype mismatch	GET	/api/dashbord/companies	http://localhost:3000
+20250721	14:41:18	733781eb-4dec-4cbb-946f-c1d53fd6b060	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/BringStage?ProjectID=1&number=0	undefined
+20250721	14:42:12	6647cead-b555-4913-95ef-255591441e18	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/v2/BringStage?ProjectID=1&number=0	undefined
+20250721	14:42:28	39e0d4f2-9f2d-4e1d-89fd-b9c9d8a9b760	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/v2/BringStage?ProjectID=1&number=0	undefined
+20250721	14:42:30	457c0723-99f4-446d-87bc-11f204f00f4d	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/v2/BringStage?ProjectID=1&number=0	undefined
+20250721	14:43:00	6b43870e-3955-49e4-9f04-40feccf0a312	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/v2/BringStage?ProjectID=1&type=%22cache%22&number=0	undefined
+20250721	14:49:29	9bde8805-6b53-46f2-94be-340e8b01283c	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/BringStage?ProjectID=1&type=%22cache%22&number=0	undefined
+20250721	14:49:31	b49eb79b-45be-4641-872a-36f9e7e55e49	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/brinshCompany/BringStage?ProjectID=1&type=%22cache%22&number=0	undefined

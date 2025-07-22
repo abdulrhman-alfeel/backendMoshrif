@@ -130,7 +130,7 @@ const insertTablecompanySubProject = (data) => {
 const insertTablecompanySubProjectv2 = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber) VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,cost,rate,countuser) VALUES (?,?,?,?,?,?,?,?,0,0,0)`,
       data,
       function (err) {
         if (err) {
@@ -179,7 +179,7 @@ const insertTablecompanySubProjectStageSubtemplet = (data) => {
 const insertTablecompanySubProjectStageCUST = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy) VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,rate) VALUES (?,?,?,?,?,?,?,?,0)`,
       data,
       function (err) {
         if (err) {

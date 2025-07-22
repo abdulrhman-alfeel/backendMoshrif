@@ -176,6 +176,12 @@ const AgreedRegistrationCompany = () => {
                 "id",
                 id
               );
+              await verificationSend(
+                dataCompany?.PhoneNumber,
+                null,
+                `تم قبول طلب تسجيل شركتك في منصة مشرف`
+              );
+
               res
                 .send({ success: "تمت العملية بنجاح", data: `${hash}` })
                 .status(200);
@@ -188,6 +194,45 @@ const AgreedRegistrationCompany = () => {
     }
   };
 };
+
+const sendNotificationRegistration = async (name) => {
+  try {
+    let array = [
+      "571309090",
+      "559233392",
+      "557711177",
+      "555785065",
+      "550033173",
+      "555285149",
+      "533540335",
+      "599667724",
+      "505942034",
+      "550555702",
+      "571506060",
+      "532171179",
+      "567890370",
+      "543259000",
+      "534672874",
+      "563449128",
+      "509430463",
+      "544666255",
+      "500088197",
+      "502464530"
+    ];
+    for (let index = 0; index < array.length; index++) {
+      const element = array[index];
+      await verificationSend(
+        element,
+        null,
+        `تم قبول طلب تسجيل شركتك في منصة مشرف`
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// sendNotificationRegistration()
 
 // حذف بيانات الشركة قيد التسجيل
 const DeleteCompanyRegistration = () => {
@@ -240,42 +285,42 @@ const UpdatedataRegistration = () => {
       const findRegistrioncompany =
         await SelectVerifycompanyexistencePhonenumber(number);
       if (verificationFinduser.length <= 0) {
-        if(!Boolean(checkVerifctioncomany)) {
-        if (
-          !Boolean(findRegistrioncompany) ||
-          (Boolean(findRegistrioncompany) &&
-            findRegistrioncompany.CommercialRegistrationNumber ===
-              CommercialRegistrationNumber) ||
-          (Boolean(findRegistrioncompany) &&
-            findRegistrioncompany.CommercialRegistrationNumber !==
-              CommercialRegistrationNumber &&
-            !Boolean(checkVerifction))
-        ) {
-          await UpdateTablecompanyRegistration([
-            convertArabicToEnglish(CommercialRegistrationNumber),
-            NameCompany,
-            convertArabicToEnglish(BuildingNumber),
-            StreetName,
-            NeighborhoodName,
-            convertArabicToEnglish(PostalCode),
-            City,
-            Country,
-            convertArabicToEnglish(TaxNumber),
-            convertArabicToEnglish(number),
-            userName,
-            String(Api),
-            id,
-          ]);
+        if (!Boolean(checkVerifctioncomany)) {
+          if (
+            !Boolean(findRegistrioncompany) ||
+            (Boolean(findRegistrioncompany) &&
+              findRegistrioncompany.CommercialRegistrationNumber ===
+                CommercialRegistrationNumber) ||
+            (Boolean(findRegistrioncompany) &&
+              findRegistrioncompany.CommercialRegistrationNumber !==
+                CommercialRegistrationNumber &&
+              !Boolean(checkVerifction))
+          ) {
+            await UpdateTablecompanyRegistration([
+              convertArabicToEnglish(CommercialRegistrationNumber),
+              NameCompany,
+              convertArabicToEnglish(BuildingNumber),
+              StreetName,
+              NeighborhoodName,
+              convertArabicToEnglish(PostalCode),
+              City,
+              Country,
+              convertArabicToEnglish(TaxNumber),
+              convertArabicToEnglish(number),
+              userName,
+              String(Api),
+              id,
+            ]);
 
-          res.send({ success: "تمت العملية بنجاح" }).status(200);
-        } else {
-          res
-            .send({ success: "الرقم مستخدم لاضافة حساب شركة اخرى " })
-            .status(200);
-        }
-      }else {
-            res.send({ success: "السجل التجاري متواجد لشركة اخرى" }).status(200);
+            res.send({ success: "تمت العملية بنجاح" }).status(200);
+          } else {
+            res
+              .send({ success: "الرقم مستخدم لاضافة حساب شركة اخرى " })
+              .status(200);
           }
+        } else {
+          res.send({ success: "السجل التجاري متواجد لشركة اخرى" }).status(200);
+        }
       } else {
         res
           .send({ success: "الرقم مستخدم بالفعل في حساب باحدى الشركات " })

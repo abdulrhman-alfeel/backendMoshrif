@@ -297,9 +297,11 @@ const SELECTTablecompanySubProject = (
   kind = "all",
   Disabled = "true",
   type = "",
-  Limit='LIMIT 2'
+  Limit='LIMIT 3',
+  order= "ASC"
 ) => {
   return new Promise((resolve, reject) => {
+    let plase = order === "ASC" ? ">" :  parseInt(IDfinlty) === 0 ? ">" : "<";
     let stringSql =
       kind === "all"
         ? `SELECT * 
@@ -327,9 +329,9 @@ FROM (
     LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub
     LEFT JOIN company EX ON EX.id = RE.NumberCompany
     WHERE 
-        ca.IDcompanySub = ? AND (ca.id) > ?   AND (ca.Disabled) =?
+        ca.IDcompanySub = ? AND (ca.id) ${plase} ?   AND (ca.Disabled) =?
           ${type}
-    ORDER BY ca.id ASC
+    ORDER BY ca.id ${order}
     ${Limit}
 ) AS subquery
 ORDER BY id ASC, datetime(Contractsigningdate) ASC`
@@ -500,6 +502,24 @@ const SELECTStageid = () => {
     });
   });
 };
+const SELECTStageallid = (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT StageCustID FROM StagesCUST  WHERE ProjectID =${id}`,
+        function (err, result) {
+          if (err) {
+            // console.error(err.message);
+            // reject(err);
+            resolve(false);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTStageSubid = (type="StagesCUST",data="ProjectID, StageID" , WHERE="StageID=?") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
@@ -643,7 +663,7 @@ const SELECTTablecompanySubProjectStageCUST = (
 ) => {
   let stringSql =
     kind === "all"
-      ? `SELECT ${type} FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE ProjectID=?`
+      ? `SELECT ${type} FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE cu.ProjectID=?`
       : kind === "CountDate"
       ? `SELECT EndDate , StartDate FROM StagesCUST WHERE ProjectID=?`
       : `SELECT * FROM StagesCUST WHERE ProjectID=? AND trim(StageName)=trim(?)`;
@@ -666,7 +686,7 @@ const SELECTTablecompanySubProjectStageCUSTv2 = (
   kind = "",
 
 ) => {
-  let stringSql = `SELECT cu.*  FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE ProjectID=?  ${kind}`
+  let stringSql = `SELECT cu.*  , (SELECT COUNT(*)  FROM StagesCUST cu  WHERE ProjectID=${id}) AS count FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID  WHERE ProjectID=?  ${kind}`
     
   let data = [id] ;
   return new Promise((resolve, reject) => {
@@ -806,6 +826,7 @@ const SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDat
 //  ملاحظات مراحل المشروع
 const SELECTTablecompanySubProjectStageNotes = (ProjectID, StageID) => {
   return new Promise((resolve, reject) => {
+
     db.serialize(function () {
       db.all(
         `SELECT * FROM StageNotes WHERE StagHOMID=? AND ProjectID=?`,
@@ -1091,7 +1112,7 @@ const SELECTTablecompanySubProjectexpenseObjectOne = (
     let stringSql =
       kind === "all"
         ? `SELECT * FROM Expense WHERE Expenseid=?`
-        : `SELECT COUNT(*) FROM Expense WHERE ${type}=?`;
+        : `SELECT MAX(Expenseid), InvoiceNo FROM Expense WHERE ${type}=?`;
     db.serialize(function () {
       db.get(stringSql, [ID], function (err, result) {
         if (err) {
@@ -1268,14 +1289,17 @@ const SELECTTableSavepdf = (idproject) => {
 };
 
 // عملية فلتر البحث في المالية
-const SELECTSEARCHINFINANCE = (type, projectID, from, to, fromtime, totime) => {
+const SELECTSEARCHINFINANCE = (type, projectID, from, to, fromtime, totime,count) => {
   // console.log(type, projectID, from, to, fromtime, totime);
-
+  // console.log(type);
   return new Promise((resolve, reject) => {
+    let plus = parseInt(count) === 0 ? ">" : "<";
+    let idtype = type === "Returns" ? "ReturnsId" : type === 'Expense'? "Expenseid": "RevenueId";
+
     db.serialize(() => {
       db.all(
-        `SELECT * FROM ${type} WHERE projectID = ? AND Amount BETWEEN ? AND ? AND Date BETWEEN ? AND ?`,
-        [projectID, from, to, fromtime, totime],
+        `SELECT * FROM ${type} WHERE projectID = ? AND Amount BETWEEN ? AND ? AND Date BETWEEN ? AND ?  AND  ${idtype} ${plus} ? ORDER BY Date DESC lIMIT 10`,
+        [projectID, from, to, fromtime, totime,count],
         (err, rows) => {
           if (err) {
             // console.error("Database query error:", err.message);
@@ -2245,7 +2269,7 @@ const SELECTfilterTableChate = (ProjectID, Type, userName, count = 0) => {
     // AND chatID > 772
     db.serialize(function () {
       db.all(
-        `SELECT * FROM Chat  WHERE ProjectID=? AND Type =? AND( Sender LIKE  '%${userName}%' ) AND chatID ${Plus} ?  ORDER BY chatID DESC LIMIT 20 `,
+        `SELECT * FROM Chat  WHERE ProjectID=? AND Type =? AND( Sender LIKE  '%${userName}%' OR message LIKE '%${userName}%'  ) AND chatID ${Plus} ?  ORDER BY chatID DESC LIMIT 20 `,
         [ProjectID, Type, parseInt(count)],
         function (err, result) {
           if (err) {
@@ -2506,5 +2530,6 @@ module.exports = {
   SELECTStageid,
   SELECTTablecompanySubProjectStageCUSTv2,
   SELECTStageSubid,
-  SELECTTablepostAll
+  SELECTTablepostAll,
+  SELECTStageallid
 };

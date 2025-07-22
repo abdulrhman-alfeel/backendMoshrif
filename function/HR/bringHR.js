@@ -83,9 +83,7 @@ const { HtmlStatmentHR } = require("../../pdf/writHtml");
 const { convertHtmlToPdf } = require("../../pdf/convertotpdf");
 const { SELECTTablecompany } = require("../../sql/selected/selected");
 const { bucket } = require("../../bucketClooud");
-const { deleteFileSingle } = require("../../middleware/Fsfile");
 const { DateDay, dates } = require("../../middleware/Aid");
-const { DateTime } = require("luxon");
 
 const Userverification = () => {
   return async (req, res) => {
@@ -199,8 +197,8 @@ const createstatementPdf = () => {
         `AND us.PhoneNumber=${PhoneNumber}`,
         "",
       );
-      let month =  new Date(hrData[0].Dateday).getUTCMonth() + 1;
-      let years = new Date(hrData[0].Dateday).getUTCFullYear();
+      let month =  new Date(hrData.Dateday).getUTCMonth() + 1;
+      let years = new Date(hrData.Dateday).getUTCFullYear();
       let namefile = '';
       if(hrData.length > 0) {
         const company =  await SELECTTablecompany(userSession?.IDCompany);
@@ -211,7 +209,8 @@ const createstatementPdf = () => {
         let day= `${years}-${dates(month)}-${number}`;
         arrayday.push(day);
       }
-      namefile =  `${hrData[0].userName}_${new Date().getMinutes()}.pdf`;
+      const userName = String(hrData.userName).replace('/'," ");
+      namefile =  `${userName}_${new Date().getMinutes()}.pdf`;
       const filePath = path.join(__dirname, "../../upload", namefile);
   
       const htmlContent = await HtmlStatmentHR(arrayday,hrData,company);

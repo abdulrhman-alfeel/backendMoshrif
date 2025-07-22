@@ -98,9 +98,11 @@ const UpdatDtatuser = async (check, resultSend, type, IDCompany) => {
   const result = await SELECTTableusersCompany(IDCompany);
   const findUser = result?.find((item) => item.id === check);
   // console.log(check, findUser.Validity, type);
-
+  if(findUser === undefined){
+    return;
+  }
   //  استقبال الصلاحيات
-  arraValidity = JSON.parse(findUser.Validity);
+  arraValidity = JSON.parse(findUser.Validity) || [];
   const findValidity = arraValidity.find(
     (item) => item.idBrinsh === resultSend
   );
@@ -119,7 +121,7 @@ const UpdatDtatuser = async (check, resultSend, type, IDCompany) => {
       findUser?.job,
       JSON.stringify(arraValidity),
       findUser.id,
-    ]);
+    ],"job=?,Validity=?");
   }
 };
 

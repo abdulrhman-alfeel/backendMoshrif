@@ -29,7 +29,6 @@ const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub
 const Updaterateandcost = (fromId,toId,type,typedata,typename="IDcompanySub") =>{
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE ${type} SET ${typedata}=? WHERE ${typename}=?`,

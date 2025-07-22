@@ -31,7 +31,7 @@ const { verifyJWT } = require("../middleware/jwt");
 
 const company = ({ uploadQueue }) => {
   const router = express.Router();
-  router.use(verifyJWT);
+  // router.use(verifyJWT);
 
   router.route("/").post(insertDataCompany(uploadQueue));
   router

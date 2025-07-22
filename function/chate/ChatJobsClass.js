@@ -319,6 +319,7 @@ const filterTableChat = () => {
             ...pic,
             File: JSON.parse(pic.File),
             Reply: JSON.parse(pic.Reply),
+            arrived: true,
           });
         }
       }
@@ -421,6 +422,7 @@ const verification = async (data) => {
 
 const { GoogleAuth } = require("google-auth-library");
 const { Deleteposts } = require("../postpublic/updatPost");
+const { lstat } = require("fs");
 const initializeUpload = () => {
   return async (req, res) => {
     // قراءة بيانات الاعتماد من ملف JSON

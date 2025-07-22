@@ -768,7 +768,7 @@ font-weight: bold;
   <div class="page">
   <div class="header">
     <div class="header1">
-      <p class="text-header-right">التاريخ:${new Date().toISOString()}م</p>
+      <p class="text-header-right">التاريخ:${new Date().toLocaleDateString()}م</p>
     </div>
 
     <div class="header-medium">
@@ -813,8 +813,9 @@ font-weight: bold;
               : 0.0;
           let day = DateDay(new Date());
           let time = item <= day;
-          let absent = converttimetotext(item) !== "الجمعة"  && time ? "Absent" : "";
-          let CheckInFile =prepar && prepar?.CheckInFile !== null ? JSON.parse(prepar?.CheckInFile): {};
+          let days = ["الجمعة" , "السبت"];
+          let absent = !prepar && !days.includes(converttimetotext(item)) && time  ?  "Absent" : "";
+          let CheckInFile = prepar && prepar?.CheckInFile !== null ? JSON.parse(prepar?.CheckInFile): {};
           if (prepar) {
             worktime += prepar?.Numberofworkinghours;
           }
@@ -833,7 +834,7 @@ font-weight: bold;
           <tr>
           <td>${item}</td>
           <td>${Datetime(prepar?.CheckIntime)}</td>
-          <td>${Datetime(prepar?.CheckOUTtime)}</td>
+          <td>${prepar?.CheckOUTtime ?  Datetime(prepar?.CheckOUTtime): 0}</td>
           <td>${prepar?.Numberofworkinghours}</td>
           <td></td>
           <td>${numberovertime === null ? 0.0 : numberovertime}</td>

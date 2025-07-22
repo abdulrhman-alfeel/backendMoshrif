@@ -8,7 +8,7 @@ const { BringDataNotifcation,FilterNotifcation, FilterNotifcationv2, BringDataNo
 const usersCompany = ({ uploadQueue }) => {
 const router = express.Router();
 
-router.use(verifyJWT)
+// router.use(verifyJWT)
 
 router.route('/')
 .post(userCompany(uploadQueue))
