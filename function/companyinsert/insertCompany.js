@@ -17,6 +17,7 @@ const {
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyVerification,
+  SELECTTableusersall,
 } = require("../../sql/selected/selectuser");
 const {
   UpdateTableinnuberOfcurrentBranchescompany,
@@ -125,6 +126,20 @@ const sendNotificationCompany = async (name) => {
     console.log(error);
   }
 };
+const sendNotificationalluser = async (name) => {
+  try {
+    const arrayuser = await SELECTTableusersall();
+
+    for (let index = 0; index < arrayuser.length; index++) {
+      const element = arrayuser[index];
+      await verificationSend(element.PhoneNumber, null, `عميلنا العزيز يوجد تحديث جديد للمنصة عن طريق المتجر`);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// sendNotificationalluser();
 //  اضافة فرع جديد
 const inseertCompanybrinsh = () => {
   return async (req, res) => {

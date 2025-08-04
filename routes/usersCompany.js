@@ -1,19 +1,21 @@
 const express = require("express");
 const { userCompany } = require("../function/companyinsert/insertuserCompany");
 const { BringUserCompany, BringUserCompanyinBrinsh, BringvalidityuserinBransh, BringUserCompanyinv2 } = require("../function/companyselect/userCompanyselect");
-const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken, InsertmultipleProjecsinvalidity, UpdatUserCompanyinBrinshV2 } = require("../function/companyinsert/UpdatuserCompany");
+const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken, InsertmultipleProjecsinvalidity, UpdatUserCompanyinBrinshV2, userCompanyUpdatdashbord } = require("../function/companyinsert/UpdatuserCompany");
 const { verifyJWT } = require("../middleware/jwt");
 const { BringDataNotifcation,FilterNotifcation, FilterNotifcationv2, BringDataNotifcationv2 } = require("../function/notifcation/InsertNotifcation");
 
 const usersCompany = ({ uploadQueue }) => {
 const router = express.Router();
 
-// router.use(verifyJWT)
+router.use(verifyJWT)
 
 router.route('/')
 .post(userCompany(uploadQueue))
 router.route('/updat')
 .put(userCompanyUpdat(uploadQueue))
+router.route('/v2/updat')
+.put(userCompanyUpdatdashbord(uploadQueue))
 router.route('/updat/userBrinsh')
 .put(UpdatUserCompanyinBrinsh(uploadQueue))
 router.route('/updat/userBrinshv2')

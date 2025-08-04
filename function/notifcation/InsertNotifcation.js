@@ -117,7 +117,6 @@ const BringDataNotifcationv2 =  () => {
       res.status(401).send("Invalid session");
       console.log("Invalid session");
     }
-        console.log(LastID,'hhhhh');
 
     const result = await SELECTTableNavigation([
       parseInt(LastID),

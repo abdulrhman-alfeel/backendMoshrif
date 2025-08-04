@@ -45,6 +45,8 @@ const {
   FilterProject,
   BringDataRequestsV2,
   BringCountRequstsV2,
+  BringProjectdashbord,
+  FilterProjectdashbord,
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -71,7 +73,7 @@ const { verifyJWT } = require("../middleware/jwt");
 const companySub = ({ uploadQueue }) => {
   const router = express.Router();
 
-  // router.use(verifyJWT);
+  router.use(verifyJWT);
   //  عمليات الادخال
   // router.route("/project").post(uploads.single("image"), projectBrinsh);
   router.post("/project", projectBrinsh(uploadQueue));
@@ -121,10 +123,12 @@ const companySub = ({ uploadQueue }) => {
   );
 
   // //  عمليات الطلب
+  router.get("/v2/BringProject", BringProjectdashbord(uploadQueue));
   router.get("/BringProject", BringProject(uploadQueue));
   router.get("/BringDataprojectClosed", BringDataprojectClosed(uploadQueue));
   router.get("/CloseOROpenProject", CloseOROpenProject(uploadQueue));
   router.get("/FilterProject", FilterProject(uploadQueue));
+  router.get("/v2/FilterProject", FilterProjectdashbord(uploadQueue));
   // router.get("/BringProjectindividual", BringProjectindividual(uploadQueue));
   router.get("/BringProjectObjectone", BringProjectObjectone(uploadQueue));
   router.get("/BringStageTemplet", BringStageTemplet(uploadQueue));

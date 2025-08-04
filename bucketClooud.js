@@ -29,7 +29,6 @@ async function uploaddata(file) {
         
         .on('finish', () => {
         
-        console.log(`Upload complete: ${destination}`);
         
         fs.unlinkSync(filePath, (err) => {
         

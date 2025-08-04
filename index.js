@@ -139,15 +139,15 @@ app.use("/api/HR", HR({ uploadQueue }));
 
 
 
-const simpleCompanies = require("./DashbordMoshrif/routes/simple-companies");
-const simpleAuth = require("./DashbordMoshrif/routes/simple-auth");
-const simpleDashboard = require("./DashbordMoshrif/routes/simple-dashboard");
-const stageTemplates = require("./DashbordMoshrif/routes/stageTemplates");
-const subscriptions = require("./DashbordMoshrif/routes/subscriptions");
-const loginActivity = require("./DashbordMoshrif/routes/loginActivity");
+const simpleCompanies = require("./DashbordMoshrif/simple-companies");
+const simpleAuth = require("./DashbordMoshrif/simple-auth");
+const simpleDashboard = require("./DashbordMoshrif/simple-dashboard");
+const stageTemplates = require("./DashbordMoshrif/stageTemplates");
+const subscriptions = require("./DashbordMoshrif/subscriptions");
+const loginActivity = require("./DashbordMoshrif/loginActivity");
 
 // تسجيل الـ routes
-app.use("/api/auth", simpleAuth);
+app.use("/api/dashbord/auth", simpleAuth);
 app.use("/api/companies", simpleCompanies);
 app.use("/api/dashboard", simpleDashboard);
 app.use("/api/stage-templates", stageTemplates);

@@ -382,7 +382,6 @@ const UPDATETablecompanySubProjectStageCUST = (data) => {
 };
 // اغلاق المراحل
 const UPDATEStopeProjectStageCUST = (data, kind = "Closed") => {
-  console.log(data);
   let sqlString =
     kind === "Closed"
       ? `UPDATE StagesCUST SET CloseDate=?,Difference=?,Done=?, NoteClosed=?,ClosedBy=? WHERE StageID=? AND ProjectID=?`

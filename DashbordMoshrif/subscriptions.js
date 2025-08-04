@@ -1,6 +1,8 @@
 const express = require('express');
-const db = require('../../sql/sqlite');
+const db = require('../sql/sqlite');
+const { verifyJWT } = require('../middleware/jwt');
 const router = express.Router();
+router.use(verifyJWT);
 
 // Helper function to transform company data for subscriptions
 function transformCompanyDataForSubscriptions(company) {

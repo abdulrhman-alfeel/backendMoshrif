@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const db = require('../../sql/sqlite');
+const db = require('../sql/sqlite');
+const { verifyJWT } = require('../middleware/jwt');
+router.use(verifyJWT);
 
 // GET /api/stage-templates - جلب جميع قوالب المراحل
 router.get('/', async (req, res, next) => {

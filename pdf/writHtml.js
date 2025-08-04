@@ -6,7 +6,7 @@ const Totaltofixt = (number) => {
     parseFloat(number)
   );
 };
-
+const moment = require('moment');
 function switchWeek(nameDays) {
   const day = nameDays.trim();
   switch (day) {
@@ -29,10 +29,11 @@ function switchWeek(nameDays) {
   }
 }
 const Datetime = (time) => {
-  const date = new Date(time);
-  const minute = date.getMinutes();
-  const hours = date.getHours();
-  return `${hours}:${minute}`;
+  // const date = new Date(time);
+  // const minute = date.getMinutes();
+  // const hours = date.getHours();
+  // return `${hours}:${minute}`;
+  return moment(time).format('hh:mm A')
 };
 
 const converttimetotext = (time) => {
@@ -866,7 +867,7 @@ font-weight: bold;
                   
                       <th >work Days:</th>
                       <th style="background-color: #fff;color: #1b1818;">${
-                        Preparation?.length
+                        Preparation?.length + 8
                       }</th>
                       <th >Absent Days:  </th>
                       <th style="background-color: #fff;color: #1b1818;">${numberabsent}</th>

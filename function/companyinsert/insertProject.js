@@ -33,7 +33,6 @@ const {
 
 const {
   PercentagecalculationforSTage,
-  BringCountUserinProject,
 } = require("../companyselect/bringProject");
 const {
   Projectinsert,
@@ -70,7 +69,6 @@ const OpreationProjectInsertv2 = async (
       numberBuilding,
       Referencenumber,
     ]);
-    console.log(TypeOFContract);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
     if(TypeOFContract !== "حر"){
     let dataStages = await StageTempletXsl(TypeOFContract);

@@ -1,6 +1,8 @@
 const express = require('express');
-const db = require('../../sql/sqlite');
+const db = require('../sql/sqlite');
+const { verifyJWT } = require('../middleware/jwt');
 const router = express.Router();
+router.use(verifyJWT);
 
 // جلب جميع بيانات تسجيل الدخول
 router.get('/', async (req, res) => {

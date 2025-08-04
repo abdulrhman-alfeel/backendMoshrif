@@ -204,12 +204,23 @@ const LoginVerificationv2 = () => {
   };
 };
 
+const loginOut = () => {
+  return async (req, res) => {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    await DELETETableLoginActivaty([userSession.PhoneNumber]);
+    res.send({success:'تمت العملية بنجاح'}).status(200);
+  };
+};
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
 
 const BringUserCompany = () => {
   return async (req, res) => {
     try {
-      const { IDCompany, number, kind_request="all" } = req.query;
+      const { IDCompany, number, kind_request = "all" } = req.query;
       let count = number || 0;
       let kindrequest =
         kind_request === "all"
@@ -373,19 +384,18 @@ const BringUserCompanyinBrinsh = () => {
 // }
 // };
 
-
 const BringUserCompanyinv2 = () => {
   return async (req, res) => {
     try {
-      let arrayvalidityuser2;
-      let CountID2;
-      let bosss2;
-      const { IDCompany, idBrinsh, type, number=0, kind_request="all" } = req.query;
+      const {
+        IDCompany,
+        idBrinsh,
+        type,
+        number = 0,
+        kind_request = "all",
+      } = req.query;
       let checkGlobles = {};
-      if (
-        (Number(type) && parseInt(number) === 0) ||
-        (!Number(type)) 
-      ) {
+      if ((Number(type) && parseInt(number) === 0) || !Number(type)) {
         let kindrequest =
           kind_request === "all"
             ? `AND id > ${parseInt(number)}`
@@ -393,18 +403,7 @@ const BringUserCompanyinv2 = () => {
 
         const LIMIT = Number(type)
           ? "ORDER BY id ASC "
-          : "ORDER BY id ASC LIMIT 20";
-
-        // استخراج جميع المستخدمين ومعرفات الفروع الخاصة بهم
-        const allUsers = await SELECTTableusersCompany(IDCompany);
-        let allUserBrinshIds = {};
-        let allUsersArray = [];
-        for (const user of allUsers) {
-          const validity = JSON.parse(user.Validity) || [];
-          const brinshIds = validity.map((v) => v.idBrinsh).filter(Boolean);
-          allUserBrinshIds[user.id] = brinshIds;
-          allUsersArray.push(user);
-        }
+          : "ORDER BY id ASC LIMIT 50";
 
         if (parseInt(number) === 0 && kind_request === "all") {
           const { checkGloble } = await getdatafromValidity(
@@ -429,21 +428,27 @@ const BringUserCompanyinv2 = () => {
         bosss2 = bosss;
 
         let arrayfind = [];
-        if (Object.keys(checkGlobles).length > 0 && parseInt(number) === 0) {
+        if (
+          Object.keys(checkGlobles).length > 0 &&
+          parseInt(number) === 0 &&
+          !Number(type) &&
+          kind_request === "all" &&
+          arrayvalidityuser.length <= 0
+        ) {
           let where = Object.values(checkGlobles)
             .map((items) => items.id)
             .join(" , ");
           arrayfind = await SELECTTableusersCompany(
             IDCompany,
             `AND id IN(${where})`,
-            ""
+            "",
+            "id,IDCompany,userName,IDNumber,PhoneNumber,image,jobdiscrption,job,DateOFjoin"
           );
-
-          for (const pic of arrayfind) {
-            const validity = JSON.parse(pic.Validity) || [];
-            const validityextrct = await extractdataValidity(validity);
-            pic.Validity = validityextrct;
-          }
+          // for (const pic of arrayfind) {
+          //   const validity = JSON.parse(pic.Validity) || [];
+          //   const validityextrct = await extractdataValidity(validity);
+          //   pic.Validity = validityextrct;
+          // }
         }
         const responseMessage =
           arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
@@ -454,8 +459,6 @@ const BringUserCompanyinv2 = () => {
           checkGloble: checkGlobles,
           idAdmin: CountID,
           boss: bosss,
-          allUserBrinshIds: allUserBrinshIds,
-          allUsers: allUsersArray,
         });
       } else {
         res.status(200).send({
@@ -544,9 +547,9 @@ const select_user_project = async (result, idBrinsh, type, LIMIT) => {
       }
 
       if (LIMIT !== "ORDER BY id ASC") {
-        const validityextrct = await extractdataValidity(
-          JSON.parse(pic?.Validity)
-        );
+        // const validityextrct = await extractdataValidity(
+        //   JSON.parse(pic?.Validity)
+        // );
         boss2 =
           findBrinsh?.job === "مدير الفرع" &&
           parseInt(findBrinsh.idBrinsh) === parseInt(idBrinsh);
@@ -560,7 +563,7 @@ const select_user_project = async (result, idBrinsh, type, LIMIT) => {
           PhoneNumber: pic.PhoneNumber,
           IDNumber: pic.IDNumber,
           image: pic.image,
-          Validity: validityextrct,
+          Validity: [],
         });
         // }
       }
@@ -598,7 +601,7 @@ const AcceptingcovenantAndbransh = async (kind, result, idBrinsh, LIMIT) => {
       };
     }
     if (LIMIT !== "ORDER BY id ASC") {
-      const validityextrct = await extractdataValidity(validity);
+      // const validityextrct = await extractdataValidity(validity);
       const isBoss =
         findBrinsh?.job === "مدير الفرع" &&
         parseInt(findBrinsh.idBrinsh) === parseInt(idBrinsh);
@@ -612,7 +615,7 @@ const AcceptingcovenantAndbransh = async (kind, result, idBrinsh, LIMIT) => {
           PhoneNumber: pic.PhoneNumber,
           IDNumber: pic.IDNumber,
           image: pic.image,
-          Validity: validityextrct,
+          Validity: [],
         });
       }
     }
@@ -742,4 +745,5 @@ module.exports = {
   BringvalidityuserinBransh,
   verificationSend,
   BringUserCompanyinv2,
+  loginOut
 };

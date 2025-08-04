@@ -18,6 +18,67 @@ const {
 const { UpdaterateCost } = require("./UpdateProject");
 // const { AddOrUpdatuser } = require("../notifcation/NotifcationProject");
 
+const userCompanyUpdatdashbord = () => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+      }
+      // console.log(req.body);
+      const { IDCompany,userName, IDNumber, PhoneNumber, jobdiscrption, job, id } =
+        req.body;
+      let number = String(PhoneNumber);
+
+      if (number.startsWith(0)) {
+        number = number.slice(1);
+      }
+      const verificationFinduser =
+        await SELECTTableusersCompanyVerificationIDUpdate(number, id);
+      const findRegistrioncompany =
+        await SelectVerifycompanyexistencePhonenumber(number);
+
+      if (
+        verificationFinduser.length <= 0 &&
+        findRegistrioncompany === undefined
+      ) {
+        await UpdateTableuserComppany(
+          [
+            IDCompany,
+            userName,
+            IDNumber,
+            number,
+            job,
+            jobdiscrption,
+            id,
+          ],
+          "job=?,jobdiscrption=?"
+        );
+        res
+          .send({
+            success: "تمت العملية بنجاح",
+          })
+          .status(200);
+      } else {
+        res
+          .send({
+            success:
+              findRegistrioncompany !== undefined
+                ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
+                : "الرقم الذي اضفته لمستخدم موجود",
+          })
+          .status(200);
+      }
+    } catch (err) {
+      console.log(err);
+      res
+        .send({
+          success: "فشل في تنفيذ العملية",
+        })
+        .status(400);
+    }
+  };
+};
 const userCompanyUpdat = () => {
   return async (req, res) => {
     try {
@@ -868,4 +929,5 @@ module.exports = {
   DeletUser,
   UpdateToken,
   InsertmultipleProjecsinvalidity,
+  userCompanyUpdatdashbord
 };

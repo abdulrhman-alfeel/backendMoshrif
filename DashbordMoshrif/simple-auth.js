@@ -2,15 +2,16 @@ const express = require("express");
 const {
   SELECTTableusersCompanyVerification,
   SELECTTableLoginActivaty,
-} = require("../../sql/selected/selectuser");
-const { DELETETableLoginActivaty } = require("../../sql/delete");
+} = require("../sql/selected/selectuser");
+const { DELETETableLoginActivaty } = require("../sql/delete");
 const {
   verificationSend,
-} = require("../../function/companyselect/userCompanyselect");
-const { insertTableLoginActivaty } = require("../../sql/INsertteble");
-const { SELECTTablecompany } = require("../../sql/selected/selected");
-const { createTokens } = require("../../middleware/jwt");
+} = require("../function/companyselect/userCompanyselect");
+const { insertTableLoginActivaty } = require("../sql/INsertteble");
+const { SELECTTablecompany } = require("../sql/selected/selected");
+const { createTokens, verifyJWT } = require("../middleware/jwt");
 const router = express.Router();
+router.use(verifyJWT);
 
 // 1. POST /api/auth/login - تسجيل الدخول
 router.post("/login", async (req, res, next) => {
@@ -30,8 +31,8 @@ router.post("/login", async (req, res, next) => {
     //   send operation login to table loginActivaty
     if (result?.length > 0 && result[0]?.job === "Admin") {
       const output = Math.floor(1000 + Math.random() * 9000);
-      // verificationSend(phoneNumber, output);
-
+      //  verificationSend(phoneNumber, output);
+      console.log(output)
       const currentDate = new Date();
       const futureDate = new Date(currentDate);
       futureDate.setDate(currentDate.getDate() + 5);

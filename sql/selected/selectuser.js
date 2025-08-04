@@ -1,8 +1,27 @@
 const db = require("../sqlite");
 
 //  مستخدمي الشركة
+const SELECTTableusersall = () => {
+  return new Promise((resolve, reject) => {
+
+    db.serialize(async () => {
+      db.all(
+        `SELECT PhoneNumber FROM usersCompany`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTTableusersCompany = (id,type="",LIMIT="LIMIT 20",kind="*") => {
   return new Promise((resolve, reject) => {
+
     db.serialize(async () => {
       db.all(
         `SELECT ${kind} FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
@@ -25,7 +44,7 @@ const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT ${type} FROM usersCompany WHERE PhoneNumber=? AND Activation="true"`,
+        `SELECT ${type} FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -39,6 +58,7 @@ const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
     });
   });
 };
+
 //  التحقق من دخول المستخدم
 const SELECTusersCompany = (userName,IDCompany) => {
   return new Promise((resolve, reject) => {
@@ -77,11 +97,12 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
     });
   });
 };
+
 const SELECTTableusersCompanyVerificationobject = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT * FROM usersCompany WHERE PhoneNumber=? AND Activation="true"`,
+        `SELECT * FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -119,7 +140,7 @@ const SELECTTableusersCompanyVerificationIDUpdate = (PhoneNumber, id) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT * FROM usersCompany WHERE PhoneNumber=? AND id !=?`,
+        `SELECT * FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND id !=?`,
         [PhoneNumber, id],
         function (err, result) {
           if (err) {
@@ -243,7 +264,7 @@ const SELECTTableLoginActivatActivaty = (PhoneNumber, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT ${type} FROM LoginActivaty WHERE PhoneNumber=? AND Activation="true"`,
+        `SELECT ${type} FROM LoginActivaty WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -367,5 +388,6 @@ module.exports = {
   SELECTusersCompany,
   SELECTTABLEObjectHR,
   SELECTuserjustforHR,
-  SELECTTableusersCompanyVerificationobject
+  SELECTTableusersCompanyVerificationobject,
+  SELECTTableusersall
 };

@@ -190,24 +190,25 @@ const createstatementPdf = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-    const hrData = await SELECTTABLEHR(
+      let namefile = '';
+      const hrData = await SELECTTABLEHR(
         userSession?.IDCompany,
         Dateday,
         0,
         `AND us.PhoneNumber=${PhoneNumber}`,
         "",
       );
-      let month =  new Date(hrData.Dateday).getUTCMonth() + 1;
-      let years = new Date(hrData.Dateday).getUTCFullYear();
-      let namefile = '';
+      let month =  new Date(hrData[0].Dateday).getUTCMonth() + 1;
+      let years = new Date(hrData[0].Dateday).getUTCFullYear();
+      
       if(hrData.length > 0) {
         const company =  await SELECTTablecompany(userSession?.IDCompany);
         let arrayday = [];
-      for(let p = 0 ; p < 31; p++){
-        let num = p + 1;
-        const number = String(num).length < 2 ? `0${num}`:num;
-        let day= `${years}-${dates(month)}-${number}`;
-        arrayday.push(day);
+        for(let p = 0 ; p < 31; p++){
+          let num = p + 1;
+          const number = String(num).length < 2 ? `0${num}`:num;
+          let day= `${years}-${dates(month)}-${number}`;
+          arrayday.push(day);
       }
       const userName = String(hrData.userName).replace('/'," ");
       namefile =  `${userName}_${new Date().getMinutes()}.pdf`;

@@ -1,6 +1,6 @@
 const express = require('express')
 
-const {Loginuser,LoginVerification, BringAllLoginActvity, CheckUserispresentornot, LoginVerificationv2 } = require('../function/companyselect/userCompanyselect')
+const {Loginuser,LoginVerification, BringAllLoginActvity, CheckUserispresentornot, LoginVerificationv2, loginOut } = require('../function/companyselect/userCompanyselect')
 const { verifyJWT } = require("../middleware/jwt");
 
 
@@ -15,6 +15,7 @@ const Login = ({ uploadQueue }) => {
   router.route('/v2/verification').get(LoginVerificationv2(uploadQueue));
   router.route('/BringAllLoginActvity').get(BringAllLoginActvity(uploadQueue));
   router.route('/Checkfinduser').get(CheckUserispresentornot(uploadQueue));
+  router.route('/loginOut').get(loginOut(uploadQueue));
 
   return router;
 }

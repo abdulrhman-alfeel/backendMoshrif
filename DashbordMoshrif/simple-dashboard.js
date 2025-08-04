@@ -1,6 +1,8 @@
 const express = require('express');
-const db = require('../../sql/sqlite');
+const db = require('../sql/sqlite');
+const { verifyJWT } = require('../middleware/jwt');
 const router = express.Router();
+router.use(verifyJWT);
 
 // 1. GET /api/dashboard/stats - إحصائيات الداشبورد العامة
 router.get('/stats', async (req, res, next) => {

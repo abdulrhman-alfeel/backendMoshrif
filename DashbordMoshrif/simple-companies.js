@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
-const db = require("../../sql/sqlite");
+const db = require("../sql/sqlite");
+const { verifyJWT } = require("../middleware/jwt");
+router.use(verifyJWT);
 
 // دالة لتوليد API Key فريد
 function generateApiKey() {

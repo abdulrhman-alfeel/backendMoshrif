@@ -13,6 +13,7 @@ const verifyJWT = (req, res, next) => {
   if (!authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "unauthorized" });
   }
+
   const token = authHeader.split(" ")[1];
   if (token === process.env.ADMIN) {
     next();

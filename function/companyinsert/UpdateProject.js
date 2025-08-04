@@ -106,22 +106,20 @@ const addrateallinstage = async () => {
   }
 };
 
+
+
 const updatelastproject = async () => {
   await Updaterateandcost(149, 0, "companySubprojects", 'rate', 'id');
   await Updaterateandcost(149, 0, "companySubprojects", 'countuser', 'id');
-
   const result = await SELECTStageallid(149);
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
-    
     await Updaterateandcost(element.StageCustID,0, "StagesCUST", 'rate', 'StageCustID');
   }
-
 };
+
 // updatelastproject();
-
-
-// addallcostandrate()
+// addallcostandrate();
 // addrateallinstage();
 
 const PercentagecalculationforProject = async (id) => {
@@ -223,7 +221,6 @@ const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
       const element = DataSTage[index];
 
       const dataSimble = await StageTempletXsl(element.StageID, "update");
-      console.log(dataSimble, "dataSimble");
       let Days = await AccountDays(numberBuilding, dataSimble.Days);
 
       tables.push({
