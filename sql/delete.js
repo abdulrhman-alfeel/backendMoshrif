@@ -47,7 +47,7 @@ const DeleteTablecompanyStageSub = (idProject, StageID) => {
 const DeleteTablecompanySubProjectall = (table, type = "projectID", id) => {
   db.serialize(function () {
     db.run(`DELETE FROM ${table} WHERE  ${type}=?`, [id], function (err) {
-      // console.log(`Row with the ID has been inserted.`);
+      // console.log(`Row with the ID has been inserted.`,` ${table}, ${type}, ${id}`);
     });
   });
 };
@@ -99,18 +99,20 @@ const DeleteTablecompanySubProjectarchives = (id) => {
   });
 };
 const sqlDropOldTable = (tableName) => {
-  const sqlDropOldTable = `DROP TABLE ${tableName};`;
+  const sqlDropOldTable = `DROP TABLE IF EXISTS ${tableName};`;
   db.serialize(() => {
     // Create a temporary table with the structure of the original table
     db.run(sqlDropOldTable, (err) => {
       if (err) {
         console.error("Error creating temporary table:", err.message);
-        callback(err);
         return;
       }
     });
   });
 };
+
+// sqlDropOldTable("StagesTemplet");
+// sqlDropOldTable("StagesSubTemplet");
 const DeletTableuserComppanyCorssUpdateActivationtoFalse = (
   data,
   type = "usersCompany"
@@ -198,10 +200,21 @@ const deletePostFromDatabase = (data) => {
     });
   });
 };
+const DeleteUserPrepare = (data) => {
+  db.serialize(function () {
+    db.run(`Delete FROM UserPrepare WHERE idUser=?`, data, function (err) {
+      if (err) {
+        console.error(err.message);
+      }
+      // console.log(`Row with the ID ${this.lastID} has been Deleteed.`);
+    });
+  });
+};
 
 const DeleteTablecompanySubProjectChate = () => {};
 
 module.exports = {
+  DeleteUserPrepare,
   DeleteTablecompany,
   DeleteTablecompanySub,
   DeleteTableChate,

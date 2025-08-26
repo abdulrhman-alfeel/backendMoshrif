@@ -6,7 +6,8 @@ const Totaltofixt = (number) => {
     parseFloat(number)
   );
 };
-const moment = require('moment');
+const moment = require("moment-timezone");
+
 function switchWeek(nameDays) {
   const day = nameDays.trim();
   switch (day) {
@@ -29,11 +30,9 @@ function switchWeek(nameDays) {
   }
 }
 const Datetime = (time) => {
-  // const date = new Date(time);
-  // const minute = date.getMinutes();
-  // const hours = date.getHours();
-  // return `${hours}:${minute}`;
-  return moment(time).format('hh:mm A')
+  // تحديد الوقت الحالي وتحويله للمنطقة الزمنية للمستخدم
+  const formattedTime = moment(time).tz("Asia/Riyadh").format("hh:mm A");
+  return formattedTime;
 };
 
 const converttimetotext = (time) => {
@@ -247,6 +246,7 @@ const HtmlContent = (item, home) => {
       <tbody>
   
         ${item.map((pic, index) => {
+
           return `   
     <tr>
           <td>${pic.items[0].InvoiceNo}</td>
@@ -808,41 +808,52 @@ font-weight: bold;
     <tbody>
       ${array.map((item, index) => {
         let prepar = Preparation.find((pic) => pic.Dateday === item);
-          let numberovertime =
-            prepar && prepar?.Overtimeassignment === "true"
-              ? prepar?.Numberofovertimehours
-              : 0.0;
-          let day = DateDay(new Date());
-          let time = item <= day;
-          let days = ["الجمعة" , "السبت"];
-          let absent = !prepar && !days.includes(converttimetotext(item)) && time  ?  "Absent" : "";
-          let CheckInFile = prepar && prepar?.CheckInFile !== null ? JSON.parse(prepar?.CheckInFile): {};
-          if (prepar) {
-            worktime += prepar?.Numberofworkinghours;
-          }
-          if (absent === "Absent") {
-            numberabsent += 1;
-          }
-  
-          if (
-            prepar && prepar?.Overtimeassignment === "true" &&
-            prepar?.Numberofovertimehours !== null
-          ) {
-            numberOvertime += 1;
-          }
-          return prepar 
-            ? `
+        let numberovertime =
+          prepar && prepar?.Overtimeassignment === "true"
+            ? prepar?.Numberofovertimehours
+            : 0.0;
+        let day = DateDay(new Date());
+        let time = item <= day;
+        let days = ["الجمعة", "السبت"];
+        let absent =
+          !prepar && !days.includes(converttimetotext(item)) && time
+            ? "Absent"
+            : "";
+        let CheckInFile =
+          prepar && prepar?.CheckInFile !== null
+            ? JSON.parse(prepar?.CheckInFile)
+            : {};
+        if (prepar) {
+          worktime += prepar?.Numberofworkinghours;
+        }
+        if (absent === "Absent") {
+          numberabsent += 1;
+        }
+
+        if (
+          prepar &&
+          prepar?.Overtimeassignment === "true" &&
+          prepar?.Numberofovertimehours !== null
+        ) {
+          numberOvertime += 1;
+        }
+        return prepar
+          ? `
           <tr>
           <td>${item}</td>
           <td>${Datetime(prepar?.CheckIntime)}</td>
-          <td>${prepar?.CheckOUTtime ?  Datetime(prepar?.CheckOUTtime): 0}</td>
+          <td>${prepar?.CheckOUTtime ? Datetime(prepar?.CheckOUTtime) : 0}</td>
           <td>${prepar?.Numberofworkinghours}</td>
           <td></td>
           <td>${numberovertime === null ? 0.0 : numberovertime}</td>
-          <td> <a href=${Object.keys(CheckInFile?.location).length > 0 ? `https://www.google.com/maps/@${CheckInFile?.location?.latitude},${CheckInFile?.location?.longitude},15z` : "#"}>موقع التحضير</a></td>
+          <td> <a href=${
+            Object.keys(CheckInFile?.location).length > 0
+              ? `https://www.google.com/maps/@${CheckInFile?.location?.latitude},${CheckInFile?.location?.longitude},15z`
+              : "#"
+          }>موقع التحضير</a></td>
         </tr>
           `
-            : `<tr style="background-color:#f6f8fe">
+          : `<tr style="background-color:#f6f8fe">
           <td>${item}</td>
           <td></td>
           <td></td>
@@ -851,8 +862,7 @@ font-weight: bold;
           <td></td>
           <td></td>
         </tr>`;
-        }
-      )}
+      })}
 
       <!-- Add more rows as needed -->
     </tbody>
@@ -893,4 +903,4 @@ font-weight: bold;
   `;
   return html;
 };
-module.exports = { HtmlContent, HtmlStatmentall,HtmlStatmentHR };
+module.exports = { HtmlContent, HtmlStatmentall, HtmlStatmentHR };

@@ -112,6 +112,7 @@ const LoginVerification = () => {
       if (result !== undefined) {
         // create accessToken from data users
         const user = {
+          id: result?.id,
           IDCompany: result?.IDCompany,
           CommercialRegistrationNumber: result.CommercialRegistrationNumber,
           userName: result?.userName,
@@ -212,7 +213,7 @@ const loginOut = () => {
       console.log("Invalid session");
     }
     await DELETETableLoginActivaty([userSession.PhoneNumber]);
-    res.send({success:'تمت العملية بنجاح'}).status(200);
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
   };
 };
 // التحقق من دخول المستخدم ومعرفة صلاحياته وارسال بيانات حسب الصلاحيات
@@ -441,7 +442,7 @@ const BringUserCompanyinv2 = () => {
           arrayfind = await SELECTTableusersCompany(
             IDCompany,
             `AND id IN(${where})`,
-            "",
+            "ORDER BY id ASC",
             "id,IDCompany,userName,IDNumber,PhoneNumber,image,jobdiscrption,job,DateOFjoin"
           );
           // for (const pic of arrayfind) {
@@ -452,10 +453,22 @@ const BringUserCompanyinv2 = () => {
         }
         const responseMessage =
           arrayvalidityuser.length > 0 ? "successfuly" : "notsuccessfuly";
+        const lengthArray = arrayvalidityuser.filter((item) =>
+          arrayfind.find((pic) => pic.id === item.id)
+        ).length;
+
         res.status(200).send({
           success: responseMessage,
-          data: arrayvalidityuser,
-          arrayfind: arrayfind,
+          data:
+            lengthArray < 7
+              ? [
+                  ...arrayfind,
+                  ...arrayvalidityuser.filter((item) =>
+                    arrayfind.every((pic) => pic.id !== item.id)
+                  ),
+                ].sort((a, b) => a.id - b.id)
+              : arrayvalidityuser,
+          arrayfind: [],
           checkGloble: checkGlobles,
           idAdmin: CountID,
           boss: bosss,
@@ -745,5 +758,5 @@ module.exports = {
   BringvalidityuserinBransh,
   verificationSend,
   BringUserCompanyinv2,
-  loginOut
+  loginOut,
 };

@@ -374,9 +374,9 @@ const SELECTTablecompanySubProjectLast_id = (
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca WHERE ca.Disabled="true" AND ca.id=?`
         : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation ,ca.Referencenumber FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
-    db.serialize(function () {
-      db.get(stringSql, [id], function (err, result) {
-        if (err) {
+        db.serialize(function () {
+          db.get(stringSql, [id], function (err, result) {
+            if (err) {
           reject(err);
           // console.error(err.message);
         } else {
@@ -618,6 +618,70 @@ const SELECTdataprojectandbrinshandcompany = (id) => {
 //  سنبل المراحل والفروع
 
 // المراحل
+const SELECTFROMTableStageTempletall = (number=0) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT StageIDtemplet,StageID,Type,StageName,Days FROM StagesTemplet WHERE   StageIDtemplet  > ${number} ORDER BY StageIDtemplet ASC lIMIT 10`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTFROMTableStageTempletaObject = (number) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT te.StageIDtemplet,us.StageName FROM StagesTemplet te LEFT JOIN StagesCUST us ON us.StageID = te.StageID WHERE te.StageID='${number}'`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTFROMTableSubStageTempletall = (StageID,number=0) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM StagesSubTemplet WHERE StageID='${StageID}' AND  StageSubID  > ${number} ORDER BY StageSubID ASC liMIT 10`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTFROMTableStageTempletmax = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT max(StageIDtemplet) ,CAST(StageID AS INTEGER) AS StageID  FROM StagesTemplet`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result.StageID);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTFROMTablecompanysubprojectStageTemplet = (Type) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
@@ -636,7 +700,6 @@ const SELECTFROMTablecompanysubprojectStageTemplet = (Type) => {
   });
 };
 
-// الفروع
 const SELECTFROMTablecompanysubprojectStagesubTeplet = (StageID) => {
   // console.log(StageID, "helll stageID");
   return new Promise((resolve, reject) => {
@@ -1979,7 +2042,7 @@ const SELECTTableViewChateUser = (chatID, userName, type) => {
       db.all(stringSql, [chatID, userName], function (err, result) {
         if (err) {
           resolve([]);
-          console.log(err.message, "nooooo");
+          console.log(err.message);
         } else {
           resolve(result);
         }
@@ -2446,4 +2509,8 @@ module.exports = {
   SELECTStageSubid,
   SELECTTablepostAll,
   SELECTStageallid,
+  SELECTFROMTableStageTempletmax,
+  SELECTFROMTableStageTempletall,
+  SELECTFROMTableSubStageTempletall,
+  SELECTFROMTableStageTempletaObject
 };

@@ -4,7 +4,6 @@ const {
   SELECTTablecompanyName,
   SELECTTablecompanySubProject,
   SELECTTablecompany,
-  SELECTTablecompanySubLinkevaluation,
   SELECTTableFinancialCustody,
   SELECTTableMaxFinancialCustody,
   SELECTTablecompanyRegistrationall,
@@ -17,7 +16,7 @@ const {
 const bringDataCompanyRegistration = () => {
   return async (req, res) => {
     try {
-      const { type, LastID } = req.query;
+      const { type="companyRegistration", LastID=0 } = req.query;
       const company = await SELECTTablecompanyRegistrationall(type, LastID);
       res.send({ masseg: "sucssfuly", data: company }).status(200);
     } catch (err) {
@@ -65,7 +64,6 @@ const biringDatabrinshCompany = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-
       const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
 
       const cached = await redis.get(key);

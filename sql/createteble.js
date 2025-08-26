@@ -39,11 +39,11 @@ const CreateTable = () => {
 
   // templet ****************************************
   db.run(
-    `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`
+    `CREATE TABLE IF NOT EXISTS StagesTemplet(StageIDtemplet INTEGER PRIMARY KEY AUTOINCREMENT,StageID TEXT NULL,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`
   );
 
   db.run(
-    `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`
+    `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID TEXT NULL,StageSubName nvarchar[max] NULL,attached TEXT NULL , CloseDate TEXT NULL)`
   );
 
   // CUSTOMER TEBLE *************************************
@@ -105,7 +105,7 @@ const CreateTable = () => {
   //  مشاهدة دردشة المراحل
   db.run(
     `CREATE TABLE IF NOT EXISTS ViewsCHATSTAGE(viewsID INTEGER PRIMARY KEY AUTOINCREMENT, chatID INTEGER NOT NULL, userName TEXT NOT NULL, Date DATE DEFAULT CURRENT_DATE, FOREIGN KEY (chatID) REFERENCES ChatSTAGE (chatID) ON DELETE RESTRICT ON UPDATE RESTRICT) `
-  ); 
+  );
   // الدردشة
   db.run(
     `CREATE TABLE IF NOT EXISTS Chat(chatID INTEGER PRIMARY KEY AUTOINCREMENT , idSendr TEXT NOT NULL,Type TEXT NULL ,ProjectID INTEGER NOT NULL,Sender TEXT NOT NULL ,message TEXT NULL,Date DATE DEFAULT CURRENT_DATE,timeminet DATE NULL,File JSON NULL , Reply JSON NULL)`
@@ -127,6 +127,16 @@ const CreateTable = () => {
   db.run(
     `CREATE TABLE IF NOT EXISTS Prepare (id INTEGER PRIMARY KEY AUTOINCREMENT ,IDCompany INTEGER NOT NULL, idUser INTEGER NOT NULL,Dateday DATE DEFAULT CURRENT_DATE ,CheckIntime DATE  NULL, CheckInFile JSON NULL , CheckOUTtime DATE NULL , CheckoutFile JSON NULL , Numberofworkinghours INTEGER NULL,Overtimeassignment TEXT DEFAULT "false" ,Numberofovertimehours INTEGER NULL)`
   );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS Flowmove (id INTEGER PRIMARY KEY AUTOINCREMENT ,userName TEXT NOT NULL, PhoneNumber TEXT NOT NULL,Movementtype TEXT NULL,Time DATE DEFAULT CURRENT_DATE)`
+  );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS UserPrepare (id INTEGER PRIMARY KEY AUTOINCREMENT,idUser INTEGER NOT NULL,IDCompany INTEGER NOT NULL,Time DATE DEFAULT CURRENT_DATE)`
+  );
+    db.run(`CREATE TABLE IF NOT EXISTS UpdateSystem (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        version TEXT NOT NULL,messageUpdate TEXT NOT NULL
+      )`);
   const sql = `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       IDBranch INTEGER NOT NULL,
@@ -136,16 +146,25 @@ const CreateTable = () => {
       Date DATE DEFAULT CURRENT_TIMESTAMP
   )`;
 
-
   db.run(sql, (err) => {
     if (err) {
       console.error("SQL Error:", err);
     }
   });
 
+  db.run(`CREATE TABLE IF NOT EXISTS subscripation (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , ProjectID INTEGER NOT NULL ,StartDate DATE NULL,EndDate DATE NULL) `);
+  db.run(`CREATE TABLE IF NOT EXISTS Invoice (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , Amount DECIMAL NOT NULL ,Subscription_end_date DATE DEFAULT CURRENT_TIMESTAMP,State TEXT NULL )`);
+  console.log((100 / 30) * (30 - 25))
+
   // db.run(
   //   `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (id INTEGER PRIMARY KEY AUTOINCREMENT , IDBranch INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, check INTEGER NOT NULL , PhoneNumber INTEGER NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP)`
   // )
+  // db.run(`
+  //   ALTER TABLE StagesSub
+  //   ADD COLUMN Referencenumber INTEGER NULL;`)
+  // db.run(`
+  //   ALTER TABLE StagesCUST
+  //   ADD COLUMN Referencenumber INTEGER NULL;`)
   // db.run(`
   //   ALTER TABLE Expense
   //   ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
@@ -156,10 +175,15 @@ const CreateTable = () => {
   //   ALTER TABLE Revenue
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
   // db.run(`
+  //   ALTER TABLE Revenue
+  //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+  // db.run(`
   //   ALTER TABLE Returns
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
-
+  // db.run(`
+  //   ALTER TABLE  StagesSub
+  //   ADD COLUMN attached TEXT NULL `)
   // db.run(`
   //   ALTER TABLE companySubprojects
   //   ADD COLUMN cost INTEGER NULL `)
@@ -172,7 +196,6 @@ const CreateTable = () => {
   // db.run(`
   //   ALTER TABLE StagesCUST
   //   ADD COLUMN rate DATE NULL ;`  )
-
 
   // db.run(`
   //   ALTER TABLE Requests

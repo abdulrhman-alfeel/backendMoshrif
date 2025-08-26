@@ -17,11 +17,11 @@ const {
   InsertDatainTableRequests,
   projectBrinshv2,
   AddORCanselAchievmentarrayall,
+  insertStageSubv2,
 } = require("../function/companyinsert/insertProject");
 const { uploads } = require("../middleware/uploads");
 const {
   BringProject,
-  BringProjectindividual,
   BringStageTemplet,
   BringStageSubTemplet,
   BringStage,
@@ -68,6 +68,7 @@ const {
   UpdateDataStageSub,
   Confirmarrivdrequest,
   DeleteRequests,
+  UpdateDataStageSubv2,
 } = require("../function/companyinsert/UpdateProject");
 const { verifyJWT } = require("../middleware/jwt");
 const companySub = ({ uploadQueue }) => {
@@ -83,6 +84,7 @@ const companySub = ({ uploadQueue }) => {
   router.post("/StageSubTemplet", StageSubTemplet(uploadQueue));
   router.post("/Stage", InsertStage(uploadQueue));
   router.post("/StageSub", insertStageSub(uploadQueue));
+  router.post("/v2/StageSub",  uploads.single("file"),insertStageSubv2(uploadQueue));
   router.post("/ClassCloaseOROpenStage", ClassCloaseOROpenStage(uploadQueue));
   router.post("/NotesStage", uploads.single("image"), NotesStage(uploadQueue));
   router.post(
@@ -163,6 +165,7 @@ const companySub = ({ uploadQueue }) => {
   router.put("/UpdateStartdate", UpdateStartdate(uploadQueue));
   router.put("/UpdateDataStage", UpdateDataStage(uploadQueue));
   router.put("/UpdateDataStageSub", UpdateDataStageSub(uploadQueue));
+  router.put("/v2/UpdateDataStageSub", uploads.single("file"),UpdateDataStageSubv2(uploadQueue));
   // حذف المشروع
   router.get(
     "/DeletProjectwithDependencies",

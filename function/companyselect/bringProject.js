@@ -193,7 +193,7 @@ const FilterProjectdashbord = () => {
         res.status(401).send("Invalid session");
         // console.log("Invalid session");
       }
-   
+
       const result = await SELECTTablecompanySubProjectFilter(
         search,
         IDCompanySub
@@ -453,49 +453,40 @@ const BringStagev2 = () => {
         return res.status(401).send("Invalid session");
       }
       const { ProjectID, type, number } = req.query;
-      // const key = `Stage:${userSession?.PhoneNumber}:${ProjectID}:${number}`;
-
-      // const cached = await redis.get(key);
-      // if (cached && type === "cache") {
-      //   const cachedData = JSON.parse(cached);
-      //   return res
-      //     .send({
-      //       success: true,
-      //       data: cachedData?.data,
-      //       Validity: cachedData?.Validity,
-      //     })
-      //     .status(200);
-      // }
-
+      const Limit = type === "cache" ?`LIMIT 8` : ""  ;
       const result = await SELECTTablecompanySubProjectStageCUSTv2(
         ProjectID,
-        `AND cu.StageCustID > ${number}  ORDER BY cu.StageCustID ASC LIMIT 8 `
+        `AND cu.StageCustID > ${number}  ORDER BY cu.StageCustID ASC ${Limit} `
       );
       // استيراد صلاحية المستخدم للمشروع
 
-      const userdata = await SELECTTableusersCompanyVerification(
-        userSession.PhoneNumber
-      );
+      const userdata =
+        number === 0
+          ? await SELECTTableusersCompanyVerification(userSession.PhoneNumber)
+          : [];
 
-      const arrayUser = await BringUserinProject(
-        JSON.parse(userdata[0].Validity),
-        0,
-        ProjectID,
-        "validityProject"
-      );
-      // let data = {
-      //   data: result,
-      //   Validity: isNaN(arrayUser?.ValidityProject)
-      //     ? arrayUser?.ValidityProject
-      //     : arrayUser,
-      // };
+      const arrayUser =
+        number === 0
+          ? await BringUserinProject(
+              JSON.parse(userdata[0].Validity),
+              0,
+              ProjectID,
+              "validityProject"
+            )
+          : [];
+      let datavalidity =
+        number === 0
+          ? {
+              Validity: isNaN(arrayUser?.ValidityProject)
+                ? arrayUser?.ValidityProject
+                : arrayUser,
+            }
+          : {};
       res
         .send({
           success: true,
           data: result,
-          Validity: isNaN(arrayUser?.ValidityProject)
-            ? arrayUser?.ValidityProject
-            : arrayUser,
+          ...datavalidity,
           countall: result[0]?.count,
         })
         .status(200);
@@ -1876,5 +1867,5 @@ module.exports = {
   BringCountUserinProject,
   BringStagev2,
   BringProjectdashbord,
-  FilterProjectdashbord
+  FilterProjectdashbord,
 };

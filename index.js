@@ -1,21 +1,15 @@
-// useerCompanyselect.js
-// ChatJobsClass.js
-// ChatJobs.js
-// NotifcationProject.js
-// Opreation.js
-// insertCompany.js
-// UpdatuserCompany.js
-// chatroute.js
-// usersCompany.js
-// apiMoshrif.js
-
-// insertNotifcation.js
-// selected.js
+// update.js 
 // INsertteble.js
-// createteble.js
-// UpdateCompany.js
-// UpdateProject.js
-// company.js
+// selected.js 
+// selectuser.js
+// createteble.js 
+// insertProject.js
+// Aid.js
+// HR.js
+// bringHR.js
+// opreationPreparation.js
+// systemUpdet.js
+// companySub.js
 
 // redis-server.exe
 // PS D:\ppp\aldy\Purebred_horses\38\backend> Set-ExecutionPolicy -ExecutionPolicy
@@ -28,18 +22,6 @@
 // https://www.youtube.com/watch?v=XbFQj7NYjZQ
 
 
-
-// selected.js
-// insertProject.js
-// writHtml.js
-// ChatJobsClass.js
-// UpdatuserCompany.js
-
-
-
-// bringProject.js
-// insertuserCompany.js
-// selected.js
 
 
 const { express, app, server, io } = require("./importMIn");
@@ -71,18 +53,29 @@ const usersCompany = require("./routes/usersCompany");
 const Login = require("./routes/login");
 const apiMoshrif = require("./routes/apiMoshrif");
 const HR = require("./routes/HR.js");
+const Templet = require("./routes/Templet.js");
 
 require("dotenv").config();
+const path = require("path");
+
+
 
 // Set up middlewares
 app.use(cors());
-app.use(helmet());
+// app.use(helmet());
 app.use(express.json());
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    connectSrc: ["'self'", "https://mushrf.net"]
+  }
+}));
 
 app.use(cookieparser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/upload", express.static("upload"));
+app.use(express.static(path.join(__dirname, '/build')));
 
 app.use(
   session({
@@ -117,7 +110,7 @@ createBullBoard({
 serverAdapter.setBasePath("/admin/queues");
 app.use("/admin/queues", serverAdapter.getRouter());
 
-app.use("/", require("./routes/root"));
+// app.use("/", require("./routes/root"));
 
 
 
@@ -132,9 +125,9 @@ app.use("/api/brinshCompany", companySub({ uploadQueue }));
 app.use("/api/posts", postpublic({ uploadQueue }));
 app.use("/api/Chate", chatroute({ uploadQueue }));
 app.use("/api/HR", HR({ uploadQueue }));
+app.use("/api/Templet", Templet({ uploadQueue }));
+app.use("/Maintenance", require('./systemUpdate.js'));
 // app.use("/api/dashbord", require("./routes/DashbordMoshrif"));
-
-
 
 
 
@@ -143,7 +136,6 @@ const simpleCompanies = require("./DashbordMoshrif/simple-companies");
 const simpleAuth = require("./DashbordMoshrif/simple-auth");
 const simpleDashboard = require("./DashbordMoshrif/simple-dashboard");
 const stageTemplates = require("./DashbordMoshrif/stageTemplates");
-const subscriptions = require("./DashbordMoshrif/subscriptions");
 const loginActivity = require("./DashbordMoshrif/loginActivity");
 
 // تسجيل الـ routes
@@ -151,7 +143,6 @@ app.use("/api/dashbord/auth", simpleAuth);
 app.use("/api/companies", simpleCompanies);
 app.use("/api/dashboard", simpleDashboard);
 app.use("/api/stage-templates", stageTemplates);
-app.use("/api/subscriptions", subscriptions);
 app.use("/api/login-activity", loginActivity);
 
 
@@ -243,16 +234,18 @@ app.use(limiter);
 app.use(errorHandler);
 
 app.all("*", (req, res) => {
-  if (req.accepts("html")) {
-    res.status(404);
+    res.sendFile(path.join(__dirname, "./build", 'index.html'));
+  
+  // if (req.accepts("html")) {
+  //   res.status(404);
 
-    // console.log(req)
-    // res.sendFile(path.json(__dirname, "views", "404.html"));
-  } else if (req.accepts("json")) {
-    res.json({ message: "404 not Found" });
-  } else {
-    res.type("txt").send("404 Not Found");
-  }
+  //   // console.log(req)
+  //   // res.sendFile(path.json(__dirname, "views", "404.html"));
+  // } else if (req.accepts("json")) {
+  //   res.json({ message: "404 not Found" });
+  // } else {
+  //   res.type("txt").send("404 Not Found");
+  // }
 });
 
 

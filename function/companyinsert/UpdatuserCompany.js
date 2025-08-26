@@ -1,3 +1,4 @@
+const { Addusertraffic } = require("../../middleware/Aid");
 const {
   DeletTableuserComppanyCorssUpdateActivationtoFalse,
 } = require("../../sql/delete");
@@ -25,9 +26,22 @@ const userCompanyUpdatdashbord = () => {
       if (!userSession) {
         res.status(401).send("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "userCompanyUpdatdashbord"
+      );
       // console.log(req.body);
-      const { IDCompany,userName, IDNumber, PhoneNumber, jobdiscrption, job, id } =
-        req.body;
+      const {
+        IDCompany,
+        userName,
+        IDNumber,
+        PhoneNumber,
+        jobdiscrption,
+        job,
+        id,
+      } = req.body;
       let number = String(PhoneNumber);
 
       if (number.startsWith(0)) {
@@ -43,15 +57,7 @@ const userCompanyUpdatdashbord = () => {
         findRegistrioncompany === undefined
       ) {
         await UpdateTableuserComppany(
-          [
-            IDCompany,
-            userName,
-            IDNumber,
-            number,
-            job,
-            jobdiscrption,
-            id,
-          ],
+          [IDCompany, userName, IDNumber, number, job, jobdiscrption, id],
           "job=?,jobdiscrption=?"
         );
         res
@@ -86,6 +92,12 @@ const userCompanyUpdat = () => {
       if (!userSession) {
         res.status(401).send("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "userCompanyUpdat"
+      );
       // console.log(req.body);
       const { userName, IDNumber, PhoneNumber, jobdiscrption, job, id } =
         req.body;
@@ -149,6 +161,12 @@ const UpdatUserCompanyinBrinsh = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdatUserCompanyinBrinsh"
+      );
       // console.log(req.body);
       const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
 
@@ -186,6 +204,12 @@ const UpdatUserCompanyinBrinshV2 = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdatUserCompanyinBrinshV2"
+      );
       // console.log(req.body);
       const { idBrinsh, type, checkGloblenew, checkGlobleold, kind } = req.body;
       // const result = await SELECTTableusersCompany(IDCompany);
@@ -571,6 +595,13 @@ const opreationDeletuserfromBrinshorProjectorCovenant = async (
 
 const DeletUser = () => {
   return async (req, res) => {
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+
+    Addusertraffic(userSession.userName, userSession?.PhoneNumber, "DeletUser");
     const PhoneNumber = req.body.PhoneNumber;
     try {
       const deletuser =
@@ -819,6 +850,17 @@ const DeleteUserFromProject = (validity, idBrinsh, type) => {
 const InsertmultipleProjecsinvalidity = () => {
   return async (req, res) => {
     try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "InsertmultipleProjecsinvalidity"
+      );
       const { ProjectesNew, Validitynew, idBrinsh, PhoneNumber } = req.body;
 
       const resultuser = await SELECTTableusersCompanyVerification(PhoneNumber);
@@ -929,5 +971,5 @@ module.exports = {
   DeletUser,
   UpdateToken,
   InsertmultipleProjecsinvalidity,
-  userCompanyUpdatdashbord
+  userCompanyUpdatdashbord,
 };

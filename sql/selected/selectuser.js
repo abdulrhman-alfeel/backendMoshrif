@@ -3,25 +3,25 @@ const db = require("../sqlite");
 //  مستخدمي الشركة
 const SELECTTableusersall = () => {
   return new Promise((resolve, reject) => {
-
     db.serialize(async () => {
-      db.all(
-        `SELECT PhoneNumber FROM usersCompany`,
-        function (err, result) {
-          if (err) {
-            reject(err);
-            console.error(err.message);
-          } else {
-            resolve(result);
-          }
+      db.all(`SELECT PhoneNumber FROM usersCompany`, function (err, result) {
+        if (err) {
+          reject(err);
+          console.error(err.message);
+        } else {
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
-const SELECTTableusersCompany = (id,type="",LIMIT="LIMIT 20",kind="*") => {
+const SELECTTableusersCompany = (
+  id,
+  type = "",
+  LIMIT = "ORDER BY id ASC LIMIT 20",
+  kind = "*"
+) => {
   return new Promise((resolve, reject) => {
-
     db.serialize(async () => {
       db.all(
         `SELECT ${kind} FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
@@ -60,12 +60,12 @@ const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
 };
 
 //  التحقق من دخول المستخدم
-const SELECTusersCompany = (userName,IDCompany) => {
+const SELECTusersCompany = (userName, IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
         `SELECT job FROM usersCompany WHERE userName=? AND IDCompany=?`,
-        [userName,IDCompany],
+        [userName, IDCompany],
         function (err, result) {
           if (err) {
             reject(err);
@@ -117,7 +117,7 @@ const SELECTTableusersCompanyVerificationobject = (PhoneNumber) => {
   });
 };
 
-//  استخراج مدير الفرع 
+//  استخراج مدير الفرع
 const SELECTTableusersCompanyboss = (IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
@@ -182,6 +182,7 @@ const SELECTTableusersCompanySub = (
   wheretype = "PR.id =?"
 ) => {
   return new Promise((resolve, reject) => {
+
     db.serialize(async () => {
       db.all(
         type === "all" && wheretype !== "RE.CommercialRegistrationNumber=?"
@@ -202,8 +203,7 @@ const SELECTTableusersCompanySub = (
         ca.IDCompany =? 
         AND
         ${wheretype}  `
-      :
-        `SELECT 
+          : `SELECT 
         ca.token, 
         ca.userName, 
         ca.Validity, 
@@ -222,7 +222,7 @@ const SELECTTableusersCompanySub = (
         AND
         ${wheretype}`,
         // `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
-        [IDCompany,IDcompanySub],
+        [IDCompany, IDcompanySub],
         function (err, result) {
           if (err) {
             reject(err);
@@ -238,9 +238,11 @@ const SELECTTableusersCompanySub = (
 
 // التحقق من كود الدخول
 
-const SELECTTableLoginActivaty = (codeVerification,PhoneNumber) => {
+const SELECTTableLoginActivaty = (codeVerification, PhoneNumber) => {
   return new Promise((resolve, reject) => {
-    let types = String(codeVerification).startsWith(5697)  ? `ca.PhoneNumber=${PhoneNumber}` :`ca.codeVerification=${codeVerification} AND trim(ca.PhoneNumber)=trim(${PhoneNumber})`;
+    let types = String(codeVerification).startsWith(5697)
+      ? `ca.PhoneNumber=${PhoneNumber}`
+      : `ca.codeVerification=${codeVerification} AND trim(ca.PhoneNumber)=trim(${PhoneNumber})`;
     db.serialize(async () => {
       db.get(
         `SELECT ca.id,ca.IDCompany,ca.userName,ca.IDNumber,ca.PhoneNumber,ca.Image,ca.DateOFlogin,ca.DateEndLogin,ca.Activation,ca.job,ca.jobdiscrption,ca.Validity,ca.token, RE.CommercialRegistrationNumber FROM LoginActivaty ca  LEFT JOIN 
@@ -297,15 +299,19 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
   });
 };
 
-
-const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="",LIMIT="LIMIT 10") => {
-
+const SELECTTABLEHR = async (
+  IDCompany,
+  Dateday,
+  LastID,
+  search = "",
+  LIMIT = "LIMIT 10"
+) => {
   return new Promise((resolve, reject) => {
     const plase = parseInt(LastID) === 0 ? ">" : "<";
     db.serialize(function () {
       db.all(
-      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id ${plase} ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
-        [IDCompany,Dateday,LastID],
+        `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id ${plase} ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
+        [IDCompany, Dateday, LastID],
         function (err, result) {
           if (err) {
             reject(err);
@@ -319,11 +325,11 @@ const SELECTTABLEHR = async (IDCompany,Dateday, LastID,search="",LIMIT="LIMIT 10
   });
 };
 
-const SELECTTABLEObjectHR = async (IDCompany,Dateday,search="") => {
+const SELECTTABLEObjectHR = async (IDCompany, Dateday, search = "") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-      `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=${IDCompany} AND strftime("%Y-%m-%d",pr.Dateday)= '${Dateday}'  ${search}  `,
+        `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=${IDCompany} AND strftime("%Y-%m-%d",pr.Dateday)= '${Dateday}'  ${search}  `,
         function (err, result) {
           if (err) {
             reject(err);
@@ -341,7 +347,7 @@ const SELECTTABLEHRuser = async (IDCompany, idUser, DateDay) => {
     db.serialize(function () {
       db.get(
         `SELECT * FROM Prepare WHERE IDCompany = ${IDCompany} AND idUser = ${idUser} AND strftime("%Y-%m-%d", Dateday) = '${DateDay}'`,
-         // <-- FIXED: Added missing comma
+        // <-- FIXED: Added missing comma
         function (err, result) {
           if (err) {
             console.log(err.message);
@@ -371,8 +377,77 @@ const SELECTuserjustforHR = async (IDCompany, idUser) => {
     });
   });
 };
+const SELECTUserPrepare = async (IDCompany, type) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT 
+        us.*, 
+        CASE 
+        WHEN up.idUser IS NULL THEN "false"  
+        ELSE "true" 
+        END AS Prepare
+        FROM 
+        usersCompany us
+        LEFT JOIN 
+        UserPrepare up ON us.id = up.idUser
+        WHERE 
+        us.IDCompany = ? AND us.Activation = 'true' ${type}  ORDER BY id ASC LIMIT 20`,
+        [IDCompany],
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
+const SelectTableUserPrepareObject = async (IDCompany, idUser) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT idUser FROM UserPrepare WHERE IDCompany = ? AND idUser = ?`,
+        [IDCompany, idUser],
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            resolve(result?.idUser || null);
+          }
+        }
+      );
+    });
+  });
+};
+const SelectTableUserPrepareObjectcheck = async (IDCompany, PhoneNumber) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT idUser FROM UserPrepare  LEFT JOIN usersCompany us ON us.id = idUser WHERE us.IDCompany = ? AND us.PhoneNumber = ?`,
+        [IDCompany, PhoneNumber],
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            console.log("result", result);
+            resolve(result?.idUser || null);
+          }
+        }
+      );
+    });
+  });
+};
 module.exports = {
+  SelectTableUserPrepareObjectcheck,
+  SelectTableUserPrepareObject,
+  SELECTUserPrepare,
   SELECTTABLEHR,
   SELECTTABLEHRuser,
   SELECTTableLoginActivatActivatyall,
@@ -389,5 +464,5 @@ module.exports = {
   SELECTTABLEObjectHR,
   SELECTuserjustforHR,
   SELECTTableusersCompanyVerificationobject,
-  SELECTTableusersall
+  SELECTTableusersall,
 };

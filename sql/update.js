@@ -342,7 +342,7 @@ const UpdateTableLoginActivatytoken = (PhoneNumber, tokennew, tokenold) => {
 
 const UPDATETablecompanySubProjectStagetemplet = (data) => {
   db.run(
-    `UPDATE StagesTemplet SET Type=?, StageName=?, Days=?,OrderBy=?,Difference=? WHERE StageID=?`,
+    `UPDATE StagesTemplet SET Type=?, StageName=?, Days=? WHERE StageID=?`,
     data,
     function (err) {
       if (err) {
@@ -352,9 +352,9 @@ const UPDATETablecompanySubProjectStagetemplet = (data) => {
     }
   );
 };
-const UPDATETablecompanySubProjectStageSubtemplet = (data) => {
+const UPDATETablecompanySubProjectStageSubtemplet = (data,type="StageSubName=?") => {
   db.run(
-    `UPDATE StagesSubTemplet SET StageSubName=? WHERE StageSubID=? `,
+    `UPDATE StagesSubTemplet SET ${type} WHERE StageSubID=? `,
     data,
     function (err) {
       if (err) {
@@ -393,6 +393,15 @@ const UPDATEStopeProjectStageCUST = (data, kind = "Closed") => {
     console.log(`Row with the ID ${this.lastID} has been inserted.`);
   });
 };
+const UPDATEStopeProjectStageCUSTv2 = (data) => {
+  let sqlString = `UPDATE StagesCUST SET Type=?, StageName=?, Days=? WHERE Referencenumber=? `;
+  db.run(sqlString, data, function (err) {
+    if (err) {
+      console.log(err.message);
+    }
+    console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
 
 const UPDATETablecompanySubProjectStageNotes = (data) => {
   db.run(
@@ -406,10 +415,10 @@ const UPDATETablecompanySubProjectStageNotes = (data) => {
     }
   );
 };
-const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name") => {
+const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name",namecolmn="StageSubName=?") => {
   let stringSql =
     kind === "Name"
-      ? `UPDATE StagesSub SET StageSubName=? WHERE StageSubID=?`
+      ? `UPDATE StagesSub SET ${namecolmn} WHERE StageSubID=?`
       : kind === "Note"
       ? `UPDATE StagesSub SET Note=? WHERE StageSubID=?`
       : `UPDATE StagesSub SET closingoperations=?,CloseDate=?, Done=?  WHERE StageSubID=?`;
@@ -420,6 +429,18 @@ const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name") => {
     console.log(`Row with the ID ${this.lastID} has been inserted.`);
   });
 };
+const UPDATETablecompanySubProjectStagesSubv2 = (data) => {
+    
+  db.run(`UPDATE StagesSub SET StageSubName=?,attached=? WHERE Referencenumber=?`, data, function (err) {
+    if (err) {
+      console.log(err.message);
+    }
+    console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
+
+
+
 const UPDATETablecompanySubProjectStageSubNotes = (data) => {
   db.run(
     `UPDATE StageSubNotes  SET Type=?,Note=?,RecordedBy=?,countdayDelay=?,ImageAttachment=? WHERE StagSubHOMID=? AND StagHOMID=? AND ProjectID=?`,
@@ -795,6 +816,7 @@ module.exports = {
   UpdateTablecompanyRegistration,
   UPDATETablecompanySubProjectexpenseInvoiceNoapi,
   Updaterateandcost,
-  UpdaterateandcostStage
-  
+  UpdaterateandcostStage,
+  UPDATEStopeProjectStageCUSTv2,
+  UPDATETablecompanySubProjectStagesSubv2
 };

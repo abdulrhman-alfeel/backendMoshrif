@@ -20,6 +20,7 @@ const StatmentExpensePdf = async (idproject, namefile) => {
     const filteredItems = dataSub.filter(
       (item) => item.ClassificationName === date
     );
+
     return {
       ClassificationName: date,
       total: filteredItems.reduce((acc, current) => acc + current.Amount, 0),
@@ -37,8 +38,8 @@ const StatmentAllpdf = async (idproject, namefile) => {
   try {
     const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
     const dataExpense = await SELECTTablecompanySubProjectexpense(idproject,'pdf');
-    const dataRevenue = await SELECTTablecompanySubProjectREVENUE(idproject,'pdf');
-    const dataReturned = await SELECTTablecompanySubProjectReturned(idproject,'pdf');
+    const dataRevenue = await SELECTTablecompanySubProjectREVENUE(idproject,0,'pdf');
+    const dataReturned = await SELECTTablecompanySubProjectReturned(idproject,0,'pdf');
     const Totalproject = await SELECTSUMAmountandBring(idproject);
 
     const htmlContent = await HtmlStatmentall(

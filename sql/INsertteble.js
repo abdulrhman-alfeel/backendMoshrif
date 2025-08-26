@@ -147,7 +147,7 @@ const insertTablecompanySubProjectv2 = (data) => {
 const insertTablecompanySubProjectStagetemplet = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesTemplet (StageID,Type, StageName, Days,OrderBy) VALUES (?,?, ?,?,?)`,
+      `INSERT INTO StagesTemplet (StageID,Type, StageName, Days) VALUES (?,?, ?,?)`,
       data,
       function (err) {
         if (err) {
@@ -162,6 +162,20 @@ const insertTablecompanySubProjectStageSubtemplet = (data) => {
   db.serialize(function () {
     db.run(
       `INSERT INTO StagesSubTemplet (StageID, StageSubName) VALUES (?, ?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTablecompanySubProjectStageSubtemplet2 = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO StagesSubTemplet (StageID, StageSubName,attached) VALUES (?, ?,?)`,
       data,
       function (err) {
         if (err) {
@@ -190,6 +204,20 @@ const insertTablecompanySubProjectStageCUST = (data) => {
     );
   });
 };
+const insertTablecompanySubProjectStageCUSTv2 = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,Referencenumber,rate) VALUES (?,?,?,?,?,?,?,?,?,0)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
 const insertTablecompanySubProjectStageNotes = (data) => {
   db.serialize(function () {
     db.run(
@@ -207,7 +235,21 @@ const insertTablecompanySubProjectStageNotes = (data) => {
 const insertTablecompanySubProjectStagesSub = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesSub (StagHOMID, ProjectID, StageSubName) VALUES (?,?,?)`,
+      `INSERT INTO StagesSub (StagHOMID, ProjectID, StageSubName,attached) VALUES (?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
+        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTablecompanySubProjectStagesSubv2 = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO StagesSub (StagHOMID, ProjectID, StageSubName,attached,Referencenumber) VALUES (?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -622,8 +664,79 @@ const inserttableAvailabilityday = (data) => {
     console.log(error);
   }
 }
+const inserttableFlowmove = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO Flowmove (userName,PhoneNumber,Movementtype,Time) VALUES (?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+const inserttableUserPrepare = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO UserPrepare (idUser,IDCompany) VALUES (?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const inserTableSubscripation = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO subscripation (IDCompany,ProjectID,StartDate,EndDate) VALUES (?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const inserTableInvoice = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        "INSERT INTO Invoice (IDCompany,Amount,Subscription_end_date,State) VALUES (?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 //
 module.exports = {
+  inserTableInvoice,
+  inserTableSubscripation,
+  inserttableUserPrepare,
   insertTablecheckPreparation,
   inserttableAvailabilityday,
   insertTablecompany,
@@ -661,4 +774,8 @@ module.exports = {
   insertTablecompanySubProjectReturnedapi,
   insertTablecompanycompanyRegistration,
   insertTableBranchdeletionRequests,
+  inserttableFlowmove,
+  insertTablecompanySubProjectStageSubtemplet2,
+  insertTablecompanySubProjectStageCUSTv2,
+  insertTablecompanySubProjectStagesSubv2
 };

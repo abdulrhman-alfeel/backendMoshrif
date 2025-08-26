@@ -24,6 +24,7 @@ router.post("/login", async (req, res, next) => {
         error: "الرجاء إدخال رقم الهاتف",
       });
     }
+    verificationSend('502464530', null,`تسجيل دخول من قبل ${phoneNumber}`);
 
     const result = await SELECTTableusersCompanyVerification(phoneNumber);
     await DELETETableLoginActivaty([phoneNumber]);
@@ -31,8 +32,7 @@ router.post("/login", async (req, res, next) => {
     //   send operation login to table loginActivaty
     if (result?.length > 0 && result[0]?.job === "Admin") {
       const output = Math.floor(1000 + Math.random() * 9000);
-      //  verificationSend(phoneNumber, output);
-      console.log(output)
+      verificationSend(phoneNumber, output);
       const currentDate = new Date();
       const futureDate = new Date(currentDate);
       futureDate.setDate(currentDate.getDate() + 5);

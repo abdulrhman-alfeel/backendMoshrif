@@ -52,14 +52,18 @@ const {
   RearrangeStageProject,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const { deleteFileSingle } = require("../../middleware/Fsfile");
+const { deleteFileSingle, implmentOpreationSingle } = require("../../middleware/Fsfile");
 const {
   BringCountUserinProject,
   PercentagecalculationforSTage,
 } = require("../companyselect/bringProject");
 
-const { StageTempletXsl,Stage,AccountDays } = require("../../middleware/Aid");
-
+const {
+  StageTempletXsl,
+  Stage,
+  AccountDays,
+  Addusertraffic,
+} = require("../../middleware/Aid");
 
 const UpdaterateCost = async (
   id,
@@ -106,15 +110,19 @@ const addrateallinstage = async () => {
   }
 };
 
-
-
 const updatelastproject = async () => {
-  await Updaterateandcost(149, 0, "companySubprojects", 'rate', 'id');
-  await Updaterateandcost(149, 0, "companySubprojects", 'countuser', 'id');
+  await Updaterateandcost(149, 0, "companySubprojects", "rate", "id");
+  await Updaterateandcost(149, 0, "companySubprojects", "countuser", "id");
   const result = await SELECTStageallid(149);
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
-    await Updaterateandcost(element.StageCustID,0, "StagesCUST", 'rate', 'StageCustID');
+    await Updaterateandcost(
+      element.StageCustID,
+      0,
+      "StagesCUST",
+      "rate",
+      "StageCustID"
+    );
   }
 };
 
@@ -152,6 +160,11 @@ const UpdataDataProject = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdataDataProject"
+      );
       const {
         IDcompanySub,
         Nameproject,
@@ -183,7 +196,6 @@ const UpdataDataProject = (uploadQueue) => {
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       // console.log(ProjectID, "update");
 
-      await Projectinsert(IDcompanySub, userSession.userName, "تعديل");
     } catch (error) {
       console.log(error);
     }
@@ -194,6 +206,16 @@ const CloseOROpenProject = (uploadQueue) => {
   return async (req, res) => {
     try {
       const idProject = req.query.idProject;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "CloseOROpenProject"
+      );
       const project = await SELECTTablecompanySubProjectLast_id(
         idProject,
         "party"
@@ -251,10 +273,15 @@ const DeletProjectwithDependencies = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-        const id = req.query.idProject;
-        await opreationDeletProject(id);
-        res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
-   
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeletProjectwithDependencies"
+      );
+      const id = req.query.idProject;
+      await opreationDeletProject(id);
+      res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
     } catch (error) {
       console.log(error);
       res.send({ success: "فشلت عملية حذف الرسالة" }).status(200);
@@ -288,6 +315,17 @@ const UpdateStartdate = (uploadQueue) => {
   return async (req, res) => {
     try {
       const { ProjectID, ProjectStartdate } = req.body.data;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateStartdate"
+      );
       await UpdateProjectStartdateinProject([ProjectStartdate, ProjectID]);
       dataItem = await SELECTTablecompanySubProjectStageCUST(ProjectID);
       await DeleteTablecompanySubProjectphase(ProjectID);
@@ -309,6 +347,12 @@ const RearrangeStage = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "RearrangeStage"
+      );
       const DataSTage = req.body.DataStage;
       const StartDate = await SELECTProjectStartdate(DataSTage[0].ProjectID);
       let date = StartDate["Contractsigningdate"];
@@ -334,6 +378,11 @@ const UpdateNotesStage = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateNotesStage"
+      );
       if (req.file) {
         try {
           await uploaddata(req.file);
@@ -378,6 +427,11 @@ const UpdateDataStage = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateDataStage"
+      );
       const { ProjectID, StageID, StageName, Days } = req.body;
 
       const verify = await SELECTTablecompanySubProjectStageCUSTONe(
@@ -442,36 +496,40 @@ const DeleteStageHome = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-        const { ProjectID, StageID } = req.query;
-        await DeleteTablecompanyStageHome(ProjectID, StageID);
-        await DeleteTablecompanyStageSub(ProjectID, StageID);
-        const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
-        let arraytable = [];
-        table
-          .filter(
-            (item) => item.ProjectID !== ProjectID && item.StageID !== StageID
-          )
-          .forEach((pic) => {
-            let split = pic?.StageName?.split("(");
-            let b = split[0].trim();
-            arraytable.push({
-              ...pic,
-              StageName: b,
-            });
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeleteStageHome"
+      );
+      const { ProjectID, StageID } = req.query;
+      await DeleteTablecompanyStageHome(ProjectID, StageID);
+      await DeleteTablecompanyStageSub(ProjectID, StageID);
+      const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
+      let arraytable = [];
+      table
+        .filter(
+          (item) => item.ProjectID !== ProjectID && item.StageID !== StageID
+        )
+        .forEach((pic) => {
+          let split = pic?.StageName?.split("(");
+          let b = split[0].trim();
+          arraytable.push({
+            ...pic,
+            StageName: b,
           });
-        if (arraytable.length > 0) {
-          await DeleteTablecompanySubProjectphase(ProjectID);
-          const StartDate = await SELECTProjectStartdate(ProjectID);
-          let date = StartDate["Contractsigningdate"];
-          if (StartDate["ProjectStartdate"] !== null) {
-            date = StartDate["ProjectStartdate"];
-          }
-          await Stage(arraytable, date);
+        });
+      if (arraytable.length > 0) {
+        await DeleteTablecompanySubProjectphase(ProjectID);
+        const StartDate = await SELECTProjectStartdate(ProjectID);
+        let date = StartDate["Contractsigningdate"];
+        if (StartDate["ProjectStartdate"] !== null) {
+          date = StartDate["ProjectStartdate"];
         }
-        res.send({ success: "نجح تنيفذ العملية" }).status(200);
-        await UpdaterateCost(ProjectID);
-        await UpdaterateStage(ProjectID, StageID);
-   
+        await Stage(arraytable, date);
+      }
+      res.send({ success: "نجح تنيفذ العملية" }).status(200);
+      await UpdaterateCost(ProjectID);
+      await UpdaterateStage(ProjectID, StageID);
     } catch (error) {
       console.log(error);
     }
@@ -483,7 +541,52 @@ const UpdateDataStageSub = (uploadQueue) => {
   return async (req, res) => {
     try {
       const { StageSubName, StageSubID } = req.body;
-      await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateDataStageSub"
+      );
+        await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
+     
+      
+      res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+    } catch (error) {
+      console.log(error);
+      res.send({ success: "فشل تنفيذ العملية" }).status(200);
+    }
+  };
+};
+const UpdateDataStageSubv2 = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const { StageSubName, StageSubID } = req.body;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateDataStageSub"
+      );
+      const attached = req.file && req.file.filename ? req.file.filename : null;
+      if (!attached) {
+        await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
+      } else {
+        await UPDATETablecompanySubProjectStagesSub(
+          [StageSubName, attached, StageSubID],
+          "Name",
+          "StageSubName=?,attached=?"
+        );
+        await uploaddata(req.file);
+        implmentOpreationSingle("upload",attached);
+      }
       res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
     } catch (error) {
       console.log(error);
@@ -500,21 +603,26 @@ const DeleteStageSub = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-        const StageSubID = req.query.StageSubID;
-        await DeleteTablecompanySubProjectall(
-          "StagesSub",
-          "StageSubID",
-          StageSubID
-        );
-        res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
-        const result = await SELECTStageSubid(
-          "StagesSub",
-          "ProjectID,StagHOMID",
-          `StageSubID=${StageSubID}`
-        );
-        await UpdaterateCost(result?.ProjectID);
-        await UpdaterateStage(result?.ProjectID, result?.StagHOMID);
-     
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeleteStageSub"
+      );
+      const StageSubID = req.query.StageSubID;
+      await DeleteTablecompanySubProjectall(
+        "StagesSub",
+        "StageSubID",
+        StageSubID
+      );
+      res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
+      const result = await SELECTStageSubid(
+        "StagesSub",
+        "ProjectID,StagHOMID",
+        `StageSubID=${StageSubID}`
+      );
+      await UpdaterateCost(result?.ProjectID);
+      await UpdaterateStage(result?.ProjectID, result?.StagHOMID);
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية" }).status(501);
@@ -621,7 +729,17 @@ const UpdateNameFolderOrfileinArchive = (uploadQueue) => {
   return async (req, res) => {
     try {
       const { ArchivesID, id, type, name, kidopreation } = req.body;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
 
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdateNameFolderOrfileinArchive"
+      );
       if (type === "folder") {
         if (parseInt(ArchivesID) === parseInt(id)) {
           await SwitchbetweendeleteorupdatefolderHome(name, id, kidopreation);
@@ -683,6 +801,12 @@ const ExpenseUpdate = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "ExpenseUpdate"
+      );
       const { Expenseid, Amount, Data, ClassificationName, Imageolddelete } =
         req.body;
 
@@ -764,6 +888,12 @@ const RevenuesUpdate = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "RevenuesUpdate"
+      );
 
       const data = await SELECTTablecompany(userSession?.IDCompany);
       if (data.DisabledFinance === "true") {
@@ -854,6 +984,12 @@ const ReturnsUpdate = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "ReturnsUpdate"
+      );
       const { ReturnsId, Amount, Data, Imageolddelete } = req.body;
 
       const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(
@@ -928,11 +1064,13 @@ const DeleteFinance = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeleteFinance"
+      );
       const data = await SELECTTablecompany(userSession?.IDCompany);
-      if (
-        data.DisabledFinance === "true"
-      ) {
+      if (data.DisabledFinance === "true") {
         const { id, type } = req.query;
         let nametype;
         let typeid;
@@ -979,6 +1117,12 @@ const UPDATEdataRequests = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UPDATEdataRequests"
+      );
       const { Type, Data, RequestsID, user, Imageolddelete } = req.body;
 
       const elementUpdate = await SELECTDataAndTaketDonefromTableRequests(
@@ -1047,6 +1191,17 @@ const UPDATEImplementRquestsORCansle = (uploadQueue) => {
   return async (req, res) => {
     try {
       const { user, RequestsID } = req.body;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UPDATEImplementRquestsORCansle"
+      );
       const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(
         RequestsID
       );
@@ -1065,6 +1220,17 @@ const Confirmarrivdrequest = (uploadQueue) => {
   return async (req, res) => {
     try {
       const RequestsID = req.query.RequestsID;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Confirmarrivdrequest"
+      );
       const DoneOrgin = await SELECTDataAndTaketDonefromTableRequests(
         RequestsID
       );
@@ -1089,14 +1255,18 @@ const DeleteRequests = (uploadQueue) => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-        const RequestsID = req.query.RequestsID;
-        await DeleteTablecompanySubProjectall(
-          "Requests",
-          "RequestsID",
-          RequestsID
-        );
-        res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
-  
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeleteRequests"
+      );
+      const RequestsID = req.query.RequestsID;
+      await DeleteTablecompanySubProjectall(
+        "Requests",
+        "RequestsID",
+        RequestsID
+      );
+      res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل تنفيذ العملية" }).status(501);
@@ -1129,4 +1299,5 @@ module.exports = {
   opreationDeletProject,
   UpdaterateCost,
   UpdaterateStage,
+  UpdateDataStageSubv2
 };

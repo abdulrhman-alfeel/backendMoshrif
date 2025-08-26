@@ -648,3 +648,32 @@
 20250803	15:49:55	90655f7a-29e8-40fc-8190-4db97355be24	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashbord/auth/verification?output=6063&PhoneNumber=502464530	http://localhost:3000
 20250803	15:54:09	d46c49c6-a80e-4046-933b-b82178df2491	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
 20250803	15:55:34	dc012c7d-5644-4632-8e94-778487f7cf5c	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250804	15:03:57	ef36ecb5-2440-4e33-b7f5-491cb3649c3b	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\backend\build\index.html'	GET	/dashboard-with-db	undefined
+20250804	15:03:57	e5646d5c-333d-434b-8fb4-67e268df3e57	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\backend\build\index.html'	GET	/.well-known/appspecific/com.chrome.devtools.json	undefined
+20250804	15:03:57	6780d872-e4fc-43a5-8fad-f3b441f20e25	Error: ENOENT: no such file or directory, stat 'D:\ppp\aldy\Purebred_horses\38\backend\build\index.html'	GET	/favicon.ico	undefined
+20250806	09:23:37	295c72a6-7e05-433c-b0c3-34a13f36410a	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250806	09:26:18	99efb7a0-779e-420a-913f-de89d64209af	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250806	09:26:37	24df0837-19c6-4e2a-926d-5621f4bc8c97	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:26:37	5a46c6fa-9f04-4a5d-a962-acfbc8992c99	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:26:37	36f93b8d-f40a-491d-8ed1-0dee14b6bf20	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:26:37	36e49e7f-9ca2-407d-a246-839122e2f5af	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:26:37	1724bd12-ef55-4506-9cc1-66ba374393c4	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:26:37	ae28c13f-7859-49c5-b321-b205b181b70b	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:26:57	7a1f3cca-8dd2-4c95-8f4b-7c02c19f7811	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:26:57	17f84cc1-e40b-42ac-84b0-ca1c2fea30f6	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:26:57	987fa278-2508-481a-a729-bbd985c1ef12	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:27:00	8cf95acb-2882-4aeb-865d-c357f98a37bc	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10&search=&number=0	http://localhost:3000
+20250806	09:27:00	0c96c5dd-89eb-4049-94c3-314b3014f7cf	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10&search=&number=0	http://localhost:3000
+20250806	09:27:02	d0822e7a-9cc2-4b7e-bb38-9674b3efc03f	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:27:02	1afe2e7b-3030-4533-a0c1-7b5a3ad76bda	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:27:02	45460cb5-28e8-419b-beba-1f64c708c019	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:27:02	ea30066a-b3a0-402c-9c13-c30ae1a310cb	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:27:02	b2ce937e-8bd6-42d8-a56c-e36778936762	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:27:02	10c604a7-40fe-41f3-95df-528a355eb6ac	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:27:22	cf6976e4-4ef8-4694-afca-f78a70a78e00	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/stats	http://localhost:3000
+20250806	09:27:22	1cbc7633-6848-464f-a0c3-3c6fc287cb40	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/companies?page=1&limit=10	http://localhost:3000
+20250806	09:27:22	7213ce9f-373b-4631-ad77-cdffb6683bc9	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/dashboard/reports	http://localhost:3000
+20250806	09:27:41	569106a3-ae16-47b6-b4c1-c610b368fdcb	Error: Cannot set headers after they are sent to the client	POST	/api/dashbord/auth/login	http://localhost:3000
+20250818	09:56:22	88d61654-e6ad-454b-a98a-7fcd1a3e2d23	TypeError: Cannot read properties of undefined (reading 'startsWith')	GET	/api/Templet/BringStageSubTemplet?StageSubID=0	undefined
+20250818	10:01:37	43952603-fd6b-4c87-970b-f74b358a633d	TypeError: Cannot read properties of undefined (reading 'startsWith')	POST	/api/Templet/insertStageHome	undefined
+20250818	10:27:33	b25d95f2-77bd-47db-9569-f043c8cbaba1	TypeError: Cannot read properties of undefined (reading 'startsWith')	PUT	/api/Templet/UpdateStageSub	undefined

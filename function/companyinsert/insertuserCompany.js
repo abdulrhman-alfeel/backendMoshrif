@@ -11,9 +11,7 @@ const { UpdateTableuserComppany } = require("../../sql/update");
 const userCompany =  () => {
   return async (req, res) => {
   try {
-    // console.log(req.body);
     const {IDCompany,userName,IDNumber,PhoneNumber,jobdiscrption,job,Validity} = req.body;
-   
     let number = String(PhoneNumber);
     if (number.startsWith(0)) {
       number = number.slice(1);
@@ -55,17 +53,7 @@ const userCompany =  () => {
   }
 }
 };
-// const Validity = [
-//   {
-//     idBrinsh :1,
-//     project:[
-//       {
-//         idProject:1,
-//         ValidityProject:[],
-//       }
-//     ]
-//   }
-// ];
+
 
 // اخراج معلومات مدير الفرع
 const CheckAdmin = async (check, resultSend, IDCompany) => {

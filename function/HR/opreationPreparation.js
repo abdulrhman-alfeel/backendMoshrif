@@ -1,11 +1,14 @@
 const { calculateHoursBetween } = require("../../middleware/Aid");
+const { DeleteUserPrepare } = require("../../sql/delete");
 const {
   inserttableAvailabilityday,
   insertTablecheckPreparation,
+  inserttableUserPrepare,
 } = require("../../sql/INsertteble");
 const {
   SELECTTABLEHRuser,
   SELECTTableusersCompanyonObject,
+  SelectTableUserPrepareObject,
 } = require("../../sql/selected/selectuser");
 const {
   UPDATETableprepareOvertimeassignment,
@@ -169,4 +172,43 @@ const CheckPreparation = async (
   }
 };
 
-module.exports = { opreationPreparation };
+
+
+const addOrcansleUserfromuserPrepare =  () =>{
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const  idArray  = req.body.idArray; // Get parameters from request body
+      if (idArray?.length <= 0 ) {
+        return res.status(400).send({ error: "Missing required parameters" });
+      }
+      // Perform the action based on the provided action type
+        // Logic to add user to userPrepare
+        for (let i = 0; i < idArray.length; i++) {
+          const element = idArray[i];
+          if(element.action === "cancel") {
+          await DeleteUserPrepare([element.id]);  
+
+          }else{
+            const user = await SelectTableUserPrepareObject(userSession.IDCompany,element.id);
+            if (user) 
+              return;
+            
+            await inserttableUserPrepare([element.id, userSession.IDCompany])
+          };
+
+        }
+        res.status(200).send({ success: "User added successfully" });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: "Failed to process request" });
+    }
+  };
+}
+
+module.exports = { opreationPreparation,addOrcansleUserfromuserPrepare };

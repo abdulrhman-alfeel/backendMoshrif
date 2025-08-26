@@ -3,6 +3,12 @@ const router = express.Router();
 const crypto = require("crypto");
 const db = require("../sql/sqlite");
 const { verifyJWT } = require("../middleware/jwt");
+const { Addusertraffic, subscripation } = require("../middleware/Aid");
+const { DeleteTablecompanySubProjectall } = require("../sql/delete");
+const { SELECTTABLEcompanyProjectall } = require("../sql/selected/selected");
+const {
+  opreationDeletProject,
+} = require("../function/companyinsert/UpdateProject");
 router.use(verifyJWT);
 
 // دالة لتوليد API Key فريد
@@ -42,6 +48,7 @@ async function transformCompanyData(company) {
     subscriptionStart: company.SubscriptionStartDate,
     subscriptionEnd: company.SubscriptionEndDate,
     apiKey: company.Api,
+    subscripation:subscripation
   };
 }
 
@@ -240,7 +247,16 @@ router.put("/:id", async (req, res, next) => {
       subscriptionEndDate,
       cost,
     } = req.body;
-
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    Addusertraffic(
+      userSession.userName,
+      userSession?.PhoneNumber,
+      "UpdateCompanydaschbord"
+    );
     const company = await db.getRow("SELECT * FROM company WHERE id = ?", [id]);
     if (!company) {
       return res.status(404).json({
@@ -327,58 +343,72 @@ router.put("/:id", async (req, res, next) => {
     next(error);
   }
 });
-
-// 5. DELETE /api/companies/:id - حذف شركة
 router.delete("/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const company = await db.getRow("SELECT * FROM company WHERE id = ?", [id]);
-    if (!company) {
-      return res.status(404).json({
-        success: false,
-        error: "الشركة غير موجودة",
-      });
-    }
-
-    // حذف البيانات المرتبطة بالشركة أولاً
-    try {
-      // جلب جميع فروع الشركة
-      const branches = await db.getAllRows(
-        "SELECT id FROM companySub WHERE NumberCompany = ?",
-        [id]
-      );
-
-      // حذف مشاريع الفروع
-      for (const branch of branches) {
-        await db.query(
-          "DELETE FROM companySubprojects WHERE IDcompanySub = ?",
-          [branch.id]
-        );
-      }
-
-      // حذف الفروع
-      await db.query("DELETE FROM companySub WHERE NumberCompany = ?", [id]);
-
-      // حذف موظفي الشركة
-      await db.query("DELETE FROM usersCompany WHERE IDCompany = ?", [id]);
-
-      // حذف الشركة نفسها
-      await db.query("DELETE FROM company WHERE id = ?", [id]);
-
-      res.json({
-        success: true,
-        message: "تم حذف الشركة وجميع بياناتها المرتبطة بنجاح",
-      });
-    } catch (deleteError) {
-      console.error("خطأ في حذف البيانات المرتبطة:", deleteError);
-      throw deleteError;
-    }
-  } catch (error) {
-    console.error("خطأ في حذف الشركة:", error);
-    next(error);
-  }
+  res.json({
+    success: true,
+    message: "نروجوا التواصل مع الدعم الفني لتقديم طلب حذف شركة ",
+  });
 });
+// // 5. DELETE /api/companies/:id - حذف شركة
+// router.delete("/:id", async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//     const userSession = req.session.user;
+//     if (!userSession) {
+//       res.status(401).send("Invalid session");
+//       console.log("Invalid session");
+//     }
+//     Addusertraffic(
+//       userSession.userName,
+//       userSession?.PhoneNumber,
+//       "deleteCompanydaschbord"
+//     );
+//     const company = await db.getRow("SELECT * FROM company WHERE id = ?", [id]);
+//     if (!company) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "الشركة غير موجودة",
+//       });
+//     }
+
+//     // حذف البيانات المرتبطة بالشركة أولاً
+//     try {
+//       // جلب جميع فروع الشركة
+//       const branches = await db.getAllRows(
+//         "SELECT id FROM companySub WHERE NumberCompany = ?",
+//         [id]
+//       );
+
+//       // حذف مشاريع الفروع
+//       for (const branch of branches) {
+//         await db.query(
+//           "DELETE FROM companySubprojects WHERE IDcompanySub = ?",
+//           [branch.id]
+//         );
+//       }
+
+//       // حذف الفروع
+//       await db.query("DELETE FROM companySub WHERE NumberCompany = ?", [id]);
+
+//       // حذف موظفي الشركة
+//       await db.query("DELETE FROM usersCompany WHERE IDCompany = ?", [id]);
+
+//       // حذف الشركة نفسها
+//       await db.query("DELETE FROM company WHERE id = ?", [id]);
+
+//       res.json({
+//         success: true,
+//         message: "تم حذف الشركة وجميع بياناتها المرتبطة بنجاح",
+//       });
+//     } catch (deleteError) {
+//       console.error("خطأ في حذف البيانات المرتبطة:", deleteError);
+//       throw deleteError;
+//     }
+//   } catch (error) {
+//     console.error("خطأ في حذف الشركة:", error);
+//     next(error);
+//   }
+// });
 
 // 6. GET /api/companies/:id/subs - جلب فروع شركة محددة
 router.get("/:id/subs", async (req, res, next) => {
@@ -569,7 +599,16 @@ router.put("/subs/:subId", async (req, res, next) => {
   try {
     const { subId } = req.params;
     const { name, manager, address, email, phone } = req.body;
-
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    Addusertraffic(
+      userSession.userName,
+      userSession?.PhoneNumber,
+      "UpdateCompanySubdaschbord"
+    );
     // التحقق من وجود الفرع
     const sub = await db.getRow("SELECT * FROM companySub WHERE id = ?", [
       subId,
@@ -636,7 +675,16 @@ router.put("/subs/:subId", async (req, res, next) => {
 router.delete("/subs/:subId", async (req, res, next) => {
   try {
     const { subId } = req.params;
-
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      console.log("Invalid session");
+    }
+    Addusertraffic(
+      userSession.userName,
+      userSession?.PhoneNumber,
+      "DeleteCompanySubdaschbord"
+    );
     // التحقق من وجود الفرع
     const sub = await db.getRow("SELECT * FROM companySub WHERE id = ?", [
       subId,
@@ -650,13 +698,12 @@ router.delete("/subs/:subId", async (req, res, next) => {
 
     // حذف البيانات المرتبطة بالفرع أولاً
     try {
-      // حذف مشاريع الفرع
-      await db.query("DELETE FROM companySubprojects WHERE IDcompanySub = ?", [
-        subId,
-      ]);
-
-      // حذف الفرع نفسه
-      await db.query("DELETE FROM companySub WHERE id = ?", [subId]);
+      const project = await SELECTTABLEcompanyProjectall(subId);
+      for (const pic of project) {
+        await opreationDeletProject(pic?.id);
+      }
+      await DeleteTablecompanySubProjectall("companySub", "id", subId);
+ 
 
       res.json({
         success: true,
@@ -675,8 +722,6 @@ router.delete("/subs/:subId", async (req, res, next) => {
 router.get("/branches/:branchId/employees/stats", async (req, res, next) => {
   try {
     const { branchId } = req.params;
-
-    console.log(`📊 جلب إحصائيات موظفي الفرع ${branchId}...`);
 
     // التحقق من وجود الفرع
     const branch = await db.getRow("SELECT * FROM companySub WHERE id = ?", [
@@ -919,8 +964,6 @@ router.get("/:id/details", async (req, res, next) => {
   }
 });
 
-
-
 // 1. GET /api/companies - جلب جميع الشركات
 // اضفناه  لجلب البيانات على عشره كائنات يقوم عبره بارسال الرقم الاخير للكائن  لجلب مابعده number
 
@@ -930,7 +973,6 @@ router.get("/:id/details", async (req, res, next) => {
 // جلب جميع بيانات تسجيل الدخول
 // اضفناه  لجلب البيانات على عشره كائنات يقوم عبره بارسال الرقم الاخير للكائن  لجلب مابعده number
 
-
 // جلب بيانات تسجيل الدخول حسب الشركة
 // اضفناه  لجلب البيانات على عشره كائنات يقوم عبره بارسال الرقم الاخير للكائن  لجلب مابعده number
 
@@ -938,9 +980,11 @@ router.get("/:id/details", async (req, res, next) => {
 
 // اضفناه  لجلب البيانات على عشره كائنات يقوم عبره بارسال الرقم الاخير للكائن  لجلب مابعده number
 
-
-
 // 10. GET /api/companies/branches/:branchId/employees - جلب موظفي فرع محدد مع الفرز
+// http://192.168.8.220:8080/api/company/bringCompanyRegitration&LastID=0
+// قبول شركة جديدة
+// http://192.168.8.220:8080/api/company/AgreedRegistrationCompany&id=0
+// http://192.168.8.220:8080/api/company/DeleteCompanyRegistration&id=0
 // http://192.168.8.220:8080/api/user/BringUserCompanyinv2?IDCompany=1&idBrinsh=1&type=12
 // تستخدم data
 
@@ -949,9 +993,7 @@ router.get("/:id/details", async (req, res, next) => {
 // http://192.168.8.220:8080/api/brinshCompany/BringProject?IDcompanySub=1&IDfinlty=0
 // http://192.168.8.220:8080/api/brinshCompany/FilterProject?IDcompanySub=1&search="اسم المشروع"
 
-
-// جلب بيانات المالية 
-
+// جلب بيانات المالية
 
 // BringExpense
 // http://192.168.8.220:8080/api/brinshCompany/BringExpense?idproject=1&lastID=0
@@ -964,12 +1006,7 @@ router.get("/:id/details", async (req, res, next) => {
 // اجمالي المالية
 // http://192.168.8.220:8080/api/brinshCompany/BringTotalAmountproject?ProjectID=1
 
-
-
-
-
 //  جلب بيانات المراحل رئيسية
-
 
 // http://192.168.8.220:8080/api/brinshCompany/BringStage?ProjectID=1&type="cache"&number=0
 // المراحل الفرعية
@@ -979,13 +1016,11 @@ router.get("/:id/details", async (req, res, next) => {
 // جلب الملاحظات
 // http://192.168.8.220:8080/api/brinshCompany/BringStageNotes?ProjectID=1&StageID=1
 
-
 // جلب الطلبيات
 // http://192.168.8.220:8080/api/brinshCompany/v2/BringDataRequests?ProjectID=1&Type="مواد ثقيفة"&Done="true"&lastID=0
 
 // حساب اجمالي الطلبات
 // http://192.168.8.220:8080/api/brinshCompany/v2/BringCountRequsts?ProjectID=1
-
 
 // اخذ بيانات المستخدمين داخل المشروع
 // http://192.168.8.220:8080/api/user/BringUserCompanyinv2?IDCompany=1&idBrinsh=1&type=1
@@ -996,25 +1031,18 @@ router.get("/:id/details", async (req, res, next) => {
 // جلب بيانات مستخدمين الشركة
 // http://192.168.8.220:8080/api/user/BringUserCompany?IDCompany=1&number=0
 
-
 // بحث على موظف
 // http://192.168.8.220:8080/api/user/BringUserCompany?IDCompany=1&number=0&kind_request="userName"
 
-
-// اضافة مستخدم جديد للشركة 
+// اضافة مستخدم جديد للشركة
 // http://192.168.8.220:8080/api/user
 // المتطلبات
 // {IDCompany,userName,IDNumber,PhoneNumber,jobdiscrption,job,Validity}
-// 
+//
 // تحديث بيانات المستخدم
 // http://192.168.8.220:8080/api/user/updat
 // المتطلبات
 // { userName, IDNumber, PhoneNumber, jobdiscrption, job, id }
-
-
-
-
-
 
 // إضافة endpoint للبحث الشامل
 router.get("/search/global", async (req, res, next) => {

@@ -2,7 +2,7 @@ const rateLimit = require("express-rate-limit");
 const logEvents = require("./logger");
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000, // 15 
   limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
   // standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
   handler: (req, res, next, options) => {
@@ -18,7 +18,6 @@ keyGenerator: (req) => {
   },
   // legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
   headers: false, // Disable the `X-RateLimit-*` headers.
-  // store: ... , // Redis, Memcached, etc. See below.
 });
 
 module.exports = limiter;

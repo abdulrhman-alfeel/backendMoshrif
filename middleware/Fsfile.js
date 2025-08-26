@@ -50,9 +50,9 @@ const implmentOpreationSingle = async (folderPath, Pathfolder) => {
       await fs.unlink(filePath);
       // console.log("success full");
     }
-  } catch (error) {
+  } catch (error) { 
     console.log(error);
   }
 };
 
-module.exports = { deleteFilesInFolder, deleteFileSingle };
+module.exports = { deleteFilesInFolder, deleteFileSingle,implmentOpreationSingle };

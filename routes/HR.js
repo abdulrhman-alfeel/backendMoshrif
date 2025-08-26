@@ -1,7 +1,7 @@
 const express = require('express');
 const { verifyJWT } = require('../middleware/jwt');
-const { opreationPreparation } = require('../function/HR/opreationPreparation');
-const { BringHR, SearchHR, Userverification, BringUsersjustforHR, createstatementPdf } = require('../function/HR/bringHR');
+const { opreationPreparation, addOrcansleUserfromuserPrepare } = require('../function/HR/opreationPreparation');
+const { BringHR, SearchHR, Userverification, BringUsersjustforHR, createstatementPdf, BringUserprepare, openViliteduser } = require('../function/HR/bringHR');
 
 
 
@@ -19,6 +19,9 @@ const HR = ({ uploadQueue }) => {
   router.get('/BringuserHR',BringUsersjustforHR(uploadQueue));
   router.get('/Userverification',Userverification(uploadQueue));
   router.get('/HRpdf',createstatementPdf(uploadQueue));
+  router.get('/BringUserprepare',BringUserprepare(uploadQueue));
+  router.get('/openViliteduser',openViliteduser(uploadQueue));
+  router.post('/addUserprepare',addOrcansleUserfromuserPrepare(uploadQueue));
 
   return router;
 }

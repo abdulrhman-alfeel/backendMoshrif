@@ -12,6 +12,7 @@ const {
   insertTablecompanySubProjectarchivesFolderforcreatproject,
   insertTablecompanySubProjectRequestsForcreatOrder,
   insertTablecompanySubProjectv2,
+  insertTablecompanySubProjectStagesSubv2,
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubProjectarchivesotherroad,
@@ -22,6 +23,8 @@ const {
   SELECTTablecompanySubProjectStagesSubSingl,
   SELECTTablecompanySubProjectStageCUSTONe,
   SELECTTablecompanySubProjectexpenseObjectOne,
+  SELECTFROMTablecompanysubprojectStageTemplet,
+  SELECTFROMTablecompanysubprojectStagesubTeplet,
 } = require("../../sql/selected/selected");
 const { uploaddata, bucket } = require("../../bucketClooud");
 
@@ -43,9 +46,12 @@ const {
   CloseOROpenStagenotifcation,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const { deleteFileSingle } = require("../../middleware/Fsfile");
+const {
+  deleteFileSingle,
+  implmentOpreationSingle,
+} = require("../../middleware/Fsfile");
 const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
-const { StageTempletXsl,Stage, AccountDays } = require("../../middleware/Aid");
+const { Stage, AccountDays } = require("../../middleware/Aid");
 const xlsx = require("xlsx");
 const OpreationProjectInsertv2 = async (
   IDcompanySub,
@@ -70,38 +76,47 @@ const OpreationProjectInsertv2 = async (
       Referencenumber,
     ]);
     const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-    if(TypeOFContract !== "حر"){
-    let dataStages = await StageTempletXsl(TypeOFContract);
-    const visity = await StageTempletXsl("NULL");
-    // console.log(visity);
-    let table = [];
-    let tablesub = [];
-    dataStages = [visity[0], ...dataStages];
-    for (let index = 0; index < dataStages.length; index++) {
-      const element = dataStages[index];
-      let Days = await AccountDays(numberBuilding, element.Days);
+    if (TypeOFContract !== "حر") {
+      let dataStages = await SELECTFROMTablecompanysubprojectStageTemplet(
+        TypeOFContract
+      );
+      const visity = await SELECTFROMTablecompanysubprojectStageTemplet("عام");
+      // console.log(visity);
+      let table = [];
+      let tablesub = [];
+      if (visity.length > 0) {
+        dataStages = [visity[0], ...dataStages];
+      }
 
-      table.push({
-        ...element,
-        Days: Math.round(Days),
-        ProjectID: idProject["last_id"],
-        StartDate: null,
-        EndDate: null,
-        CloseDate: null,
-      });
+      for (let index = 0; index < dataStages.length; index++) {
+        const element = dataStages[index];
+        let Days = await AccountDays(numberBuilding, element.Days);
 
-      const resultSubTablet = await StageSubTempletXlsx(element.StageID);
-      resultSubTablet.forEach((pic) => {
-        tablesub.push({
-          StageID: pic.StageID,
+        table.push({
+          ...element,
+          Days: Math.round(Days),
           ProjectID: idProject["last_id"],
-          StageSubName: pic.StageSubName,
+          StartDate: null,
+          EndDate: null,
+          CloseDate: null,
+          Referencenumber: element.StageIDtemplet,
         });
-      });
+
+        const resultSubTablet =
+          await SELECTFROMTablecompanysubprojectStagesubTeplet(element.StageID);
+        resultSubTablet.forEach((pic) => {
+          tablesub.push({
+            StageID: pic.StageID,
+            ProjectID: idProject["last_id"],
+            StageSubName: pic.StageSubName,
+            attached: pic.attached || null,
+            Referencenumber: pic.StageSubID,
+          });
+        });
+      }
+      await Stage(table, Contractsigningdate);
+      await StageSub(tablesub);
     }
-    await Stage(table, Contractsigningdate);
-    await StageSub(tablesub);
-  }
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
   } catch (error) {
     console.log(error);
@@ -185,17 +200,19 @@ const OpreationProjectInsert = async (
       numberBuilding,
     ]);
 
-    if(TypeOFContract !== "حر"){
+    if (TypeOFContract !== "حر") {
       const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-      let dataStages = await StageTempletXsl(TypeOFContract);
-      const visity = await StageTempletXsl("NULL");
+      let dataStages = await SELECTFROMTablecompanysubprojectStageTemplet(
+        TypeOFContract
+      );
+      const visity = await SELECTFROMTablecompanysubprojectStageTemplet("عام");
       let table = [];
       let tablesub = [];
       dataStages = [visity[0], ...dataStages];
       for (let index = 0; index < dataStages.length; index++) {
         const element = dataStages[index];
         let Days = await AccountDays(numberBuilding, element.Days);
-  
+
         table.push({
           ...element,
           Days: Math.round(Days),
@@ -203,22 +220,24 @@ const OpreationProjectInsert = async (
           StartDate: null,
           EndDate: null,
           CloseDate: null,
+          Referencenumber: element.StageIDtemplet,
         });
-  
-        const resultSubTablet = await StageSubTempletXlsx(element.StageID);
+
+        const resultSubTablet =
+          await SELECTFROMTablecompanysubprojectStagesubTeplet(element.StageID);
         resultSubTablet.forEach((pic) => {
           tablesub.push({
             StageID: pic.StageID,
             ProjectID: idProject["last_id"],
             StageSubName: pic.StageSubName,
+            attached: pic.attached || null,
+            Referencenumber: pic.StageSubID,
           });
         });
       }
       await Stage(table, Contractsigningdate);
       await StageSub(tablesub);
     }
-
-
 
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
   } catch (error) {
@@ -273,23 +292,6 @@ const projectBrinsh = (uploadQueue) => {
   };
 };
 
-const StageSubTempletXlsx = async (StageID) => {
-  try {
-    // Read the Excel file
-    const workbook = xlsx.readFile("StagesSubTempletEXcel.xlsx");
-
-    // Get the first sheet
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-
-    // Get the data from the sheet
-    const data = xlsx.utils.sheet_to_json(worksheet);
-    return data.filter((item) => item.StageID === StageID);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
 // وظيفة انشاء ملفات ثابته للمشروع في قسم الارشيف
 const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
   try {
@@ -337,9 +339,6 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
     console.log(error);
   }
 };
-
-
-
 
 // وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
 const StageTemplet = (uploadQueue) => {
@@ -409,17 +408,18 @@ const StageSubTemplet = (uploadQueue) => {
 
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
 
-
 // وظيف ادخال بييانات المراحلة الفرعية
 const StageSub = async (teble) => {
   try {
     for (let index = 0; index < teble.length; index++) {
       const item = teble[index];
 
-      await insertTablecompanySubProjectStagesSub([
+      await insertTablecompanySubProjectStagesSubv2([
         item.StageID,
         item.ProjectID,
         item.StageSubName,
+        item.attached || null,
+        item.Referencenumber,
       ]);
     }
   } catch (err) {
@@ -517,10 +517,59 @@ const insertStageSub = (uploadQueue) => {
             StageID,
             ProjectID,
             StageSubName,
+            null,
           ]);
+
           res.send({ success: "تمت العملية بنجاح" }).status(200);
           await UpdaterateCost(ProjectID);
-          await UpdaterateStage(ProjectID, StageID)
+          await UpdaterateStage(ProjectID, StageID);
+          await StageSubinsert(ProjectID, StageID, userSession.userName);
+        } else {
+          res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
+        }
+      } else {
+        res.send({ success: "يرجى ادخال اسم الخطوة" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: false }).status(401);
+    }
+  };
+};
+const insertStageSubv2 = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+      const StageID = req.body.StageID;
+      const ProjectID = req.body.ProjectID;
+      const StageSubName = req.body.StageSubName;
+      if (Boolean(StageSubName)) {
+        const VerifyName = await SELECTTablecompanySubProjectStagesSub(
+          ProjectID,
+          StageID,
+          StageSubName
+        );
+        // console.log(VerifyName);
+        const attached = req.file ? req.file.filename : null;
+        if (VerifyName.length <= 0) {
+          await insertTablecompanySubProjectStagesSub([
+            StageID,
+            ProjectID,
+            StageSubName,
+            attached,
+          ]);
+          if (attached) {
+            await uploaddata(req.file);
+            implmentOpreationSingle("upload", attached);
+          }
+
+          res.send({ success: "تمت العملية بنجاح" }).status(200);
+          await UpdaterateCost(ProjectID);
+          await UpdaterateStage(ProjectID, StageID);
           await StageSubinsert(ProjectID, StageID, userSession.userName);
         } else {
           res.send({ success: "اسم الخطوة موجود بالفعل" }).status(200);
@@ -769,8 +818,6 @@ const EditNote = async (
 
 // وظيفة تقوم باضافة الانجازات او إلغائها
 
-
-
 // استيراد النسبئة المئوية للمشروع
 
 const AddORCanselAchievment = (uploadQueue) => {
@@ -794,8 +841,9 @@ const AddORCanselAchievment = (uploadQueue) => {
         bringData
       );
       res.send({ success: "تمت العملية بنجاح" }).status(200);
+
       await UpdaterateCost(bringData?.ProjectID);
-      await UpdaterateStage(bringData?.ProjectID,bringData?.StagHOMID)
+      await UpdaterateStage(bringData?.ProjectID, bringData?.StagHOMID);
     } catch (error) {
       console.log(error);
       res.send({ success: "فشل في تنفيذ العملية" }).status(401);
@@ -848,10 +896,10 @@ const AddORCanselAchievmentarrayall = (uploadQueue) => {
       }
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       const bringData = await SELECTTablecompanySubProjectStagesSubSingl(
-        selectAllarray[0]
+        selectAllarray[0] || selectAllarraycansle[0]
       );
       await UpdaterateCost(bringData?.ProjectID);
-      await UpdaterateStage(bringData?.ProjectID,bringData?.StagHOMID);
+      await UpdaterateStage(bringData?.ProjectID, bringData?.StagHOMID);
     } catch (error) {
       res.send({ success: "فشل في تنفيذ العملية" }).status(401);
     }
@@ -1412,4 +1460,5 @@ module.exports = {
   OpreationProjectInsertv2,
   projectBrinshv2,
   AddORCanselAchievmentarrayall,
+  insertStageSubv2,
 };

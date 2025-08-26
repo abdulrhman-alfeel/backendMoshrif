@@ -33,6 +33,7 @@ const { verificationSend } = require("../companyselect/userCompanyselect");
 const {
   convertArabicToEnglish,
   verificationfromdata,
+  Addusertraffic,
 } = require("../../middleware/Aid");
 
 const UpdateDataCompany = () => {
@@ -49,7 +50,11 @@ const UpdateDataCompany = () => {
       Cost,
       id,
     } = req.body;
-
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+    }
+    Addusertraffic(userSession.userName, userSession?.PhoneNumber, "UpdateDataCompany");
     // console.log(req.body);
     if (
       await verificationfromdata([
@@ -117,6 +122,11 @@ const UpdateDataCompany = () => {
 const UpdateApiCompany = () => {
   return async (req, res) => {
     const id = req.query.id;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+    }
+    Addusertraffic(userSession.userName, userSession?.PhoneNumber, "UpdateApiCompany");
     const chackfromCompany = await SELECTTablecompanyName(id);
     if (Boolean(chackfromCompany)) {
       bcrypt.hash(
@@ -139,6 +149,15 @@ const AgreedRegistrationCompany = () => {
   return async (req, res) => {
     try {
       const id = req.query.id;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "AgreedRegistrationCompany"
+      );
       const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
       if (Boolean(dataCompany)) {
         await bcrypt.hash(
@@ -217,7 +236,7 @@ const sendNotificationRegistration = async (name) => {
       "509430463",
       "544666255",
       "500088197",
-      "502464530"
+      "502464530",
     ];
     for (let index = 0; index < array.length; index++) {
       const element = array[index];
@@ -238,6 +257,16 @@ const sendNotificationRegistration = async (name) => {
 const DeleteCompanyRegistration = () => {
   return async (req, res) => {
     try {
+      console.log('hello world')
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "DeleteCompanyRegistration"
+      );
       const id = req.query.id;
       await DeleteTablecompanySubProjectall("companyRegistration", "id", id);
       res.send({ success: "تمت العملية بنجاح" }).status(200);
@@ -266,6 +295,17 @@ const UpdatedataRegistration = () => {
         userName,
         id,
       } = req.body;
+
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "UpdatedataRegistration"
+      );
+
       let number = String(PhoneNumber);
       if (number.startsWith(0)) {
         number = number.slice(1);
@@ -336,7 +376,11 @@ const UpdateCompanybrinsh = () => {
   return async (req, res) => {
     const { NumberCompany, NameSub, BranchAddress, Email, PhoneNumber, id } =
       req.body;
-
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+    }
+    Addusertraffic(userSession.userName, userSession?.PhoneNumber, "UpdateCompanybrinsh");
     const operation = await UpdateTablecompanySub([
       NumberCompany,
       NameSub,
@@ -370,6 +414,12 @@ const Acceptandrejectrequests = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Acceptandrejectrequests"
+      );
+
       const id = req.body.id;
       const kindORreason = req.body.kindORreason;
       if (String(kindORreason).length > 0) {
@@ -400,6 +450,15 @@ const Updatecovenantrequests = () => {
   return async (req, res) => {
     try {
       const { typedata, title, id } = req.body;
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+      }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Updatecovenantrequests"
+      );
       if (typedata === "معلقة") {
         const Amount = req.body.Amount;
         await UPDATETableFinancialCustody(
@@ -425,6 +484,11 @@ const Deletecovenantrequests = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Deletecovenantrequests"
+      );
       const PhoneNumber = userSession.PhoneNumber;
       if (PhoneNumber !== "502464530") {
         const id = req.query.id;
@@ -448,6 +512,12 @@ const Branchdeletionprocedures = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Branchdeletionprocedures"
+      );
       const { IDBrach } = req.query;
       const check = Math.floor(1000 + Math.random() * 9000);
       await insertTableBranchdeletionRequests([
@@ -473,11 +543,18 @@ const Implementedbyopreation = () => {
   return async (req, res) => {
     try {
       const { check } = req.query;
+
       const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "Implementedbyopreation"
+      );
       const result = await SELECTTableBranchdeletionRequests(
         userSession?.IDCompany,
         check,
