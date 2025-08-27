@@ -2,6 +2,54 @@ const db = require("./sqlite");
 // already
 
 
+const UpdateStateComany = (updat,updatwhere,typename="subscriptionEndDate") =>{
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE company SET ${typename}=? WHERE id=?`,
+          [updat,updatwhere],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
+const Updatesubscripation = (updat,updatwhere,typename="price") =>{
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE subscripation SET ${typename}=? WHERE id=?`,
+          [updat,updatwhere],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
 const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub") =>{
   return new Promise((resolve, reject) => {
     try {
@@ -818,5 +866,7 @@ module.exports = {
   Updaterateandcost,
   UpdaterateandcostStage,
   UPDATEStopeProjectStageCUSTv2,
-  UPDATETablecompanySubProjectStagesSubv2
+  UPDATETablecompanySubProjectStagesSubv2,
+  UpdateStateComany,
+  Updatesubscripation
 };

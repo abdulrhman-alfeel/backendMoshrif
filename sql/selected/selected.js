@@ -19,6 +19,20 @@ const SELECTTablecompany = (id, type = "*") => {
     });
   });
 };
+const SELECTTablecompanyall = (type = "*") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(`SELECT ${type} FROM company `, function (err, result) {
+        if (err) {
+          reject(err);
+          // console.error(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
 
 const SELECTTablecompanyRegistrationall = (
   type = "companyRegistration",
@@ -374,9 +388,9 @@ const SELECTTablecompanySubProjectLast_id = (
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca WHERE ca.Disabled="true" AND ca.id=?`
         : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation ,ca.Referencenumber FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
-        db.serialize(function () {
-          db.get(stringSql, [id], function (err, result) {
-            if (err) {
+    db.serialize(function () {
+      db.get(stringSql, [id], function (err, result) {
+        if (err) {
           reject(err);
           // console.error(err.message);
         } else {
@@ -618,7 +632,7 @@ const SELECTdataprojectandbrinshandcompany = (id) => {
 //  سنبل المراحل والفروع
 
 // المراحل
-const SELECTFROMTableStageTempletall = (number=0) => {
+const SELECTFROMTableStageTempletall = (number = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
@@ -650,7 +664,7 @@ const SELECTFROMTableStageTempletaObject = (number) => {
     });
   });
 };
-const SELECTFROMTableSubStageTempletall = (StageID,number=0) => {
+const SELECTFROMTableSubStageTempletall = (StageID, number = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
@@ -2413,7 +2427,26 @@ const SELECTTableBranchdeletionRequests = async (
   });
 };
 
+const SELECTTABLESUBSCRIPATION = async (IDCompany, StartDate) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM subscripation WHERE IDCompany=? AND strftime('%Y-%m',StartDate )=strftime('%Y-%m',? ) `,
+        [IDCompany, StartDate],
+        function (err, result) {
+          if (err) {
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
 module.exports = {
+  SELECTTABLESUBSCRIPATION,
   SELECTTablecompanyApi,
   SELECTTablecompany,
   SELECTTablecompanyName,
@@ -2512,5 +2545,6 @@ module.exports = {
   SELECTFROMTableStageTempletmax,
   SELECTFROMTableStageTempletall,
   SELECTFROMTableSubStageTempletall,
-  SELECTFROMTableStageTempletaObject
+  SELECTFROMTableStageTempletaObject,
+  SELECTTablecompanyall
 };

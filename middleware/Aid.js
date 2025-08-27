@@ -6,7 +6,7 @@ const {
   insertTablecompanySubProjectStageSubtemplet,
   insertTablecompanySubProjectStageCUSTv2,
 } = require("../sql/INsertteble");
-
+const moment = require('moment-timezone');
 const convertArabicToEnglish = (arabicNumber) => {
   const arabicToEnglishMap = {
     "٠": "0",
@@ -54,11 +54,31 @@ function calculateHoursBetween(startTime, endTime) {
 
   // Calculate the difference in milliseconds
   const diffMs = end - start;
-
+  console.log(diffMs);
   // Convert milliseconds to hours
   const diffHours = diffMs / (1000 * 60 * 60);
 
   return diffHours;
+}
+
+console.log(parseInt(moment.parseZone(new Date()).format('DD')) + 5 );
+// دالة لحساب فارق الأيام
+function calculateDaysDifference(date1, date2) {
+  const date1Obj = new Date(date1);
+  const date2Obj = new Date(date2);
+
+  // حساب الفرق بالميلي ثانية
+  const diffTime = Math.abs(date2Obj - date1Obj);
+  return Math.ceil(diffTime / (1000 * 3600 * 24)); // تحويل الميلي ثانية إلى أيام
+
+};
+function calculateAcountsubscripation (subscripatiion){
+const today = new Date();
+const year = today.getFullYear();
+const month = today.getMonth();
+// نجيب اليوم الأخير (اليوم 0 من الشهر القادم هو آخر يوم في الشهر الحالي)
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+return daysInMonth / subscripatiion
 }
 
 const dates = (time) => (String(time).length > 1 ? time : `0${time}`);
@@ -95,14 +115,12 @@ const ChangeDate = (teble, StartDate) => {
   }
   return newData;
 };
-const subscripation = [
-  {
-    company:100
-  },
-  { 
-    singular : 150
-  }
-]
+const subscripation = {
+  company: 100,
+
+  singular: 150,
+};
+
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
 const Stage = async (teble, StartDate, types = "new") => {
   try {
@@ -127,7 +145,7 @@ const Stage = async (teble, StartDate, types = "new") => {
         item.StartDate,
         item.EndDate,
         item.OrderBy,
-        item.Referencenumber
+        item.Referencenumber,
       ]);
     }
   } catch (err) {}
@@ -206,7 +224,6 @@ const StageSubTempletXlsx = async (StageID) => {
 const insertStageinDatabase = () => {
   return new Promise(async (resolve, reject) => {
     try {
-
       const data = await StageTempletXsl2();
       if (data && data.length > 0) {
         for (const item of data) {
@@ -227,7 +244,7 @@ const insertStageinDatabase = () => {
             ]);
           }
         }
-        console.log('ok');
+        console.log("ok");
         resolve(true);
       } else {
         reject(new Error("No data found in the Excel file."));
@@ -280,6 +297,7 @@ const Addusertraffic = async (userName, PhoneNumber, Movementtype) => {
 };
 
 module.exports = {
+  calculateDaysDifference,
   Stage,
   AccountDays,
   StageTempletXsl,
@@ -290,5 +308,6 @@ module.exports = {
   calculateHoursBetween,
   Addusertraffic,
   StageSubTempletXlsx,
-  subscripation
+  subscripation,
+  calculateAcountsubscripation
 };

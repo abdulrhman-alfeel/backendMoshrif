@@ -152,16 +152,25 @@ const CreateTable = () => {
     }
   });
 
-  db.run(`CREATE TABLE IF NOT EXISTS subscripation (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , ProjectID INTEGER NOT NULL ,StartDate DATE NULL,EndDate DATE NULL) `);
+  db.run(`CREATE TABLE IF NOT EXISTS subscripation (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , ProjectID INTEGER NOT NULL ,price DECIMAL  NULL, StartDate DATE NULL,EndDate DATE NULL) `);
   db.run(`CREATE TABLE IF NOT EXISTS Invoice (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , Amount DECIMAL NOT NULL ,Subscription_end_date DATE DEFAULT CURRENT_TIMESTAMP,State TEXT NULL )`);
-  console.log((100 / 30) * (30 - 25))
+  // console.log((100 / 30) * (30 - 25));
 
   // db.run(
   //   `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (id INTEGER PRIMARY KEY AUTOINCREMENT , IDBranch INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, check INTEGER NOT NULL , PhoneNumber INTEGER NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP)`
   // )
+
+// جديد
   // db.run(`
-  //   ALTER TABLE StagesSub
-  //   ADD COLUMN Referencenumber INTEGER NULL;`)
+  //   ALTER TABLE company
+  //   ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+
+
+
+
+  // db.run(`
+  //   ALTER TABLE subscripation
+  //   ADD COLUMN price DECIMAL;`)
   // db.run(`
   //   ALTER TABLE StagesCUST
   //   ADD COLUMN Referencenumber INTEGER NULL;`)

@@ -461,12 +461,12 @@ const BringStagev2 = () => {
       // استيراد صلاحية المستخدم للمشروع
 
       const userdata =
-        number === 0
+        parseInt(number) === 0
           ? await SELECTTableusersCompanyVerification(userSession.PhoneNumber)
           : [];
 
       const arrayUser =
-        number === 0
+        parseInt(number) === 0
           ? await BringUserinProject(
               JSON.parse(userdata[0].Validity),
               0,
@@ -475,7 +475,7 @@ const BringStagev2 = () => {
             )
           : [];
       let datavalidity =
-        number === 0
+        parseInt(number) === 0
           ? {
               Validity: isNaN(arrayUser?.ValidityProject)
                 ? arrayUser?.ValidityProject
