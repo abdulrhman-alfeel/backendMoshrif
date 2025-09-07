@@ -1,5 +1,4 @@
-const { DateTime } = require("luxon");
-const { DateDay } = require("../middleware/Aid");
+const { DateDay, converttimetotext } = require("../middleware/Aid");
 
 const Totaltofixt = (number) => {
   return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(
@@ -8,38 +7,13 @@ const Totaltofixt = (number) => {
 };
 const moment = require("moment-timezone");
 
-function switchWeek(nameDays) {
-  const day = nameDays.trim();
-  switch (day) {
-    case "Saturday":
-      return "السبت";
-    case "Sunday":
-      return "الاحد";
-    case "Monday":
-      return "الاثنين";
-    case "Tuesday":
-      return "الثلاثاء";
-    case "Wednesday":
-      return "الاربعاء";
-    case "Thursday":
-      return "الخميس";
-    case "Friday":
-      return "الجمعة";
-    default:
-      return "يوم غير معروف"; // Unknown day
-  }
-}
+
 const Datetime = (time) => {
   // تحديد الوقت الحالي وتحويله للمنطقة الزمنية للمستخدم
   const formattedTime = moment(time).tz("Asia/Riyadh").format("hh:mm A");
   return formattedTime;
 };
 
-const converttimetotext = (time) => {
-  const currentDate = DateTime.fromISO(time);
-  const day = switchWeek(currentDate.toFormat("cccc"));
-  return day;
-};
 const HtmlContent = (item, home) => {
   const html = `<!DOCTYPE html>
   <html lang="ar">
@@ -903,4 +877,206 @@ font-weight: bold;
   `;
   return html;
 };
-module.exports = { HtmlContent, HtmlStatmentall, HtmlStatmentHR };
+const HtmlStatmentSubscription = (array) => {
+
+  const html = `
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <!-- border-collapse: collapse; -->
+
+<Style>
+  body{
+      width: 95%;
+      margin: auto;
+      margin-top: 35px;
+  }
+  .page {
+    width: 794px;
+    /* height: 1123px; */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    border: 1px dashed #2117fb;
+
+  }
+  .header {
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    border: 2px dashed #2117fb;
+    border-radius: 15px;
+    padding: 10px;
+  }
+  .header1{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: right;
+    margin:10px
+    /* border: 2px dashed black */
+  }
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* border: 2px dashed black */
+  }
+  .text-header-right{
+    font-family: "Tajawal", system-ui;
+    font-size: 17px;
+  }
+
+  h1{
+    font-family: "Tajawal", system-ui;
+    font-size: 20px;
+}
+.header-medium{
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+  .header-left img {
+    width: 100px;
+    height: 100px;
+    margin-right: 10px;
+  }
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+  .header-right p {
+    margin: 0;
+    font-size: 14px;
+    
+  }
+  table {
+  width: 98%;
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  text-align: left;
+  padding: 5px;
+  border-radius: 5px;
+  border: 2px dashed #2117fb;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+} 
+table th {
+background-color: #447dee;
+color: #fff;
+font-weight: bold;
+font-family:'Tajawal';
+font-size: 13px;
+padding: 3px;
+text-transform: uppercase;
+border: 1px solid  #1b1818;
+letter-spacing: 1px; 
+text-align: center;
+}
+
+table td {
+padding: 3px;
+text-align: center;
+font-family:'Tajawal';
+font-size: 11px;
+border: 1px solid  #1b1818;
+font-weight: bold;
+}
+
+</Style>
+<body>
+  <div class="page">
+  <div class="header">
+    <div class="header1">
+      <p class="text-header-right">التاريخ: ${moment().format("YYYY-MM-DD")}</p>
+    </div>
+
+    <div class="header-medium">
+        <h1 style="font-size: 17px;">فاتورة تفصيلية لأشتراك شهر اغسطس</h1>
+      </div>
+    <div class="header-left">
+      <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+      <h1>منصة مشرف</h1>
+    </div>
+  
+  </div>
+
+<div style="text-align:right; font-family: 'Tajawal', system-ui;">
+  <div style="display: flex; flex-direction: row; justify-content: space-between;">
+    <h1>المحترمون </h1>
+    <h1>الاخ/الاخوة : ${array[0]?.NameCompany} </h1>
+  </div>
+  <h2 style="font-size:large; text-align: center;"> الموضوع اشتراك شهر اغسطس </h2>
+  <h3 style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"> إشارة إلى الموضوع اعلاه مرفق اليكم فاتورة اشتراك شهر اغسطس نأمل سرعة السداد ليتسنى لكم الاستفادة من الخدمات المقدمه لكم </h3>
+</div>
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                  <th scope="col" rowspan="2">سعر اشتراك </th>
+                  <th scope="col" rowspan="2">عدد ايام  المشروع للشهر</th>
+                  <th scope="col" rowspan="2">تاريخ انشاء المشروع </th>
+                  <th scope="col" rowspan="2">اسم المشروع </th>
+                  <th scope="col" rowspan="2">م </th>
+                </tr>
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+      ${array.map((item,index)=>{
+        return`  <tr>
+              <td>${item.price}SR</td>
+              <td>${item.DaysElapsed}</td>
+              <td>${item.StartDate}</td>
+              <td>${item?.ProjectName}</td>
+              <td>${index +1}</td>
+            
+            </tr>`;
+        
+      })}
+  
+  
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                  <td scope="col" rowspan="5">${Totaltofixt(array[0]?.total)}</td>
+                  <th scope="col" rowspan="3">الاجمالي </th>
+                
+                </tr>
+            </tbody>
+    </thead>
+    </tr>         
+  
+  </table>
+        </div>
+</body>
+</html>
+
+
+  `;
+  return html;
+};
+module.exports = { HtmlContent, HtmlStatmentall, HtmlStatmentHR,HtmlStatmentSubscription };

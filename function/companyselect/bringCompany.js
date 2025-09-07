@@ -60,12 +60,14 @@ const biringDatabrinshCompany = () => {
     try {
       const {IDCompany,type} = req.body;
       const userSession = req.session.user;
+
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
-      const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
 
+      const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
+      
       const cached = await redis.get(key);
       if (cached && type === "cache") {
         const cachedData = JSON.parse(cached);
@@ -73,6 +75,7 @@ const biringDatabrinshCompany = () => {
         return res.send({ masseg: "succfuly", ...cachedData }).status(200);
       }
 
+      
       const result = await getCompanyBranchesForUser(IDCompany, userSession);
 
       res
@@ -94,9 +97,11 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
   const Datausere = await SELECTTableusersCompanyonObject(
     userSession.PhoneNumber
   );
+
   const validity =
     Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
   const company = await SELECTTablecompanyName(IDCompany);
+   
   let arrayBrinsh = [];
   if (userSession.job !== "Admin") {
 
@@ -137,7 +142,6 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
     "count",
     "COUNT(idOrder) AS count"
   );
-
 
   return {
     data: ObjectData,

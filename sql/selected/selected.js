@@ -22,18 +22,20 @@ const SELECTTablecompany = (id, type = "*") => {
 const SELECTTablecompanyall = (type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
-      db.all(`SELECT ${type} FROM company `, function (err, result) {
-        if (err) {
-          reject(err);
-          // console.error(err.message);
-        } else {
-          resolve(result);
+      db.all(
+        `SELECT ${type} FROM company WHERE  Suptype!='مجاني' `,
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
+            resolve(result);
+          }
         }
-      });
+      );
     });
   });
 };
-
 const SELECTTablecompanyRegistrationall = (
   type = "companyRegistration",
   count = 0
@@ -628,6 +630,42 @@ const SELECTdataprojectandbrinshandcompany = (id) => {
     });
   });
 };
+// طلب بيانات معرفات المشاريع والشركة
+const SELECTIDcompanyANDpreoject = (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT EX.id AS IDCompany,ca.id AS ProjectID FROM companySubprojects  ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany`,
+
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const selectprojectdatabycompany = (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT EX.id AS IDCompany,ca.id AS ProjectID FROM companySubprojects  ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany WHERE EX.id = ?`,
+        [id],
+
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
 //  سنبل المراحل والفروع
 
@@ -636,7 +674,7 @@ const SELECTFROMTableStageTempletall = (number = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT StageIDtemplet,StageID,Type,StageName,Days FROM StagesTemplet WHERE   StageIDtemplet  > ${number} ORDER BY StageIDtemplet ASC lIMIT 10`,
+        `SELECT StageIDtemplet,StageID,Type,StageName,Days FROM StagesTemplet WHERE  StageIDtemplet  > ${number} ORDER BY StageIDtemplet ASC lIMIT 10`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -2445,7 +2483,48 @@ const SELECTTABLESUBSCRIPATION = async (IDCompany, StartDate) => {
   });
 };
 
+const SelectInvoicesubscripation = async (IDCompany, StartDate) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+    `SELECT 
+    su.*, 
+    co.NameCompany,
+    co.CommercialRegistrationNumber,
+    CASE 
+    WHEN pr.Nameproject IS NULL THEN 'مشروع محذوف' 
+    ELSE pr.Nameproject 
+    END AS ProjectName,
+    julianday(su.EndDate) - julianday(su.StartDate) AS DaysElapsed,
+   CASE
+   WHEN vo.Amount IS NULL THEN 0.00
+   ELSE vo.Amount
+   END AS total  
+    FROM 
+    subscripation su
+    LEFT JOIN 
+    companySubprojects pr ON su.ProjectID = pr.id
+    LEFT JOIN company co ON co.id = su.IDCompany
+    LEFT JOIN Invoice vo ON vo.IDCompany=su.IDCompany AND strftime('%Y-%m', vo.Subscription_end_date) = strftime('%Y-%m', su.StartDate)
+    WHERE 
+    su.IDCompany = ? 
+    AND strftime('%Y-%m', su.StartDate) = strftime('%Y-%m', ?)
+ `,
+        [IDCompany, StartDate],
+        function (err, result) {
+          if (err) {
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
 module.exports = {
+  selectprojectdatabycompany,
   SELECTTABLESUBSCRIPATION,
   SELECTTablecompanyApi,
   SELECTTablecompany,
@@ -2546,5 +2625,7 @@ module.exports = {
   SELECTFROMTableStageTempletall,
   SELECTFROMTableSubStageTempletall,
   SELECTFROMTableStageTempletaObject,
-  SELECTTablecompanyall
+  SELECTTablecompanyall,
+  SELECTIDcompanyANDpreoject,
+  SelectInvoicesubscripation
 };

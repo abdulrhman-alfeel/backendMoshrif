@@ -1,4 +1,3 @@
-const { isEmpty } = require("bullmq");
 const {
   insertTablecompanySubProjectStageCUST,
   inserttableFlowmove,
@@ -6,7 +5,8 @@ const {
   insertTablecompanySubProjectStageSubtemplet,
   insertTablecompanySubProjectStageCUSTv2,
 } = require("../sql/INsertteble");
-const moment = require('moment-timezone');
+const { DateTime } = require("luxon");
+
 const convertArabicToEnglish = (arabicNumber) => {
   const arabicToEnglishMap = {
     "٠": "0",
@@ -61,7 +61,6 @@ function calculateHoursBetween(startTime, endTime) {
   return diffHours;
 }
 
-console.log(parseInt(moment.parseZone(new Date()).format('DD')) + 5 );
 // دالة لحساب فارق الأيام
 function calculateDaysDifference(date1, date2) {
   const date1Obj = new Date(date1);
@@ -72,13 +71,24 @@ function calculateDaysDifference(date1, date2) {
   return Math.ceil(diffTime / (1000 * 3600 * 24)); // تحويل الميلي ثانية إلى أيام
 
 };
-function calculateAcountsubscripation (subscripatiion){
-const today = new Date();
+
+
+
+
+
+function calculateendDate(time=new Date()){
+const today = new Date(time);
 const year = today.getFullYear();
 const month = today.getMonth();
 // نجيب اليوم الأخير (اليوم 0 من الشهر القادم هو آخر يوم في الشهر الحالي)
 const daysInMonth = new Date(year, month + 1, 0).getDate();
-return daysInMonth / subscripatiion
+return daysInMonth
+} 
+
+
+function calculateAcountsubscripation (subscripatiion){
+const daysInMonth = calculateendDate();
+return  subscripatiion / daysInMonth
 }
 
 const dates = (time) => (String(time).length > 1 ? time : `0${time}`);
@@ -296,6 +306,74 @@ const Addusertraffic = async (userName, PhoneNumber, Movementtype) => {
   }
 };
 
+
+function switchWeek(nameDays) {
+  const day = nameDays.trim();
+  switch (day) {
+    case "Saturday":
+      return "السبت";
+    case "Sunday":
+      return "الاحد";
+    case "Monday":
+      return "الاثنين";
+    case "Tuesday":
+      return "الثلاثاء";
+    case "Wednesday":
+      return "الاربعاء";
+    case "Thursday":
+      return "الخميس";
+    case "Friday":
+      return "الجمعة";
+    default:
+      return "يوم غير معروف"; // Unknown day
+  }
+}
+
+const converttimetotext = (time) => {
+  const currentDate = DateTime.fromISO(time);
+  const day = switchWeek(currentDate.toFormat("cccc"));
+  return day;
+};
+
+// Function to switch the month name in Arabic
+function switchMonth(nameMonth) {
+  switch (nameMonth) {
+    case "January":
+      return "يناير";
+    case "February":
+      return "فبراير";
+    case "March":
+      return "مارس";
+    case "April":
+      return "ابريل";
+    case "May":
+      return "مايو";
+    case "June":
+      return "يونيو";
+    case "July":
+      return "يوليو";
+    case "August":
+      return "أغسطس";
+    case "September":
+      return "سبتمبر";
+    case "October":
+      return "أكتوبر";
+    case "November":
+      return "نوفمبر";
+    case "December":
+      return "ديسمبر";
+    default:
+      return "شهر غير معروف"; // Unknown month
+  }
+}
+
+// Convert time to Arabic month name
+const convertTimeToMonth = (time) => {
+  const currentDate = DateTime.fromISO(time);
+  const month = switchMonth(currentDate.toFormat("MMMM")); // Extracting the full month name
+  return month;
+};
+
 module.exports = {
   calculateDaysDifference,
   Stage,
@@ -309,5 +387,9 @@ module.exports = {
   Addusertraffic,
   StageSubTempletXlsx,
   subscripation,
-  calculateAcountsubscripation
+  calculateAcountsubscripation,
+  calculateendDate,
+  switchWeek,
+  converttimetotext,
+  convertTimeToMonth
 };

@@ -37,6 +37,22 @@ const CreateTable = () => {
     `CREATE TABLE IF NOT EXISTS companySubprojects(id INTEGER PRIMARY KEY AUTOINCREMENT,IDcompanySub INTEGER NOT NULL,Nameproject TEXT NOT NULL, Note TEXT NULL,TypeOFContract TEXT NOT NULL, GuardNumber INTEGER NULL ,LocationProject TEXT NULL , ProjectStartdate DATE NULL ,Imageproject TEXT NULL,Contractsigningdate DATE NULL DEFAULT CURRENT_DATE,numberBuilding INTEGER NULL,Disabled TEXT NULL DEFAULT 'true',Referencenumber INTEGER NULL,FOREIGN KEY (IDcompanySub) REFERENCES companySub (id) ON DELETE RESTRICT ON UPDATE RESTRICT)`
   );
 
+
+  db.run(`
+    CREATE TRIGGER IF NOT EXISTS utr_BranchesAuditBranchDetailsss
+AFTER INSERT ON companySubprojects
+BEGIN
+    INSERT INTO companySubprojectsAudite (id, ProjectID, IDcompanySub,Nameproject,Note,TypeOFContract,
+    GuardNumber,LocationProject,ProjectStartdate,Imageproject,Contractsigningdate,numberBuilding,Disabled,
+    Referencenumber
+    )
+    VALUES (NEW.id, NEW.ProjectID, NEW.IDcompanySub,NEW.Nameproject,NEW.Note,NEW.TypeOFContract,
+    NEW.GuardNumber,NEW.LocationProject,NEW.ProjectStartdate,NEW.Imageproject,NEW.Contractsigningdate,NEW.numberBuilding,NEW.Disabled,
+    NEW.Referencenumber);
+END;
+    `)
+
+
   // templet ****************************************
   db.run(
     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageIDtemplet INTEGER PRIMARY KEY AUTOINCREMENT,StageID TEXT NULL,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`
@@ -161,12 +177,17 @@ const CreateTable = () => {
   // )
 
 // جديد
-  // db.run(`
-  //   ALTER TABLE company
-  //   ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+//   db.run(`
+//     ALTER TABLE company
+//     ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+//   db.run(`
+//     ALTER TABLE company
+//     ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
 
-
-
+//  db.run( `ALTER TABLE company ADD COLUMN usertype TEXT NULL DEFAULT 'شركات'`);
+//  db.run(`
+//     ALTER TABLE  StagesSub
+//     ADD COLUMN attached TEXT NULL `)
 
   // db.run(`
   //   ALTER TABLE subscripation
@@ -190,9 +211,7 @@ const CreateTable = () => {
   //   ALTER TABLE Returns
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
-  // db.run(`
-  //   ALTER TABLE  StagesSub
-  //   ADD COLUMN attached TEXT NULL `)
+  //
   // db.run(`
   //   ALTER TABLE companySubprojects
   //   ADD COLUMN cost INTEGER NULL `)

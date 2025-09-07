@@ -1,5 +1,4 @@
 const moment = require("moment-timezone");
-const cron = require("node-cron");
 
 const {
   inserTableSubscripation,
@@ -8,161 +7,130 @@ const {
 const {
   SELECTTABLESUBSCRIPATION,
   SELECTTablecompanyall,
+  SELECTIDcompanyANDpreoject,
+  selectprojectdatabycompany,
+  SelectInvoicesubscripation,
 } = require("../../sql/selected/selected");
 const {
   calculateDaysDifference,
   subscripation,
   calculateAcountsubscripation,
+  calculateendDate,
+  convertTimeToMonth,
 } = require("../../middleware/Aid");
 const { UpdateStateComany, Updatesubscripation } = require("../../sql/update");
+const { bucket } = require("../../bucketClooud");
+const path = require("path");
+const fs = require("fs");
+const { HtmlStatmentSubscription } = require("../../pdf/writHtml");
+const { convertHtmlToPdf } = require("../../pdf/convertotpdf");
+const { implmentOpreationSingle } = require("../../middleware/Fsfile");
 
-const insertDataproject = async (IDCompany, ProjectID) => {
+const insertDataprojectsubScripation = async (IDCompany, ProjectID) => {
   try {
     const newDate = moment.parseZone(new Date()).format("yy-MM-DD");
-    const endDate = `${moment.parseZone(newDate).format("yy-MM")}-30`;
-    console.log(endDate, newDate);
+    const month = moment.parseZone(newDate).format("yy-MM");
+    const endDate = `${month}-${calculateendDate(month)}`;
     await inserTableSubscripation([IDCompany, ProjectID, newDate, endDate]);
   } catch (error) {
     console.log(error);
   }
 };
 
-const opreationInvoice = () => {
-  return async (req, res) => {
-    let totalComapny = 0;
-    let acountscripationproject = [];
-    let acountscripationCompany = [];
-    let pricscripation = subscripation.company;
-    const company = await SELECTTablecompanyall("id,NameCompany");
-    const newDate = new Date();
-    for (let index = 0; index < company.length; index++) {
-      const element = company[index];
+const insertallprojectinSubscripation = async () => {
+  const data = await SELECTIDcompanyANDpreoject();
+  for (const i of data) {
+    await insertDataprojectsubScripation(i.IDCompany, i.ProjectID);
+  console.log("done");
+  }
+};
+// insertallprojectinSubscripation();
+const operationInvoice = async () => {
+  try {
+    let accountsSubscriptionProject = [];
+    let accountsSubscriptionCompany = [];
 
-      // طلب بيانات المشاريع للشركة
-      const result = await SELECTTABLESUBSCRIPATION(element.id, newDate);
+    let priceSubscription = subscripation.singular;
+    const companies = await SELECTTablecompanyall("id,NameCompany");
 
-      for (let index = 0; index < result.length; index++) {
-        const elementProject = result[index];
+    const today = new Date();
+    for (const company of companies) {
+      let totalCompany = 0;
 
-        // حساب عدد ايام المشروع لاخر يوم بالشهر
-        const numberday = await calculateDaysDifference(
-          elementProject.StartDate,
-          elementProject.EndDate
+      // جلب المشاريع التابعة للشركة
+      const projects = await SELECTTABLESUBSCRIPATION(
+        company.id,
+        moment(today).format("YYYY-MM-DD")
+      );
+      priceSubscription =
+        projects.length > 3 ? subscripation.company : subscripation.singular;
+      for (const project of projects) {
+        // حساب عدد الأيام بين البداية والنهاية
+        const numberOfDays = await calculateDaysDifference(
+          project.StartDate,
+          project.EndDate
         );
-        //  حساب الاشتراك الشهري
-        const scripationday = await calculateAcountsubscripation(
-          pricscripation
+
+        // حساب تكلفة الاشتراك باليوم
+        const subscriptionPerDay = await calculateAcountsubscripation(
+          priceSubscription
         );
 
-        // حساب الفاتورة لكل مشروع
-        const totalProject = parseInt(numberday) * parseInt(scripationday);
+        // التكلفة النهائية للمشروع
+        const totalProject =
+          parseFloat(numberOfDays) * parseFloat(subscriptionPerDay);
 
-        acountscripationproject.push({
+        accountsSubscriptionProject.push({
+          id: project.id,
+          projectId: project.ProjectID,
           price: totalProject,
-          id: elementProject.id,
+          companyId: company.id,
         });
-
-        totalComapny += totalProject;
+        totalCompany += totalProject;
       }
-      //  حساب اجمالي التكلفة لجميع المشاريع
-      acountscripationCompany.push({
-        subscripation: totalComapny,
-        IDCompany: element.id,
-        Subscripation_end_date:
-          parseInt(moment.parseZone(new Date()).format("DD")) + 5,
+
+      // حساب نهاية الاشتراك (مثلاً بعد 5 أيام من اليوم الحالي)
+      // const subscriptionEndDate = moment(today).format("YYYY-MM-DD");
+      const subscriptionEndDate = moment(today)
+        .add(5, "days")
+        .format("YYYY-MM-DD");
+      // حفظ اجمالي اشتراك الشركة
+      accountsSubscriptionCompany.push({
+        companyId: company.id,
+        subscription: totalCompany,
+        subscriptionEndDate,
       });
     }
-  };
+
+    const newDate = moment.parseZone(new Date()).format("yy-MM-DD");
+    const month = moment.parseZone(newDate).add(1, "month").format("yy-MM");
+    const endDate = `${month}-${calculateendDate(month)}`;
+
+    for (const projectinvoic of accountsSubscriptionProject) {
+      await Updatesubscripation(projectinvoic.price, projectinvoic.id);
+      await insertsubscripationnew(projectinvoic.companyId, newDate, endDate);
+    }
+
+    for (const companys of accountsSubscriptionCompany) {
+      await UpdateStateComany(companys.subscriptionEndDate, companys.companyId);
+      await inserTableInvoice([
+        companys.companyId,
+        companys.subscription,
+        companys.subscriptionEndDate,
+        "true",
+      ]);
+    }
+  } catch (error) {
+    console.error("Error in operationInvoice:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
 };
 
-const operationInvoice = () => {
-  return async (req, res) => {
-    try {
-      const userSession = req.session.user;
-      if (!userSession) {
-        res.status(401).send("Invalid session");
-        console.log("Invalid session");
-      }
-
-      
-      let accountsSubscriptionProject = [];
-      let accountsSubscriptionCompany = [];
-
-      const priceSubscription = subscripation.company;
-      const companies = await SELECTTablecompanyall("id,NameCompany");
-
-      const today = new Date();
-
-      for (const company of companies) {
-        let totalCompany = 0;
-
-        // جلب المشاريع التابعة للشركة
-        const projects = await SELECTTABLESUBSCRIPATION(company.id, today);
-
-        for (const project of projects) {
-          // حساب عدد الأيام بين البداية والنهاية
-          const numberOfDays = await calculateDaysDifference(
-            project.StartDate,
-            project.EndDate
-          );
-
-          // حساب تكلفة الاشتراك باليوم
-          const subscriptionPerDay = await calculateAcountsubscripation(
-            priceSubscription
-          );
-
-          // التكلفة النهائية للمشروع
-          const totalProject =
-            parseInt(numberOfDays) * parseInt(subscriptionPerDay);
-
-          accountsSubscriptionProject.push({
-            projectId: project.id,
-            price: totalProject,
-          });
-
-          totalCompany += totalProject;
-        }
-
-        // حساب نهاية الاشتراك (مثلاً بعد 5 أيام من اليوم الحالي)
-        const subscriptionEndDate = moment(today)
-          .add(5, "days")
-          .format("YYYY-MM-DD");
-
-        // حفظ اجمالي اشتراك الشركة
-        accountsSubscriptionCompany.push({
-          companyId: company.id,
-          subscription: totalCompany,
-          subscriptionEndDate,
-        });
-      }
-
-      for (const projectinvoic of accountsSubscriptionProject) {
-        await Updatesubscripation(projectinvoic.price, projectinvoic.projectId);
-      }
-      for (const companys of accountsSubscriptionCompany) {
-        await UpdateStateComany(
-          companys.subscriptionEndDate,
-          companys.companyId
-        );
-        await inserTableInvoice([
-          companys.companyId,
-          companys.subscription,
-          companys.subscriptionEndDate,
-          "true",
-        ]);
-      }
-
-      // إرسال النتيجة كـ response
-      return res
-        .json({
-          success: true,
-        })
-        .status(200);
-    } catch (error) {
-      console.error("Error in operationInvoice:", error);
-      return res.status(500).json({ success: false, error: error.message });
-    }
-  };
+const insertsubscripationnew = async (id, newDate, endDate) => {
+  const dataProjectnew = await selectprojectdatabycompany(id);
+  for (const project of dataProjectnew) {
+    await inserTableSubscripation([id, project.ProjectID, newDate, endDate]);
+  }
 };
 
 // دالة التحقق من الشركات
@@ -178,7 +146,7 @@ async function checkCompanySubscriptions() {
     for (const company of companies) {
       if (moment(today).isSameOrAfter(company.subscriptionEndDate)) {
         // إذا انتهى الاشتراك نخلي الشركة غير نشطة
-        await UpdateStateComany("false",company.id,'State');
+        await UpdateStateComany("false", company.id, "State");
 
         console.log(
           `🔴 الشركة ${company.NameCompany} انتهى اشتراكها وتم تعطيلها`
@@ -190,8 +158,70 @@ async function checkCompanySubscriptions() {
   }
 }
 
-// جدولة المهمة لتعمل مرة باليوم (الساعة 12 صباحاً)
-cron.schedule("0 0 * * *", () => {
-  console.log("⏰ تشغيل التحقق اليومي من الاشتراكات...");
-  checkCompanySubscriptions();
-});
+// شهر غير معروف
+// console.log(convertTimeToMonth(moment().format("YYYY-MM-DD")));
+async function uploadFile(outputPrefix, filePath) {
+  try {
+    await bucket.upload(filePath, {
+      destination: outputPrefix,
+    });
+
+    console.log("✅ File uploaded successfully");
+  } catch (err) {
+    console.error("❌ Upload failed:", err);
+  }
+}
+
+const bringInvoicedetails = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        return res.status(401).send("Invalid session");
+      }
+      const prevMonth = moment().subtract(1, "month").format("YYYY-MM-DD");
+
+      const data = await SelectInvoicesubscripation(
+        userSession.IDCompany,
+        prevMonth
+      );
+
+      if (!data || data.length === 0) {
+        return res.status(404).send("No subscription data found");
+      }
+
+      const month = convertTimeToMonth(prevMonth);
+      const namefile = `${data[0].CommercialRegistrationNumber}_${month}_.pdf`;
+      const filePath = path.join(__dirname, "../../upload", namefile);
+
+      const htmlContent = await HtmlStatmentSubscription(data);
+      await convertHtmlToPdf(htmlContent, filePath);
+
+      const outputPrefix = `${data[0].CommercialRegistrationNumber}/invoice/${namefile}`;
+
+      if (fs.existsSync(filePath)) {
+        await uploadFile(outputPrefix, filePath);
+        implmentOpreationSingle("upload", namefile);
+      }
+
+      const fileUrl = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${outputPrefix}`;
+
+      return res.status(200).send({
+        success: "Inactive",
+        url: fileUrl,
+      });
+    } catch (err) {
+      console.error("❌ Error in bringInvoicedetails:", err);
+      return res
+        .status(500)
+        .send({ success: "Inactive" ,error: "Internal server error", details: err.message });
+    }
+  };
+};
+
+module.exports = {
+  insertDataprojectsubScripation,
+  operationInvoice,
+  checkCompanySubscriptions,
+  bringInvoicedetails,
+};

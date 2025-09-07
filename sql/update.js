@@ -26,6 +26,30 @@ const UpdateStateComany = (updat,updatwhere,typename="subscriptionEndDate") =>{
     }
   });
 }
+const Updatesubscripationwhendeletproject = (updatwhere) =>{
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE subscripation SET EndDate= CURRENT_DATE  WHERE ProjectID=? AND strftime('%Y-%m',StartDate)=strftime('%Y-%m',CURRENT_DATE )`,
+          [updatwhere],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
 const Updatesubscripation = (updat,updatwhere,typename="price") =>{
   return new Promise((resolve, reject) => {
     try {
@@ -868,5 +892,6 @@ module.exports = {
   UPDATEStopeProjectStageCUSTv2,
   UPDATETablecompanySubProjectStagesSubv2,
   UpdateStateComany,
-  Updatesubscripation
+  Updatesubscripation,
+  Updatesubscripationwhendeletproject
 };

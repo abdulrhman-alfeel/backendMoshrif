@@ -45,6 +45,7 @@ const {
   UPDATETablecompanySubProjectStagesSub,
   Updaterateandcost,
   UpdaterateandcostStage,
+  Updatesubscripationwhendeletproject,
 } = require("../../sql/update");
 const {
   Projectinsert,
@@ -281,6 +282,7 @@ const DeletProjectwithDependencies = (uploadQueue) => {
       );
       const id = req.query.idProject;
       await opreationDeletProject(id);
+      await Updatesubscripationwhendeletproject(id);
       res.send({ success: "تمت عملية الحذف بنجاح" }).status(200);
     } catch (error) {
       console.log(error);

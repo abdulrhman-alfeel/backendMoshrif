@@ -53,6 +53,7 @@ const {
 const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
 const { Stage, AccountDays } = require("../../middleware/Aid");
 const xlsx = require("xlsx");
+const { insertDataprojectsubScripation } = require("../subscripation/opreationSubscripation");
 const OpreationProjectInsertv2 = async (
   IDcompanySub,
   Nameproject,
@@ -118,6 +119,7 @@ const OpreationProjectInsertv2 = async (
       await StageSub(tablesub);
     }
     await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
+    return idProject["last_id"];
   } catch (error) {
     console.log(error);
   }
@@ -145,7 +147,7 @@ const projectBrinshv2 = (uploadQueue) => {
         const locationsstring = String(LocationProject).startsWith("https")
           ? LocationProject
           : null;
-        await OpreationProjectInsertv2(
+       const idProject=  await OpreationProjectInsertv2(
           IDcompanySub,
           Nameproject,
           Note,
@@ -162,6 +164,8 @@ const projectBrinshv2 = (uploadQueue) => {
           })
           .status(200);
         await Projectinsert(IDcompanySub, userSession.userName);
+        await insertDataprojectsubScripation(userSession.IDCompany,idProject)
+
       } else {
         res
           .send({
