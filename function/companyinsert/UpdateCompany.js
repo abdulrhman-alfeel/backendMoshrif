@@ -584,46 +584,6 @@ const Implementedbyopreation = () => {
   };
 };
 
-// const OperationMoveingdataProjectfromBranshtoBransh = async (fromId,toId,IDCompany) => {
-// const {fromId,toId,IDCompany} = req.query;
-//   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'companySubprojects');
-//   await UpdateMoveingDataBranshtoBrinsh(fromId,toId,'FinancialCustody',"IDCompanySub");
-//   const resultuser = await SELECTTableusersCompany(IDCompany);
-//   for(const user of resultuser){
-//     const data = JSON.parse(user.Validity);
-//     const resultValidity = await moveProjectsAndDelete(data, 2, 1);
-//     await UpdateTableuserComppanyValidity([JSON.stringify(resultValidity),user.id])
-//   }
-//   await DeleteTablecompanySubProjectall("companySub",'id',fromId);
-
-// }
-
-// OperationMoveingdataProjectfromBranshtoBransh(2,1,1);
-
-// Function to move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
-// function moveProjectsAndDelete(data, fromId, toId) {
-//   const fromBrinshIndex = data.findIndex(item => parseInt(item.idBrinsh) === fromId);
-//   const toBrinsh = data.find(item => parseInt(item.idBrinsh) === toId);
-
-//   if (fromBrinshIndex !== -1 && toBrinsh) {
-// Move projects
-//     toBrinsh.project.push(...data[fromBrinshIndex].project);
-// Remove the fromId brinsh
-//     data.splice(fromBrinshIndex, 1);
-// Return the modified data
-//     return data;
-//   } else if(fromBrinshIndex !== -1 ) {
-//     let datanew = [...data, {
-//       idBrinsh: 1,
-//       job: 'عضو',
-//       project:data[fromBrinshIndex].project ,
-//       Acceptingcovenant: false}]
-//     return datanew; // Return the original data if not found
-//   }else{
-//     console.log('One of the idBrinsh not found');
-//     return data; // Return the original data if not found
-//   }
-// }
 
 // Move projects from idBrinsh 2 to idBrinsh 1 and delete idBrinsh 2
 

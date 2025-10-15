@@ -7,12 +7,127 @@ const Totaltofixt = (number) => {
 };
 const moment = require("moment-timezone");
 
-
 const Datetime = (time) => {
   // تحديد الوقت الحالي وتحويله للمنطقة الزمنية للمستخدم
   const formattedTime = moment(time).tz("Asia/Riyadh").format("hh:mm A");
   return formattedTime;
 };
+const styles = `
+<Style>
+  body{
+      width: 95%;
+      margin: auto;
+      margin-top: 35px;
+  }
+  .page {
+    width: 794px;
+    /* height: 1123px; */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    border: 1px dashed #2117fb;
+
+  }
+  .header {
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    border: 2px dashed #2117fb;
+    border-radius: 15px;
+    padding: 10px;
+  }
+  .header1{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: right;
+    margin:10px
+    /* border: 2px dashed black */
+  }
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* border: 2px dashed black */
+  }
+  .text-header-right{
+    font-family: "Tajawal", system-ui;
+    font-size: 17px;
+  }
+
+  h1{
+    font-family: "Tajawal", system-ui;
+    font-size: 20px;
+}
+.header-medium{
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+  .header-left img {
+    width: 100px;
+    height: 100px;
+    margin-right: 10px;
+  }
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+  }
+  .header-right p {
+    margin: 0;
+    font-size: 14px;
+    
+  }
+  table {
+  width: 98%;
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  text-align: left;
+  padding: 5px;
+  border-radius: 5px;
+  border: 2px dashed #2117fb;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+} 
+table th {
+background-color: #447dee;
+color: #fff;
+font-weight: bold;
+font-family:'Tajawal';
+font-size: 13px;
+padding: 3px;
+text-transform: uppercase;
+border: 1px solid  #1b1818;
+letter-spacing: 1px; 
+text-align: center;
+}
+
+table td {
+padding: 3px;
+text-align: center;
+font-family:'Tajawal';
+font-size: 11px;
+border: 1px solid  #1b1818;
+font-weight: bold;
+}
+.wrap-text {
+  white-space: normal;   /* السماح بالتفاف النص */
+  word-wrap: break-word; /* يكسر الكلمة الطويلة */
+  word-break: break-word;/* متوافق أكثر مع المتصفحات الحديثة */
+  max-width: 200px;      /* (اختياري) لتحديد أقصى عرض للخلية */
+}
+  thead { display: table-header-group; }
+</Style>
+`;
 
 const HtmlContent = (item, home) => {
   const html = `<!DOCTYPE html>
@@ -29,6 +144,7 @@ const HtmlContent = (item, home) => {
   </head>
     <!-- border-collapse: collapse; -->
   
+
   <Style>
     @font-face {
         font-family: 'Tajawal', sans-serif;
@@ -220,7 +336,6 @@ const HtmlContent = (item, home) => {
       <tbody>
   
         ${item.map((pic, index) => {
-
           return `   
     <tr>
           <td>${pic.items[0].InvoiceNo}</td>
@@ -463,6 +578,7 @@ span{
   align-items: center;
 }
 </Style>
+
     <body>
   <div class="page">
   <div class="header">
@@ -630,115 +746,7 @@ const HtmlStatmentHR = (array, Preparation, home) => {
   <title>Document</title>
 </head>
   <!-- border-collapse: collapse; -->
-
-<Style>
-  body{
-      width: 95%;
-      margin: auto;
-      margin-top: 35px;
-  }
-  .page {
-    width: 794px;
-    /* height: 1123px; */
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    border: 1px dashed #2117fb;
-
-  }
-  .header {
-    display: flex;
-    justify-content:space-between;
-    align-items: center;
-    border: 2px dashed #2117fb;
-    border-radius: 15px;
-    padding: 10px;
-  }
-  .header1{
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: right;
-    margin:10px
-    /* border: 2px dashed black */
-  }
-  .header-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    /* border: 2px dashed black */
-  }
-  .text-header-right{
-    font-family: "Tajawal", system-ui;
-    font-size: 17px;
-  }
-
-  h1{
-    font-family: "Tajawal", system-ui;
-    font-size: 20px;
-}
-.header-medium{
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-  .header-left img {
-    width: 100px;
-    height: 100px;
-    margin-right: 10px;
-  }
-  .header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-  }
-  .header-right p {
-    margin: 0;
-    font-size: 14px;
-    
-  }
-  table {
-  width: 98%;
-  color: #333;
-  font-family: Arial, sans-serif;
-  font-size: 8px;
-  text-align: left;
-  padding: 5px;
-  border-radius: 5px;
-  border: 2px dashed #2117fb;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  margin: auto;
-  margin-top: 10px;
-  margin-bottom: 10px;
-} 
-table th {
-background-color: #447dee;
-color: #fff;
-font-weight: bold;
-font-family:'Tajawal';
-font-size: 13px;
-padding: 3px;
-text-transform: uppercase;
-border: 1px solid  #1b1818;
-letter-spacing: 1px; 
-text-align: center;
-}
-
-table td {
-padding: 3px;
-text-align: center;
-font-family:'Tajawal';
-font-size: 11px;
-border: 1px solid  #1b1818;
-font-weight: bold;
-}
-
-</Style>
+${styles}
 <body>
   <div class="page">
   <div class="header">
@@ -878,7 +886,6 @@ font-weight: bold;
   return html;
 };
 const HtmlStatmentSubscription = (array) => {
-
   const html = `
 <!DOCTYPE html>
 <html lang="ar">
@@ -888,115 +895,7 @@ const HtmlStatmentSubscription = (array) => {
   <title>Document</title>
 </head>
   <!-- border-collapse: collapse; -->
-
-<Style>
-  body{
-      width: 95%;
-      margin: auto;
-      margin-top: 35px;
-  }
-  .page {
-    width: 794px;
-    /* height: 1123px; */
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    border: 1px dashed #2117fb;
-
-  }
-  .header {
-    display: flex;
-    justify-content:space-between;
-    align-items: center;
-    border: 2px dashed #2117fb;
-    border-radius: 15px;
-    padding: 10px;
-  }
-  .header1{
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: right;
-    margin:10px
-    /* border: 2px dashed black */
-  }
-  .header-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    /* border: 2px dashed black */
-  }
-  .text-header-right{
-    font-family: "Tajawal", system-ui;
-    font-size: 17px;
-  }
-
-  h1{
-    font-family: "Tajawal", system-ui;
-    font-size: 20px;
-}
-.header-medium{
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-  .header-left img {
-    width: 100px;
-    height: 100px;
-    margin-right: 10px;
-  }
-  .header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
-  }
-  .header-right p {
-    margin: 0;
-    font-size: 14px;
-    
-  }
-  table {
-  width: 98%;
-  color: #333;
-  font-family: Arial, sans-serif;
-  font-size: 8px;
-  text-align: left;
-  padding: 5px;
-  border-radius: 5px;
-  border: 2px dashed #2117fb;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  margin: auto;
-  margin-top: 10px;
-  margin-bottom: 10px;
-} 
-table th {
-background-color: #447dee;
-color: #fff;
-font-weight: bold;
-font-family:'Tajawal';
-font-size: 13px;
-padding: 3px;
-text-transform: uppercase;
-border: 1px solid  #1b1818;
-letter-spacing: 1px; 
-text-align: center;
-}
-
-table td {
-padding: 3px;
-text-align: center;
-font-family:'Tajawal';
-font-size: 11px;
-border: 1px solid  #1b1818;
-font-weight: bold;
-}
-
-</Style>
+${styles}
 <body>
   <div class="page">
   <div class="header">
@@ -1039,16 +938,15 @@ font-weight: bold;
     </thead>
     </tr>         
     <tbody>
-      ${array.map((item,index)=>{
-        return`  <tr>
+      ${array.map((item, index) => {
+        return `  <tr>
               <td>${item.price}SR</td>
               <td>${item.DaysElapsed}</td>
               <td>${item.StartDate}</td>
               <td>${item?.ProjectName}</td>
-              <td>${index +1}</td>
+              <td>${index + 1}</td>
             
             </tr>`;
-        
       })}
   
   
@@ -1062,7 +960,9 @@ font-weight: bold;
             <tbody>
             <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
                 <tr>
-                  <td scope="col" rowspan="5">${Totaltofixt(array[0]?.total)}</td>
+                  <td scope="col" rowspan="5">${Totaltofixt(
+                    array[0]?.total
+                  )}</td>
                   <th scope="col" rowspan="3">الاجمالي </th>
                 
                 </tr>
@@ -1079,4 +979,735 @@ font-weight: bold;
   `;
   return html;
 };
-module.exports = { HtmlContent, HtmlStatmentall, HtmlStatmentHR,HtmlStatmentSubscription };
+
+const HtmlStatmentTimline = (result, comapny) => {
+  const html = `
+  <!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <!-- border-collapse: collapse; -->
+${styles}
+<body>
+  <div class="page">
+  <div class="header">
+    <div class="header1">
+      <p class="text-header-right">التاريخ: ${moment
+        .parseZone()
+        .format("yyy-MM-DD")}</p>
+    </div>
+
+    <div class="header-medium">
+        <h1 style="font-size: 17px;">${comapny?.NameCompany}</h1>
+        <h1 style="font-size: 17px;">الجدول الزمني لمشروع</h1>
+      </div>
+      <div class="header-left">
+        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+        <h1>منصة مشرف</h1>
+      </div>
+      
+    </div>
+    <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;margin-top:50px">
+      <div>
+        <h1 style="font-size: 17px;">اسم المشروع </h1>
+        <h1 style="font-size: 17px;">${result.Nameproject}</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;">نوع المشروع</h1>
+        <h1 style="font-size: 17px;">${result.TypeOFContract}</h1>
+      </div>
+    </div>
+    <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:20px ">
+      <div >
+        <h1 style="font-size: 17px; ">المدة المتوقعة للمشروع</h1>
+             <h1 style="font-size: 17px;text-align: center;">${
+               result.ExpectedDurationDays
+             }</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;">تاريخ بدء المشروع</h1>
+        <h1 style="font-size: 17px; text-align: center;">${
+          result.ProjectStartdate
+        }</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;">تاريخ توقيع العقد</h1>
+        <h1 style="font-size: 17px;text-align: center;">${
+          result.Contractsigningdate
+        }</h1>
+      </div>
+    </div>
+
+        <h1 style="font-size: 17px;text-align:right;margin-top:50px">مراحل المشروع</h1>
+
+
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                  <th scope="col" rowspan="2">الفرق بالأيام </th>
+                  <th scope="col" rowspan="2">تاريخ الإغلاق </th>
+                  <th scope="col" rowspan="2">تاريخ النهاية </th>
+                  <th scope="col" rowspan="2">تاريخ البداية</th>
+                  <th scope="col" rowspan="2">مدة الانجاز </th>
+                  <th scope="col" colspan="2">اسم المرحلة </th>
+                </tr>
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+      ${JSON.parse(result.StageCust)?.map((item, index) => {
+        return `
+            <tr>
+        <td class="wrap-text">${item.Difference}</td>
+        <td class="wrap-text">${item.CloseDate}</td>
+        <td class="wrap-text">${item.EndDate}</td>
+        <td class="wrap-text">${item.StartDate}</td>
+        <td class="wrap-text">${item.Days}</td>
+        <td class="wrap-text">${item.StageName}</td>
+        
+      </tr>
+        `;
+      })}
+  
+      <tr>
+              <th scope="col">${result.TotalDeviationDays}</th>
+              <th scope="col"colspan="3" > </th>
+              <th scope="col" >${result.ExpectedDurationDays}</th>
+              <th scope="col" >عدد مراحل المشروع : ${result.StagesCount}</th>
+      </tr>
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+
+<h1 style="font-size: 17px;text-align:right;margin-top:50px">ملاحظات المشروع</h1>
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                 
+                  <th scope="col" rowspan="2">تاريخ الملاحظة </th>
+                  <th scope="col" rowspan="2">الجهة</th>
+                  <th scope="col" rowspan="2">عدد الايام</th>
+                  <th scope="col" rowspan="2">الملاحظة </th>
+                  <th scope="col" colspan="2">اسم المرحلة </th>
+                </tr>
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+${JSON.parse(result.StageNotes)?.map((item, index) => {
+  return `<tr>
+        <td class="wrap-text">${item.DateNote}</td>
+        <td class="wrap-text">${item.RecordedBy}</td>
+        <td class="wrap-text">${item.countdayDelay}</td>
+        <td class="wrap-text">${item.Note}</td>
+        <td class="wrap-text">${item.StageName}</td>
+      </tr>`;
+})}
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+
+
+
+     <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:80px ">
+      <div >
+        <h1 style="font-size: 15px; text-align: center;" class="wrap-text">تاريخ التسليم المتوقع للمشروع</h1>
+             <h1 style="font-size: 15px;text-align: center;"> ${
+               result.ExpectedDeliveryDate
+             } </h1>
+      </div>
+      <div >
+        <h1 style="font-size: 15px; text-align: center;  " class="wrap-text">اجمالي الايام المتبقية لإنتهاء المشروع</h1>
+             <h1 style="font-size: 15px;text-align: center;"> ${
+               result.Totaldaysremaining
+             } يوم</h1>
+      </div>
+      <div >
+        <h1 style="font-size: 15px; text-align: center;  " class="wrap-text">اجمالي الايام المستغرقة حتى تاريخ طباعة التقرير</h1>
+             <h1 style="font-size: 15px;text-align: center;"> ${
+               result.Totaldaysspent
+             } يوم</h1>
+      </div>
+    
+    </div>
+        </div>
+</body>
+</html>
+
+  `;
+  return html;
+};
+
+function Separationoftypes(items) {
+  const arr = Array.isArray(items) ? items : JSON.parse(items || "[]");
+  const map = new Map();
+  for (const it of arr) {
+    const key = it.Type ?? "-";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(it);
+  }
+  return Array.from(map.entries()).map(([Type, list]) => ({
+    Type,
+    itemsSub: list,
+    total: list.length,
+  }));
+};
+
+
+const esc = (v) =>
+  String(v ?? "-")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const HtmlStatmentallRequests = (result, count, company, type = "all") => {
+  let nameProject = "";
+  const rowsHtml = result
+    .map((p) => {
+      const items = Array.isArray(p.items)
+        ? p.items
+        : JSON.parse(p.items || "[]");
+      const groups = Separationoftypes(items);
+
+      const totalRowsForProject = Math.max(items.length, 1);
+      let projectPrinted = false;
+      nameProject =
+        type !== "all"
+          ? `<h1 style="font-size: 17px;">مشروع : ${p.project_name}</h1>`
+          : "";
+
+      return groups
+        .map((group) => {
+          const typeTotal = Math.max(group.itemsSub.length, 1);
+          let typePrinted = false;
+
+          return group.itemsSub
+            .map((t) => {
+              const projectCell =
+                !projectPrinted && type === "all"
+                  ? `<td style="background-color: #447dee; color: #fff;"  class="blue-col" rowspan="${totalRowsForProject}">${esc(
+                      p.project_name
+                    )}</td>`
+                  : "";
+
+              const typeCell = !typePrinted
+                ? `<td style="background-color: #447dee; color: #fff;"  class="blue-col" rowspan="${typeTotal}">${esc(
+                    group.Type
+                  )}</td>`
+                : "";
+
+              projectPrinted = true;
+              typePrinted = true;
+
+              return `
+        <tr>
+        
+          <td class="wrap-text">${esc(t.Implementedby)}</td>
+          <td class="wrap-text">${esc(t.InsertBy)}</td>
+          <td class="wrap-text">${esc(
+            t.checkorderout === "true" ? "✓" : "X"
+          )}</td>
+          <td class="wrap-text">${esc(t.Done === "true" ? "✓" : "X")}</td>
+          <td class="wrap-text">${esc(t.Date)}</td>
+          <td class="wrap-text">${esc(t.Data)}</td>
+          ${typeCell}
+            ${projectCell}
+        </tr>
+      `;
+            })
+            .join("");
+        })
+        .join("");
+    })
+    .join("");
+  const column =
+    type === "all" ? `<th scope="col" rowspan="2">المشروع</th>` : "";
+
+  const html = `
+  <!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <!-- border-collapse: collapse; -->
+${styles}
+<body>
+  <div class="page">
+  <div class="header">
+    <div class="header1">
+         <p class="text-header-right">التاريخ: ${moment
+           .parseZone()
+           .format("yyy-MM-DD")}</p>
+    </div>
+
+    <div class="header-medium">
+        <h1 style="font-size: 17px;">${company?.NameCompany}</h1>
+        <h1 style="font-size: 17px;">تقرير الطلبات</h1>
+        ${nameProject}
+      </div>
+      <div class="header-left">
+        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+        <h1>منصة مشرف</h1>
+      </div>
+      
+    </div>
+
+    <div  >
+      <h1 style="font-size: 17px;text-align: center; "> اجمالي الطلبات </h1>
+           <h1 style="font-size: 17px;text-align: center;">${count.total}</h1>
+    </div>
+    <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:20px ">
+      <div >
+        <h1 style="font-size: 17px;"> مستلمة في الموقع </h1>
+             <h1 style="font-size: 17px;text-align: center;">${
+               count.confirmed_count
+             }</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;">قيد التسليم</h1>
+        <h1 style="font-size: 17px; text-align: center;">${
+          count.closed_count
+        }</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;">قيد المراجعه</h1>
+        <h1 style="font-size: 17px;text-align: center;">${count.open_count}</h1>
+      </div>
+    </div>
+
+        <h1 style="font-size: 17px;text-align:right;margin-top:50px">تفاصيل الطلبات</h1>
+
+
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+                <tr>
+                  <th scope="col" rowspan="2">منفذ الطلب </th>
+                  <th scope="col" rowspan="2">طلب بواسطة</th>
+                  <th scope="col" rowspan="2">تم الاستلام </th>
+                  <th scope="col" rowspan="2">تم الارسال </th>
+                  <th scope="col" rowspan="2">تاريخ الطلب</th>
+                  <th scope="col" rowspan="2">تفاصيل الطلب</th>
+                  <th scope="col" rowspan="2">التصنيف</th>
+                  ${column}
+                </tr>
+            </tbody>
+    </thead>
+    </tr>         
+    <tbody>
+${rowsHtml}
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+        </div>
+</body>
+</html>
+
+  `;
+  return html;
+};
+
+const HTMLStatmentFinancialCustody = (result, count, company) => {
+  const html = `
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+
+
+${styles}
+<body>
+  <div class="page">
+    <section class="intro-block">>
+  <div class="header">
+    <div class="header1">
+      <p class="text-header-right">التاريخ: م</p>
+    </div>
+ 
+    
+    <div class="header-medium">
+        <h1 style="font-size: 17px;">${company?.NameCompany}</h1>
+        <h1 style="font-size: 17px;">تقرير العهد</h1>
+      </div>
+      <div class="header-left">
+        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+        <h1>منصة مشرف</h1>
+      </div>
+      
+    </div>
+<div class="intro-summary">
+    <div >
+      <h1 style="font-size: 17px; text-align: center;"> اجمالي عدد العهد  </h1>
+      <h1 style="font-size: 17px;text-align: center;">${
+        count.total_requests
+      }</h1>
+    </div>
+    <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:20px ">
+      <div>
+        <h1 style="font-size: 17px;">المرفوضه</h1>
+        <h1 style="font-size: 17px;text-align: center;">${
+          count.rejected_requests
+        }</h1>
+      </div>
+      <div>
+        <h1 style="font-size: 17px;text-align: center;">المغلقة </h1>
+        <h1 style="font-size: 17px; text-align: center;">${
+          count.accepted_requests
+        }</h1>
+      </div>
+      <div >
+        <h1 style="font-size: 17px;text-align: center;"> قيد المراجعه  </h1>
+             <h1 style="font-size: 17px;text-align: center;">${
+               count.open_requests
+             }</h1>
+      </div>
+    </div>
+    </div>
+    </section>
+<div class="content">
+
+
+${
+  result.filter((pic) => pic.section === "الطلبات المفتوحة").length > 0
+    ? `
+  <h1 style="font-size: 17px;text-align:right;margin-top:50px">تفاصيل طلبات قيد المراجعه </h1>
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+            <tr>
+                  <th scope="col" rowspan="2">تاريخ الطلب </th>
+                  <th scope="col" rowspan="2">البيان</th>
+                  <th scope="col" rowspan="2">المبلغ </th>
+                  <th scope="col" colspan="2">بواسطة </th>
+                </tr>
+            </tbody>
+            
+    </thead>
+    </tr>         
+    <tbody>
+      
+      ${result
+        .filter((pic) => pic.section === "الطلبات المفتوحة")
+        .map((item, index) => {
+          return ` <tr>
+         <td class="wrap-text">${item.Date}</td>
+        <td class="wrap-text">${item.Statement}</td>
+        <td class="wrap-text">${Totaltofixt(item.Amount)}</td>
+        <th scope="col">${item.Requestby}</th>
+      </tr>`;
+        })}
+
+      <!-- Add more rows as needed -->
+    </tbody>
+    
+  </table>`
+    : ""
+}
+
+
+  ${
+    result.filter((pic) => pic.section === "الطلبات المقبولة").length > 0
+      ? `
+  <h1 style="font-size: 17px;text-align:right;margin-top:50px">تفاصيل الطلبات المغلقة </h1>
+  <table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+            <tr>
+                  <th scope="col" rowspan="2">تاريخ الموافقة</th>
+                  <th scope="col" rowspan="2">موافقة بواسطة</th>
+                  <th scope="col" rowspan="2">تاريخ الطلب </th>
+                  <th scope="col" rowspan="2">البيان</th>
+                  <th scope="col" rowspan="2">المبلغ </th>
+                  <th scope="col" colspan="2">بواسطة </th>
+                </tr>
+            </tbody>
+            
+    </thead>
+    </tr>         
+    <tbody>
+         
+    ${result
+      .filter((pic) => pic.section === "الطلبات المقبولة")
+      .map((item, index) => {
+        return `
+      <tr>
+        <td class="wrap-text">${item.ApprovalDate}</td>
+        <td class="wrap-text">${item.Approvingperson}</td>
+        <td class="wrap-text">${item.Date}</td>
+        <td class="wrap-text">${item.Statement}</td>
+        <td class="wrap-text">${Totaltofixt(item.Amount)}</td>
+        <th scope="col">${item.Requestby}</th>
+      </tr>`;
+      })}
+
+      <!-- Add more rows as needed -->
+    </tbody>
+    
+  </table>`
+      : ""
+  }
+
+  ${
+    result.filter((pic) => pic.section === "الطلبات المرفوضة").length > 0
+      ? `<h1 style="font-size: 17px;text-align:right;margin-top:50px">تفاصيل الطلبات المرفوضة </h1>
+  <table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+            <tr>
+                  <th scope="col" rowspan="2">سبب الرفض</th>
+                  <th scope="col" rowspan="2">تاريخ الرفض</th>
+                  <th scope="col" rowspan="2">رفض بواسطة</th>
+                  <th scope="col" rowspan="2">تاريخ الطلب </th>
+                  <th scope="col" rowspan="2">البيان</th>
+                  <th scope="col" rowspan="2">المبلغ </th>
+                  <th scope="col" colspan="2">بواسطة </th>
+                </tr>
+            </tbody>
+            
+    </thead>
+    </tr>         
+    <tbody>
+      
+    ${result
+      .filter((pic) => pic.section === "الطلبات المرفوضة")
+      .map((item, index) => {
+        return `
+      <tr>
+        <td class="wrap-text">${item.Reasonforrejection}</td>
+        <td class="wrap-text">${item.Dateofrejection}</td>
+        <td class="wrap-text">${item.Approvingperson}</td>
+        <td class="wrap-text">${item.Date}</td>
+        <td class="wrap-text">${item.Statement}</td>
+        <td class="wrap-text">${Totaltofixt(item.Amount)}</td>
+        <th scope="col" >${item.Requestby}</th>
+      </tr>
+      `;
+      })}
+
+      <!-- Add more rows as needed -->
+    </tbody>
+    
+  </table>`
+      : ""
+  }
+
+</div>
+
+
+  <section class="last-page-only">
+    
+    <div >
+      <h1 style="font-size: 17px; text-align: center;"> اجمالي مبلغ العهد  </h1>
+      <h1 style="font-size: 17px;text-align: center;">${Totaltofixt(
+        count.total_amount
+      )}</h1>
+    </div>
+
+    <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:20px ">
+    
+    <div>
+        <h1 style="font-size: 17px;">اجمالي مبلغ العهد المرفوضه </h1>
+        <h1 style="font-size: 17px;text-align: center;">${Totaltofixt(
+          count.rejected_amount
+        )}</h1>
+      </div>
+
+      <div>
+        <h1 style="font-size: 17px;text-align: center;">اجمالي مبلغ العهد المغلقة</h1>
+        <h1 style="font-size: 17px; text-align: center;">${Totaltofixt(
+          count.accepted_amount
+        )}</h1>
+      </div>
+
+      <div >
+        <h1 style="font-size: 17px;text-align: center;">اجمالي مبلغ  عهد قيد المراجعه   </h1>
+        <h1 style="font-size: 17px;text-align: center;">${Totaltofixt(
+          count.open_amount
+        )}</h1>
+      </div>
+
+    </div>
+    </section>
+    </div>
+        </div>
+</body>
+</html>
+
+  `;
+
+  return html;
+};
+
+const HtmlStatmentStage = (stage_image,dataStage, company,StageSub) => {
+  try {
+    const html = `
+    <!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+  <!-- border-collapse: collapse; -->
+
+  ${styles}
+<body>
+  <div class="page">
+  <div class="header">
+    <div class="header1">
+      <p class="text-header-right">التاريخ:  ${moment
+           .parseZone()
+           .format("yyy-MM-DD")}م</p>
+    </div>
+
+    <div class="header-medium">
+        <h1 style="font-size: 17px;">${esc(company?.NameCompany)}</h1>
+        <h1 style="font-size: 17px;">تقرير مرحلة</h1>
+        <h1 style="font-size: 17px;">${esc(dataStage.StageName)}</h1>
+      </div>
+      <div class="header-left">
+        <img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/Vector.png" alt="logo" style="width: 80px;height: 40px;">
+        <h1>منصة مشرف</h1>
+      </div>
+      
+    </div>
+
+
+<table>
+  <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+            <tr>
+                  <th scope="col" rowspan="2">النسبة التقديرية </th>
+                  <th scope="col" rowspan="2">نسبة الانجاز</th>
+                  <th scope="col" rowspan="2">تاريخ النهائية </th>
+                  <th scope="col" colspan="2">تاريخ البدية </th>
+                </tr>
+            </tbody>
+            
+    </thead>
+    </tr>         
+    <tbody>
+      
+      <tr>
+        <td class="wrap-text">${esc(dataStage.Ratio)}</td>
+        <td class="wrap-text">${esc(parseFloat(dataStage.rate).toFixed(4))}%</td>
+        <td class="wrap-text">${esc(dataStage.EndDate)}</td>
+        <td class="wrap-text">${esc(dataStage.StartDate)}</td>
+      </tr>
+
+      <!-- Add more rows as needed -->
+    </tbody>
+    
+  </table>
+
+
+
+    <h1 style="font-size: 17px;text-align:right;margin-top:50px">تفاصيل المراحل الفرعية </h1>
+    <table>
+    <thead>
+        <tr>
+    <thead>
+            <tbody>
+            <!-- <th style="text-align: center;border-color: #333;"  colspan="6">Purchaise</th> -->
+            <tr>
+                  <th scope="col" rowspan="2"> بواسطة</th>
+                  <th scope="col" rowspan="2">تاريخ الانجاز </th>
+                  <th scope="col" rowspan="2">انجزت </th>
+                  <th scope="col" colspan="2">اسم المرحلة</th>
+                </tr>
+            </tbody>
+            
+    </thead>
+    </tr>         
+    <tbody>
+      
+     ${StageSub.map((item) =>{
+      return `
+      <tr>
+        <td class="wrap-text">${esc(item.userName)}</td>
+        <td class="wrap-text">${esc(item.CloseDate)}</td>
+        <td class="wrap-text">${esc(item.Done) === "true" ? "✓" : "X"}</td>
+        <td class="wrap-text">${esc(item.StageSubName)}</td>
+              </tr>
+      `
+     } ) }
+
+      <!-- Add more rows as needed -->
+    </tbody>
+
+    </table>
+
+
+  <h1 style="font-size: 17px;text-align:right;margin-top:50px">صور الانجازات  </h1>
+  <div style="display: flex;justify-content: center;gap: 10px;margin-top:10px;flex-wrap: wrap;">
+    ${stage_image.length === 0 ? `<h1>لا توجد صور</h1>` :
+    stage_image.map((img) => {
+      return `<img src="https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${img.url}" alt="logo"
+      style="width: 40%; border-radius: 2%;">`
+    }).join('')
+
+    }
+  </div>
+
+
+  
+    </div>
+</body>
+</html>
+
+    `;
+    return html;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports = {
+  HtmlContent,
+  HtmlStatmentall,
+  HtmlStatmentHR,
+  HtmlStatmentSubscription,
+  HtmlStatmentTimline,
+  HtmlStatmentallRequests,
+  HTMLStatmentFinancialCustody,
+  HtmlStatmentStage
+};

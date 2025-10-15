@@ -175,6 +175,53 @@ const SELECTTablecompanySubCount = (id) => {
 };
 
 // فروع الشركة
+const SELECTTablecompanySubuser = (PhoneNumber) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT 
+    RE.*,
+    EX.NameCompany,
+    EX.CommercialRegistrationNumber,
+    EX.Country,
+    (SELECT COUNT(*) 
+    FROM companySubprojects 
+    WHERE IDcompanySub = RE.id 
+      AND Disabled = 'true') AS CountProject
+    FROM usersCompany uC
+    LEFT JOIN usersBransh uB 
+          ON uC.id = uB.user_id 
+          AND uC.job NOT IN ('Admin') 
+    LEFT JOIN company EX 
+          ON EX.id = uC.IDCompany
+    LEFT JOIN companySub RE 
+          ON RE.NumberCompany = EX.id
+    LEFT JOIN Linkevaluation Li 
+          ON Li.IDcompanySub = RE.id
+    WHERE trim(uC.PhoneNumber) = trim(${PhoneNumber})   AND (
+       uC.job = 'Admin'
+       OR EXISTS (
+            SELECT 1
+            FROM usersBransh uB2
+            WHERE uB2.user_id = uC.id
+              AND uB2.idBransh = RE.id   -- الفروع المخوّل لها المستخدم فقط
+       )
+  ); `,
+
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
+            console.log(result.length)
+            resolve(result);
+          }
+          // console.log(result, "selecttable");
+        }
+      );
+    });
+  });
+};
 const SELECTTablecompanySub = (
   id,
   type = "*",
@@ -287,6 +334,26 @@ const SELECTTablecompanySubLinkevaluation = (id) => {
 
 // مشاريع الفرع
 // من اجل حذف الفرع جلب جميع مشاريع الفرع
+const SELECTTusersProjectProjectall = (PhoneNumber) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        "SELECT ProjectID FROM usersProject ut LEFT JOIN usersCompany uy ON uy.id = ut.user_id  WHERE trim(uy.PhoneNumber)=trim(?)",
+        [PhoneNumber],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+// مشاريع الفرع
+// من اجل حذف الفرع جلب جميع مشاريع الفرع
 const SELECTTABLEcompanyProjectall = (id) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
@@ -306,64 +373,186 @@ const SELECTTABLEcompanyProjectall = (id) => {
   });
 };
 
+// SELECT
+//         CASE
+//         WHEN uC.job = 'Admin' THEN uC.job
+//         WHEN cS.Nameproject IS NULL  THEN NULL
+//         ELSE uB.job
+//         END AS job,
+//         cS.id,
+//         cS.IDcompanySub,
+//         cS.Nameproject,
+//         cS.Note,
+//         cS.TypeOFContract,
+//         cS.GuardNumber,
+//         cS.LocationProject,
+//         cS.ProjectStartdate,
+//         cS.numberBuilding,
+//         cS.Contractsigningdate,
+//         cS.Disabled,
+//         cS.Referencenumber,
+//         cS.rate,
+//         cS.cost,
+//         (SELECT COUNT(ValidityProject) FROM usersProject ut WHERE ut.ProjectID =cS.id ) AS countuser,
+//         EX.Cost AS ConstCompany,
+//         EX.DisabledFinance,
+//         Li.urlLink AS Linkevaluation,
+//         CASE
+//         WHEN uB.ValidityBransh IS NOT NULL THEN json_extract(uB.ValidityBransh, '$')
+//         ELSE NULL END AS ValidityBransh
+//         FROM usersCompany uC
+//         LEFT JOIN usersBransh uB
+//             ON uC.id = uB.user_id
+//             AND uC.job NOT IN ('Admin')
+//         LEFT JOIN usersProject uP
+//             ON uB.idBransh = uP.idBransh
+//             AND uB.user_id = uP.user_id
+//         LEFT JOIN companySubprojects cS
+//         ON (
+//             (uC.job = 'Admin' AND cS.IDcompanySub = ${id})
+//             OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${id})
+//             OR (uC.job NOT IN ('Admin','مدير الفرع')
+//                 AND uP.ProjectID = cS.id
+//                 AND uB.idBransh = ${id})
+//         )
+//         LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
+//         LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
+//         LEFT JOIN company EX ON EX.id = RE.NumberCompany
+//         WHERE trim(uC.PhoneNumber) = trim(${PhoneNumber})  AND cS.id > ${IDfinlty}  AND (cS.Disabled) ='${Disabled}'  ORDER BY cS.id ASC
+//         ${Limit}
+//         `
+//           : `SELECT
+//         cS.id AS ProjectID,cS.Nameproject
+//         FROM usersCompany uC
+//         LEFT JOIN usersBransh uB
+//             ON uC.id = uB.user_id
+//             AND uC.job NOT IN ('Admin')
+//         LEFT JOIN usersProject uP
+//             ON uB.idBransh = uP.idBransh
+//             AND uB.user_id = uP.user_id
+//         LEFT JOIN companySubprojects cS
+//         ON (
+//           (uC.job = 'Admin' )
+//           OR (uB.job = 'مدير الفرع' )
+//           OR (uC.job NOT IN ('Admin','مدير الفرع')
+//               AND uP.ProjectID = cS.id )
+//         )
+//         WHERE trim(uC.PhoneNumber) =trim(${PhoneNumber})  AND (cS.id) ${plase} ${IDfinlty}   AND (cS.Disabled) =${Disabled}  ORDER BY cS.id ASC  ${Limit}
+const selecttablecompanySubProjectall = (
+  id,
+  IDfinlty,
+  PhoneNumber,
+  Disabled = "true",
+  Limit = "LIMIT 3",
+  kind = "all"
+) => {
+  return new Promise((resolve, reject) => {
+    let plase = parseInt(IDfinlty) === 0 ? ">" : "<";
+
+    db.serialize(function () {
+      db.all(
+        kind === "all"
+          ? `
+        SELECT 
+    CASE  
+        WHEN uC.job = 'Admin' THEN uC.job
+        WHEN cS.Nameproject IS NULL THEN NULL
+        ELSE uB.job
+    END AS job,
+    cS.id,
+    cS.IDcompanySub,
+    cS.Nameproject,
+    cS.Note,
+    cS.TypeOFContract,
+    cS.GuardNumber,
+    cS.LocationProject,
+    cS.ProjectStartdate,
+    cS.numberBuilding,
+    cS.Contractsigningdate,
+    cS.Disabled,
+    cS.Referencenumber, 
+    cS.rate,
+    cS.cost,
+    (SELECT COUNT(ValidityProject) FROM usersProject ut WHERE ut.ProjectID = cS.id) AS countuser,
+    EX.Cost AS ConstCompany,
+    EX.DisabledFinance,
+    Li.urlLink AS Linkevaluation,
+    CASE
+        WHEN uB.ValidityBransh IS NOT NULL THEN json_extract(uB.ValidityBransh, '$') 
+        ELSE NULL 
+    END AS ValidityBransh
+FROM usersCompany uC
+LEFT JOIN usersBransh uB 
+    ON uC.id = uB.user_id 
+    AND uC.job NOT IN ('Admin') 
+LEFT JOIN usersProject uP 
+    ON uB.idBransh = uP.idBransh 
+    AND uB.user_id = uP.user_id 
+LEFT JOIN companySubprojects cS 
+    ON (
+        (uC.job = 'Admin' AND cS.IDcompanySub = ${id})
+        OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${id})
+        OR (uC.job NOT IN ('Admin','مدير الفرع') 
+            AND uP.ProjectID = cS.id 
+            AND uB.idBransh = ${id})
+    )
+LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
+LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
+LEFT JOIN company EX ON EX.id = RE.NumberCompany
+WHERE 
+    TRIM(uC.PhoneNumber) = TRIM(${PhoneNumber})  
+    AND cS.id > ${IDfinlty}  
+    AND cS.Disabled = '${Disabled}'  
+ORDER BY cS.id ASC
+${Limit}
+
+        `
+          : `SELECT 
+        cS.id AS ProjectID,cS.Nameproject
+        FROM usersCompany uC
+        LEFT JOIN usersBransh uB 
+            ON uC.id = uB.user_id 
+            AND uC.job NOT IN ('Admin') 
+        LEFT JOIN usersProject uP 
+            ON uB.idBransh = uP.idBransh 
+            AND uB.user_id = uP.user_id
+        LEFT JOIN companySubprojects cS 
+        ON (
+          (uC.job = 'Admin' )
+          OR (uB.job = 'مدير الفرع' )
+          OR (uC.job NOT IN ('Admin','مدير الفرع') 
+              AND uP.ProjectID = cS.id )
+        )
+        WHERE trim(uC.PhoneNumber) =trim(${PhoneNumber})  AND (cS.id) ${plase} ${IDfinlty}   AND (cS.Disabled) =${Disabled}  ORDER BY cS.id ASC  ${Limit}`,
+
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 // جلب المشاريع للمنصة
 const SELECTTablecompanySubProject = (
   id,
-  IDfinlty,
   kind = "all",
   Disabled = "true",
-  type = "",
-  Limit = "LIMIT 3",
-  order = "ASC"
+  type = ""
 ) => {
   return new Promise((resolve, reject) => {
-    let plase = order === "ASC" ? ">" : parseInt(IDfinlty) === 0 ? ">" : "<";
     let stringSql =
-      kind === "all"
-        ? `SELECT * 
-FROM (
-    SELECT 
-        ca.id,
-        ca.IDcompanySub,
-        ca.Nameproject,
-        ca.Note,
-        ca.TypeOFContract,
-        ca.GuardNumber,
-        ca.LocationProject,
-        ca.ProjectStartdate,
-        ca.numberBuilding,
-        ca.Contractsigningdate,
-        EX.Cost AS ConstCompany,
-        Li.urlLink AS Linkevaluation,
-        ca.Disabled,
-        ca.Referencenumber, 
-        ca.rate,
-        ca.cost,
-        ca.countuser
-    FROM companySubprojects ca
-    LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub
-    LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub
-    LEFT JOIN company EX ON EX.id = RE.NumberCompany
-    WHERE 
-        ca.IDcompanySub = ? AND (ca.id) ${plase} ?   AND (ca.Disabled) =?
-          ${type}
-    ORDER BY ca.id ${order}
-    ${Limit}
-) AS subquery
-ORDER BY id ASC, datetime(Contractsigningdate) ASC`
-        : kind === "difference"
+      kind === "difference"
         ? `SELECT Contractsigningdate,ProjectStartdate,Nameproject,IDcompanySub,TypeOFContract FROM companySubprojects WHERE id=? AND Disabled =?`
         : kind === "forchat"
-        ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=?  `
-        : kind === "forchatAdmin"
-        ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE RE.NumberCompany=? AND (ca.id) > ?   AND (ca.Disabled) =?   ${type}    ORDER BY ca.id ASC
-    LIMIT 10`
+        ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=? ${type} `
         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=? AND Disabled =?`;
 
-    let data =
-      kind === "all" || kind === "forchatAdmin"
-        ? [id, IDfinlty, Disabled]
-        : [id, Disabled];
+    let data = [id, Disabled];
     db.serialize(function () {
       db.all(stringSql, data, function (err, result) {
         if (err) {
@@ -376,6 +565,75 @@ ORDER BY id ASC, datetime(Contractsigningdate) ASC`
     });
   });
 };
+// const SELECTTablecompanySubProject = (
+//   id,
+//   IDfinlty,
+//   kind = "all",
+//   Disabled = "true",
+//   type = "",
+//   Limit = "LIMIT 3",
+//   order = "ASC"
+// ) => {
+//   return new Promise((resolve, reject) => {
+//     let plase = order === "ASC" ? ">" : parseInt(IDfinlty) === 0 ? ">" : "<";
+//     let stringSql =
+//       kind === "all"
+//         ? `SELECT *
+// FROM (
+//     SELECT
+//         ca.id,
+//         ca.IDcompanySub,
+//         ca.Nameproject,
+//         ca.Note,
+//         ca.TypeOFContract,
+//         ca.GuardNumber,
+//         ca.LocationProject,
+//         ca.ProjectStartdate,
+//         ca.numberBuilding,
+//         ca.Contractsigningdate,
+//         EX.Cost AS ConstCompany,
+//         Li.urlLink AS Linkevaluation,
+//         ca.Disabled,
+//         ca.Referencenumber,
+//         ca.rate,
+//         ca.cost,
+//         ca.countuser
+//     FROM companySubprojects ca
+//     LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = ca.IDcompanySub
+//     LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub
+//     LEFT JOIN company EX ON EX.id = RE.NumberCompany
+//     WHERE
+//         ca.IDcompanySub = ? AND (ca.id) ${plase} ?   AND (ca.Disabled) =?
+//           ${type}
+//     ORDER BY ca.id ${order}
+//     ${Limit}
+// ) AS subquery
+// ORDER BY id ASC, datetime(Contractsigningdate) ASC`
+//         : kind === "difference"
+//         ? `SELECT Contractsigningdate,ProjectStartdate,Nameproject,IDcompanySub,TypeOFContract FROM companySubprojects WHERE id=? AND Disabled =?`
+//         : kind === "forchat"
+//         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub  WHERE  ca.IDcompanySub=? AND ca.Disabled=?  `
+//         : kind === "forchatAdmin"
+//         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca  LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE RE.NumberCompany=? AND (ca.id) > ?   AND (ca.Disabled) =?   ${type}    ORDER BY ca.id ASC
+//     LIMIT 10`
+//         : `SELECT COUNT(*) FROM companySubprojects WHERE IDcompanySub=? AND Disabled =?`;
+
+//     let data =
+//       kind === "all" || kind === "forchatAdmin"
+//         ? [id, IDfinlty, Disabled]
+//         : [id, Disabled];
+//     db.serialize(function () {
+//       db.all(stringSql, data, function (err, result) {
+//         if (err) {
+//           reject(err);
+//           // console.log(err.message);
+//         } else {
+//           resolve(result);
+//         }
+//       });
+//     });
+//   });
+// };
 const SELECTTablecompanySubProjectLast_id = (
   id,
   kind = "all",
@@ -389,7 +647,8 @@ const SELECTTablecompanySubProjectLast_id = (
         ? `SELECT MAX(ca.id) AS last_id, ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation,RE.NumberCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ${type}=?`
         : kind === "forchat"
         ? `SELECT ca.id AS ProjectID,ca.Nameproject FROM companySubprojects ca WHERE ca.Disabled="true" AND ca.id=?`
-        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation ,ca.Referencenumber FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
+        : `SELECT ca.id,ca.IDcompanySub,ca.Nameproject,ca.Note,ca.TypeOFContract,ca.GuardNumber,ca.LocationProject,ca.ProjectStartdate,ca.numberBuilding,ca.Contractsigningdate,ca.Disabled,EX.Cost AS ConstCompany, Li.urlLink AS Linkevaluation ,ca.Referencenumber,ca.Cost_per_Square_Meter,
+        ca.Project_Space FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN Linkevaluation Li ON Li.IDcompanySub =RE.id LEFT JOIN  company EX ON EX.id = RE.NumberCompany  WHERE Disabled ='true' AND ca.id=?`;
     db.serialize(function () {
       db.get(stringSql, [id], function (err, result) {
         if (err) {
@@ -422,14 +681,53 @@ const SELECTTablecompanySubProjectindividual = (id, IDcompanySub) => {
   });
 };
 // فلتر المشاريع
-const SELECTTablecompanySubProjectFilter = (search, IDcompanySub) => {
+const SELECTTablecompanySubProjectFilter = (search, IDcompanySub, user_id) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        "SELECT * FROM companySubprojects WHERE Nameproject LIKE '%" +
-          search +
-          "%' AND IDcompanySub=? AND Disabled = 'true'",
-        [IDcompanySub],
+        `SELECT 
+        CASE  
+        WHEN uC.job = 'Admin' THEN uC.job
+        WHEN cS.Nameproject IS NULL  THEN NULL
+        ELSE uB.job
+        END AS job,
+        cS.id,
+        cS.IDcompanySub,
+        cS.Nameproject,
+        cS.Note,
+        cS.TypeOFContract,
+        cS.GuardNumber,
+        cS.LocationProject,
+        cS.ProjectStartdate,
+        cS.numberBuilding,
+        cS.Contractsigningdate,
+        cS.Disabled,
+        cS.Referencenumber, 
+        cS.rate,
+        cS.cost,
+        cS.countuser,
+        EX.Cost AS ConstCompany,
+        EX.DisabledFinance,
+        Li.urlLink AS Linkevaluation
+        FROM usersCompany uC
+        LEFT JOIN usersBransh uB 
+            ON uC.id = uB.user_id 
+            AND uC.job NOT IN ('Admin') 
+        LEFT JOIN usersProject uP 
+            ON uB.idBransh = uP.idBransh 
+            AND uB.user_id = uP.user_id
+        LEFT JOIN companySubprojects cS 
+     ON (
+         (uC.job = 'Admin' AND cS.IDcompanySub = ${IDcompanySub})
+         OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${IDcompanySub})
+         OR (uC.job NOT IN ('Admin','مدير الفرع') 
+             AND uP.ProjectID = cS.id 
+             AND uB.idBransh = ${IDcompanySub})
+     )
+LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
+LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
+LEFT JOIN company EX ON EX.id = RE.NumberCompany
+WHERE uC.id = ${user_id} AND Nameproject LIKE '%${search}%'`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -670,11 +968,11 @@ const selectprojectdatabycompany = (id) => {
 //  سنبل المراحل والفروع
 
 // المراحل
-const SELECTFROMTableStageTempletall = (number = 0) => {
+const SELECTFROMTableStageTempletall = (Type,number = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT StageIDtemplet,StageID,Type,StageName,Days FROM StagesTemplet WHERE  StageIDtemplet  > ${number} ORDER BY StageIDtemplet ASC lIMIT 10`,
+        `SELECT * FROM StagesTemplet WHERE Type='${Type}' AND StageIDtemplet  > ${number} ORDER BY StageIDtemplet ASC lIMIT 10`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -686,11 +984,11 @@ const SELECTFROMTableStageTempletall = (number = 0) => {
     });
   });
 };
-const SELECTFROMTableStageTempletaObject = (number) => {
+const SELECTFROMTableStageTempletaObject = (number, IDCompany, add = "") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT te.StageIDtemplet,us.StageName FROM StagesTemplet te LEFT JOIN StagesCUST us ON us.StageID = te.StageID WHERE te.StageID='${number}'`,
+        `SELECT te.StageIDtemplet,us.StageName,te.attached ${add} FROM StagesTemplet te LEFT JOIN StagesCUST us ON us.StageID = te.StageID WHERE us.Referencenumber='${number}' AND te.IDCompany=${IDCompany}`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -702,44 +1000,32 @@ const SELECTFROMTableStageTempletaObject = (number) => {
     });
   });
 };
-const SELECTFROMTableSubStageTempletall = (StageID, number = 0) => {
-  return new Promise((resolve, reject) => {
-    db.serialize(function () {
-      db.all(
-        `SELECT * FROM StagesSubTemplet WHERE StageID='${StageID}' AND  StageSubID  > ${number} ORDER BY StageSubID ASC liMIT 10`,
-        function (err, result) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
-  });
-};
-const SELECTFROMTableStageTempletmax = () => {
+const SELECTFROMTableStageTempletadays = (StageID, type, IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT max(StageIDtemplet) ,CAST(StageID AS INTEGER) AS StageID  FROM StagesTemplet`,
+        `SELECT Days FROM StagesTemplet WHERE StageID=${StageID} Type =${type} AND IDCompany=${IDCompany}`,
         function (err, result) {
           if (err) {
             reject(err);
           } else {
-            resolve(result.StageID);
+            resolve(result);
           }
         }
       );
     });
   });
 };
-const SELECTFROMTablecompanysubprojectStageTemplet = (Type) => {
+// SELECT * FROM StagesSubTemplet WHERE StageID=A1  AND Stagestype_id=92  AND  StageSubID  > 0 ORDER BY StageSubID ASC liMIT 10
+const SELECTFROMTableSubStageTempletall = (
+  StageID,
+  Stagestype_id,
+  number = 0
+) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM StagesTemplet WHERE trim(Type)=trim(?)`,
-        [Type],
+        `SELECT * FROM StagesSubTemplet WHERE StageID='${StageID}'  AND Stagestype_id=${Stagestype_id}  AND  StageSubID  > ${number} ORDER BY StageSubID ASC liMIT 10`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -752,16 +1038,130 @@ const SELECTFROMTablecompanysubprojectStageTemplet = (Type) => {
   });
 };
 
-const SELECTFROMTablecompanysubprojectStagesubTeplet = (StageID) => {
-  // console.log(StageID, "helll stageID");
+const SELECTFROMTableStageTempletmax = (type, IDCompany) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      let arrays =
+        type === "عام"
+          ? `SELECT max(StageIDtemplet) AS StageIDtemplet , StageID
+        FROM StagesTemplet WHERE  IDCompany=${IDCompany}  AND StageID !='A1'`
+          : `SELECT max(StageIDtemplet) , StageID,
+            (SELECT SUM(Ratio) FROM StagesTemplet WHERE trim(Type) = trim('${type}') AND IDCompany=${IDCompany}) AS TotalRatio 
+        FROM StagesTemplet WHERE  IDCompany=${IDCompany} `;
+      db.get(arrays, function (err, result) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
+const SELECTFROMTablecompanysubprojectStageTemplet = (Type, IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM StagesSubTemplet WHERE StageID=?`,
-        [StageID],
+        `SELECT * 
+FROM StagesTemplet 
+WHERE TRIM(Type) = TRIM("${Type}") 
+  AND IDCompany = 
+    (SELECT IDCompany 
+     FROM StagesTemplet 
+     WHERE TRIM(Type) = TRIM("${Type}") 
+     AND IDCompany = ${IDCompany} 
+     LIMIT 1) 
+UNION
+SELECT * 
+FROM StagesTemplet 
+WHERE TRIM(Type) = TRIM("${Type}") 
+  AND IDCompany = 1
+  AND NOT EXISTS (
+      SELECT 1 
+      FROM StagesTemplet 
+      WHERE TRIM(Type) = TRIM("${Type}") 
+      AND IDCompany = ${IDCompany}
+  );`,
         function (err, result) {
           if (err) {
             reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+const selectStagestypeforProject = (IDCompany) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} OR IDCompany = 1`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    })
+  });
+}
+const selectStagestypeTemplet = (IDCompany) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} `,
+        function (err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    })
+  });
+}
+
+// المراحل الفرعية
+
+const SELECTFROMTablecompanysubprojectStagesubTeplet = (
+  StageID,
+  Stagestype_id,
+  IDCompany
+) => {
+  // console.log(StageID, "helll stageID");
+  return new Promise((resolve, reject) => {
+    const sql = `
+  SELECT * 
+  FROM StagesSubTemplet 
+  WHERE StageID = ? AND Stagestype_id = ? AND IDCompany = ?
+
+  UNION
+
+  SELECT * 
+  FROM StagesSubTemplet 
+  WHERE StageID = ? AND Stagestype_id = ? AND IDCompany = 1
+    AND NOT EXISTS (
+        SELECT 1 
+        FROM StagesSubTemplet 
+        WHERE StageID = ? AND IDCompany = ?
+    );
+`;
+
+const params = [StageID, Stagestype_id, IDCompany, StageID, Stagestype_id, StageID, IDCompany];
+
+    db.serialize(function () {
+      db.all(sql, params,
+        function (err, result) {
+          if (err) {
+            console.log(err, "err");
+            reject(err);
+
           } else {
             resolve(result);
           }
@@ -772,6 +1172,26 @@ const SELECTFROMTablecompanysubprojectStagesubTeplet = (StageID) => {
 };
 
 // مراحل المشروع
+const SELECTTableStageCUST_IMAGE = (
+ProjectID,
+StageID,
+count = 0
+) => {
+  let stringSql = `SELECT * FROM StagesCUST_Image cu   WHERE  cu.id > ? AND  cu.ProjectID=? AND cu.StageID=? ORDER BY cu.id ASC LIMIT 10`;
+    
+  let data = [count,ProjectID, StageID];
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(stringSql, data, function (err, result) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
 const SELECTTablecompanySubProjectStageCUST = (
   id,
   kind = "all",
@@ -815,16 +1235,87 @@ const SELECTTablecompanySubProjectStageCUSTv2 = (id, kind = "") => {
   });
 };
 
+// `SELECT
+//     pr.cost,
+//     pr.Nameproject,
+//     pr.Contractsigningdate,
+//     pr.ProjectStartdate,
+//     pr.IDcompanySub,
+//     cu.StageID,
+//     cu.ProjectID,
+//     cu.StageName,
+//     cu.Days,
+//     cu.OrderBy,
+//     cu.Done,
+//     cu.StartDate,
+//     cu.EndDate,
+//     cu.CloseDate,
+//     cu.Ratio,
+//     cu.attached,
+//     cu.Type,
+//     cu.rate,
+//     cu.OpenBy,
+//     cu.NoteOpen,
+//     cu.ClosedBy,
+//     cu.NoteClosed,
+//     RE.NumberCompany,
+//     (SELECT SUM(Ratio)
+//      FROM StagesTemplet
+//      WHERE Type = "عظم بدون قبو" ) AS TotalRatio,
+//     (SELECT JSON_OBJECT('Done', SC.Done, 'Days', SC.Days)
+//      FROM StagesCUST SC
+//      WHERE SC.ProjectID = cu.ProjectID AND SC.Done = "true"
+//      LIMIT 1) AS verify,
+
+//     -- إضافة CASE مع json_group_array
+//     CASE
+//         WHEN (SELECT COUNT(*)
+//               FROM StagesCUST SC
+//               WHERE SC.ProjectID = cu.ProjectID AND SC.Done = "true") <= 0 THEN
+//             (SELECT json_group_array(
+//                 DISTINCT JSON_OBJECT(
+//                     'StageID', SC.StageID,
+//                     'ProjectID', SC.ProjectID,
+//                     'Done', SC.Done,
+//                     'Days', SC.Days,
+//                     'StartDate', SC.StartDate,
+//                     'EndDate', SC.EndDate,
+//                     'Ratio', SC.Ratio,
+//                     'attached', SC.attached,
+//                     'OrderBy', SC.OrderBy,
+//                     'Type', SC.Type,
+//                     'rate', SC.rate,
+//                     'OpenBy', SC.OpenBy,
+//                     'NoteOpen', SC.NoteOpen,
+//                     'ClosedBy', SC.ClosedBy,
+//                     'NoteClosed', SC.NoteClosed
+//                 )
+//             )
+//             FROM StagesCUST SC
+//             WHERE SC.ProjectID = cu.ProjectID )
+//         ELSE NULL
+//     END AS verifyDetails -- إضافة اسم للعمود الجديد
+
+// FROM
+//     StagesCUST cu
+// LEFT JOIN
+//     companySubprojects pr ON pr.id = cu.ProjectID
+// LEFT JOIN
+//     companySub RE ON RE.id = pr.IDcompanySub
+// WHERE
+//     cu.ProjectID = 45 AND cu.StageID = 53;
+// ;
+// `
 // جلب كائن واحد من المراحل
 const SELECTTablecompanySubProjectStageCUSTONe = (
   ProjectID,
   StageID,
   kind = "all",
-  type = "cu.projectID=?"
+  type = ""
 ) => {
   const stringSql =
     kind === "all"
-      ? `SELECT cu.rate,pr.cost, pr.Nameproject,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE  cu.ProjectID=? AND cu.StageID=? `
+      ? `SELECT cu.rate,pr.cost,cu.StageName, pr.Nameproject,pr.Contractsigningdate,pr.ProjectStartdate,pr.IDcompanySub, cu.StageID,cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed,RE.NumberCompany,cu.Ratio,cu.attached ${type} FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE  cu.ProjectID=? AND cu.StageID=? `
       : kind === "notifcation"
       ? `SELECT max(cu.StageID) AS StageID,pr.Nameproject,pr.IDcompanySub, cu.ProjectID,cu.Type,cu.StageName,cu.Days,cu.StartDate,cu.EndDate,cu.CloseDate,cu.OrderBy,cu.Done,cu.OpenBy,cu.NoteOpen,cu.ClosedBy,cu.NoteClosed ,RE.NumberCompany FROM StagesCUST cu LEFT JOIN companySubprojects pr ON pr.id = cu.ProjectID LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub WHERE cu.StageID != 'A1' AND ${type} `
       : `SELECT Done,Days FROM StagesCUST WHERE ProjectID=? AND Done = "true"`;
@@ -835,6 +1326,47 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(stringSql, data, function (err, result) {
+        if (err) {
+          reject(err);
+          console.error(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
+const SELECTTableStagesCUST_Image = (
+  ProjectID,
+  StageID,
+
+) => {
+
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(`SELECT * FROM StagesCUST_Image WHERE ProjectID=? AND StageID = ?`, [ProjectID, StageID], function (err, result) {
+        if (err) {
+          reject(err);
+          console.error(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
+
+
+const SELECTTableStageStageSub = (
+  ProjectID,
+  StageID,
+
+) => {
+
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(`SELECT StageSubName,CloseDate,Done,    
+            REPLACE(JSON_EXTRACT(closingoperations, '$[0].userName'), '"', '') AS userName FROM StagesSub WHERE ProjectID=? AND StagHOMID =?`, [ProjectID, StageID], function (err, result) {
         if (err) {
           reject(err);
           console.error(err.message);
@@ -921,8 +1453,8 @@ const SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDat
     return new Promise((resolve, reject) => {
       db.serialize(function () {
         db.get(
-          `SELECT MAX(StageID) AS StageID ,MAX(OrderBy) AS OrderBy,EndDate FROM StagesCUST WHERE ProjectID=? AND  StageID != "A1" `,
-          [id],
+          `SELECT MAX(StageID) AS StageID ,MAX(OrderBy) AS OrderBy,EndDate, (SELECT SUM(Ratio) FROM StagesCUST WHERE ProjectID=? ) AS TotalRatio  FROM StagesCUST WHERE ProjectID=? AND  StageID != "A1" `,
+          [id, id],
           function (err, result) {
             if (err) {
               reject(err);
@@ -1071,6 +1603,121 @@ const SELECTTablecompanySubProjectStageSubNotes = (
       db.all(
         `SELECT * FROM StageSubNotes WHERE StagSubHOMID=? AND StagHOMID=? AND ProjectID=?`,
         [StagSubHOMID, StageID, ProjectID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+
+
+// SELECT
+//   COALESCE(json_group_array(DISTINCT json_object(
+//     'Nameproject',    cs.Nameproject,
+//     'Type',           rs.Type,
+//     'Data',           rs.Data,
+//     'Date',           rs.Date,
+//     'Done',           rs.Done,
+//     'InsertBy',       u1.userName,
+//     'Implementedby',  u2.userName,
+//     'checkorderout',  rs.checkorderout,
+//     'DateTime',       rs.DateTime
+//   )), '[]')                         AS items,
+//   COUNT(*)                                                               AS total,
+//   SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'false' THEN 1 ELSE 0 END) AS open_count,
+//   SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'true'
+//             AND lower(COALESCE(rs.checkorderout,'false')) = 'false' THEN 1 ELSE 0 END) AS closed_count,
+//   SUM(CASE WHEN lower(COALESCE(rs.checkorderout,'false')) = 'true' THEN 1 ELSE 0 END)   AS confirmed_count
+// FROM Requests rs
+// JOIN companySubprojects cs ON cs.id = rs.ProjectID
+// LEFT JOIN usersCompany u1 ON trim(u1.PhoneNumber) = trim(rs.InsertBy)
+// LEFT JOIN usersCompany u2 ON trim(u2.PhoneNumber) = trim(rs.Implementedby)
+// WHERE cs.IDcompanySub = 1;
+
+
+
+
+
+const SelectOrdertabletotalreport = (
+  type= "IDcompanySub"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+  `SELECT
+  COUNT(*) AS total,
+  SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'false' THEN 1 ELSE 0 END) AS open_count,
+  SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'true'
+  AND lower(COALESCE(rs.checkorderout,'false')) = 'false' THEN 1 ELSE 0 END) AS closed_count,
+  SUM(CASE WHEN lower(COALESCE(rs.checkorderout,'false')) = 'true' THEN 1 ELSE 0 END)   AS confirmed_count
+  FROM Requests rs
+  LEFT JOIN usersCompany u1 ON trim(u1.PhoneNumber) = trim(rs.InsertBy)
+  JOIN companySubprojects cs ON cs.id = rs.ProjectID
+  WHERE ${type} ;
+`
+      ,
+        function (err, result) {
+          if (err) {
+            reject(err);
+            // console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SelectdetailsOrders = (
+  type= "IDcompanySub"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `
+SELECT
+  cs.id           AS project_id,
+  cs.Nameproject  AS project_name,
+  cb.NameSub,
+
+  -- العناصر الخاصة بهذا المشروع فقط
+  COALESCE(
+    json_group_array(DISTINCT json_object(
+      'Type',          rs.Type,
+      'Data',          rs.Data,
+      'Date',          rs.Date,
+      'Done',          rs.Done,
+      'InsertBy',      u1.userName,
+      'Implementedby', u2.userName,
+      'checkorderout', rs.checkorderout,
+      'DateTime',      rs.DateTime
+    )),
+    '[]'
+  ) AS items,
+
+  COUNT(*) AS total,
+  SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'false' THEN 1 ELSE 0 END) AS open_count,
+  SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'true'
+            AND lower(COALESCE(rs.checkorderout,'false')) = 'false' THEN 1 ELSE 0 END) AS closed_count,
+  SUM(CASE WHEN lower(COALESCE(rs.checkorderout,'false')) = 'true' THEN 1 ELSE 0 END) AS confirmed_count
+
+FROM Requests rs
+JOIN companySubprojects cs ON cs.id = rs.ProjectID
+JOIN companySub cb ON cb.id = cs.IDcompanySub
+LEFT JOIN usersCompany u1 ON trim(u1.PhoneNumber) = trim(rs.InsertBy)
+LEFT JOIN usersCompany u2 ON trim(u2.PhoneNumber) = trim(rs.Implementedby)
+WHERE ${type}
+GROUP BY  cs.id, cs.Nameproject, rs.Type
+ORDER BY cs.Nameproject, rs.Type ;
+`,
+       
         function (err, result) {
           if (err) {
             reject(err);
@@ -1563,28 +2210,33 @@ const SELECTallDatafromTableRequestsV2 = async (
   return new Promise((resolve, reject) => {
     let plus = parseInt(lastID) === 0 ? ">" : "<";
     db.serialize(async () => {
+      let add = `(SELECT us.userName FROM usersCompany us WHERE us.PhoneNumber =re.InsertBy) AS InsertBy ,(SELECT us.userName FROM usersCompany us WHERE us.PhoneNumber =re.Implementedby) AS Implementedby`;
+
       db.all(
         type === "part"
-          ? "SELECT re.* FROM Requests re  WHERE  re.ProjectID=? AND re.Type LIKE '%" +
-              Type +
-              "%'  AND re.Done= '" +
-              Done +
-              "' AND re.RequestsID " +
-              plus +
-              " '" +
-              parseInt(lastID) +
-              "' ORDER BY re.RequestsID DESC,datetime(re.Date) DESC LIMIT 10"
-          : "SELECT  RequestsID,Nameproject,ProjectID,Type,Data,Date,Done,InsertBy,Implementedby,Image,checkorderout,DateTime FROM Requests re LEFT JOIN companySubprojects PR ON PR.id = re.ProjectID WHERE PR.IDcompanySub=? AND Type LIKE '%" +
-              Type +
-              "%'  AND Done='" +
-              Done +
-              "'  AND RequestsID " +
-              plus +
-              " '" +
-              parseInt(lastID) +
-              "' " +
-              whereAdd +
-              "  ORDER BY RequestsID DESC,datetime(Date)  DESC LIMIT 10",
+          ? `SELECT re.* ,${add}, CASE
+        WHEN re.Image IS NOT NULL THEN json_extract(re.Image, '$') 
+        ELSE NULL
+    END AS Image FROM Requests re WHERE  re.ProjectID=? AND re.Type LIKE '%${Type}%'  AND re.Done='${Done}' AND re.RequestsID 
+              ${plus} 
+              ${parseInt(lastID)} 
+            ORDER BY re.RequestsID DESC,datetime(re.Date) DESC LIMIT 10`
+          : `SELECT 
+    re.*, 
+    ${add},
+    CASE
+        WHEN re.Image IS NOT NULL THEN json_extract(re.Image, '$') 
+        ELSE NULL
+    END AS Image
+FROM Requests re
+LEFT JOIN companySubprojects PR ON PR.id = re.ProjectID
+WHERE PR.IDcompanySub = ?
+  AND re.Type LIKE '%${Type}%'
+  AND re.Done = '${Done}'
+  AND re.RequestsID ${plus}  ${parseInt(lastID)} 
+    ${whereAdd}
+ORDER BY re.RequestsID DESC, datetime(re.Date) DESC 
+LIMIT 10;`,
         [ProjectID],
         function (err, rows) {
           if (err) {
@@ -1600,6 +2252,7 @@ const SELECTallDatafromTableRequestsV2 = async (
     });
   });
 };
+
 const SELECTDataAndTaketDonefromTableRequests2 = async (
   RequestsID,
   type = "part",
@@ -1731,9 +2384,12 @@ const SELECTTablePostPublicSearch = (
   userName,
   branch,
   PostID,
-  where = ""
+  userJob = "موظف",
+  user
 ) => {
   return new Promise((resolve, reject) => {
+    const isAdminOrBranchManager = userJob !== "موظف";
+
     let SearchSub =
       type === "بحسب المشروع والتاريخ"
         ? "PR.Nameproject"
@@ -1745,7 +2401,7 @@ const SELECTTablePostPublicSearch = (
       type === "بحسب المشروع والمستخدم والتاريخ"
         ? `AND  PR.Nameproject LIKE ?  AND ca.postBy LIKE ? AND (ca.PostID) ${plus} ?`
         : type === "بحسب التاريخ"
-        ? `AND (ca.PostID) ${plus} ? ${where}`
+        ? `AND (ca.PostID) ${plus} ? `
         : `AND ${SearchSub} LIKE ?  AND (ca.PostID) ${plus} ?`;
     let data =
       type === "بحسب التاريخ"
@@ -1757,29 +2413,39 @@ const SELECTTablePostPublicSearch = (
         : type === "بحسب الفرع"
         ? [id, DateStart, DateEnd, `%${branch}%`, PostID]
         : [id, DateStart, DateEnd, `%${userName}%`, PostID];
+    let query = `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, cs.StageName,
+        EX.NameCompany, RE.NameSub, PR.Nameproject,
+        (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
+        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
+        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ${user}) AS UserLiked
 
-    db.serialize(function () {
-      db.all(
-        `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, cs.StageName,
-                  EX.NameCompany, RE.NameSub, PR.Nameproject
         FROM Post ca
         LEFT JOIN company EX ON EX.id = ca.CommpanyID
         LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
         LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
-        LEFT JOIN StagesCUST cs ON cs.ProjectID = ca.ProjectID AND cs.StageID = ca.StageID
+        LEFT JOIN StagesCUST cs ON cs.ProjectID = ca.ProjectID AND cs.StageID = ca.StageID`;
+
+    if (!isAdminOrBranchManager) {
+      query += `
+    LEFT JOIN usersCompany us ON us.PhoneNumber = ?
+    INNER JOIN usersProject up ON up.ProjectID = ca.ProjectID  AND us.id = up.user_id
+  `;
+    }
+
+    query += `
         WHERE ca.CommpanyID = ?
-         AND Date(Date) BETWEEN ? AND ?  ${SqlStringOne} ORDER BY ca.PostID ASC) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`,
-        data,
-        function (err, result) {
-          if (err) {
-            reject(err);
-            // console.error(err.message);
-          } else {
-            // console.log(result);
-            resolve(result);
-          }
+        AND Date(Date) BETWEEN ? AND ?  ${SqlStringOne} 
+        ORDER BY ca.PostID ASC) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`;
+    db.serialize(function () {
+      db.all(query, data, function (err, result) {
+        if (err) {
+          reject(err);
+          // console.error(err.message);
+        } else {
+          // console.log(result);
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
@@ -1963,38 +2629,112 @@ const SELECTTableLikesPostPublicotherroad = (PostId, userName) => {
     });
   });
 };
-const SELECTTablepostAll = (id, formattedDate, PostID, user, where = "") => {
+const SELECTTablepostAll = (
+  id,
+  formattedDate,
+  PostID,
+  user,
+  userJob,
+  PhoneNumber
+) => {
   return new Promise((resolve, reject) => {
     let plus = parseInt(PostID) === 0 ? ">" : "<";
+
+    // التحقق إذا كان مدير فرع أو admin
+    const isAdminOrBranchManager = userJob !== "موظف";
+
+    // إعداد الاستعلام حسب نوع المستخدم
+    let query = `
+  SELECT * FROM (
+    SELECT 
+      ca.PostID,
+      ca.postBy,
+      ca.Date,
+      ca.timeminet,
+      ca.url,
+      ca.Type,
+      ca.Data,
+      ca.StageID,
+      cs.StageName,
+      EX.NameCompany,
+      RE.NameSub,
+      PR.Nameproject,
+      (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
+      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
+      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS UserLiked
+    FROM Post ca
+    LEFT JOIN company EX ON EX.id = ca.CommpanyID
+    LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+    LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+    LEFT JOIN StagesCUST cs ON cs.ProjectID = ca.ProjectID AND cs.StageID = ca.StageID
+`;
+
+    // إذا لم يكن مدير فرع أو admin، نضيف شرط usersProject
+    if (!isAdminOrBranchManager) {
+      query += `
+    LEFT JOIN usersCompany us ON us.PhoneNumber = ?
+    INNER JOIN usersProject up ON up.ProjectID = ca.ProjectID  AND us.id = up.user_id
+  `;
+    }
+
+    query += `
+    WHERE ca.CommpanyID = ?
+      AND Date(ca.Date) = ?
+      AND (ca.PostID) ${plus} ? 
+    ORDER BY ca.PostID ASC
+  ) AS subquery
+  ORDER BY PostID DESC, datetime(Date) DESC
+  LIMIT 5
+`;
+
+    // بناء مصفوفة القيم
+    let values = [user];
+    if (!isAdminOrBranchManager) values.push(PhoneNumber); // نضيف user_id فقط إذا كان شرط مفعّل
+    values.push(id, formattedDate, PostID);
+
     db.serialize(function () {
-      db.all(
-        `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, cs.StageName,
-                  EX.NameCompany, RE.NameSub, PR.Nameproject,
-                  (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
-                  (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
-                  (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS UserLiked
-             
-            FROM Post ca
-           LEFT JOIN company EX ON EX.id = ca.CommpanyID
-           LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
-           LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
-          LEFT JOIN StagesCUST cs ON cs.ProjectID = ca.ProjectID AND cs.StageID = ca.StageID
-           WHERE ca.CommpanyID = ?
-           AND Date(ca.Date) = ? AND (ca.PostID) ${plus} ? ${where}
-           ORDER BY ca.PostID ASC) AS subquery
-           ORDER BY PostID DESC, datetime(Date) DESC LIMIT 5`,
-        [user, id, formattedDate, PostID],
-        function (err, result) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result);
-          }
+      db.all(query, values, function (err, result) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
+// const SELECTTablepostAll = (id, formattedDate, PostID, user, where = "") => {
+//   return new Promise((resolve, reject) => {
+//     let plus = parseInt(PostID) === 0 ? ">" : "<";
+//     db.serialize(function () {
+//       db.all(
+//         `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, cs.StageName,
+//                   EX.NameCompany, RE.NameSub, PR.Nameproject,
+//                   (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
+//                   (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
+//                   (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS UserLiked
+
+//             FROM Post ca
+//            LEFT JOIN company EX ON EX.id = ca.CommpanyID
+//            LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID
+//            LEFT JOIN companySubprojects PR ON PR.id = ca.ProjectID
+//           LEFT JOIN StagesCUST cs ON cs.ProjectID = ca.ProjectID AND cs.StageID = ca.StageID
+//            WHERE ca.CommpanyID = ?
+//            AND Date(ca.Date) = ? AND (ca.PostID) ${plus} ? ${where}
+//            ORDER BY ca.PostID ASC) AS subquery
+//            ORDER BY PostID DESC, datetime(Date) DESC LIMIT 5`,
+//         [user, id, formattedDate, PostID],
+//         function (err, result) {
+//           if (err) {
+//             reject(err);
+//           } else {
+//             resolve(result);
+//           }
+//         }
+//       );
+//     });
+//   });
+// };
 //
 
 //  جلب بيانات الشات
@@ -2443,6 +3183,93 @@ const SELECTTableFinancialCustody = async (id, type = "") => {
     });
   });
 };
+const selectdetailsFcialCustodforreport = async (IDCompany, type = "") => {
+  return new Promise((resolve, reject) => {
+    let query = ` fy.id, fy.idOrder, fy.IDCompany, fy.IDCompanySub, CASE WHEN usersCompany.userName IS NULL THEN fy.Requestby ELSE  usersCompany.userName END AS Requestby,
+  fy.Amount, fy.Statement, fy.Date, fy.Approvingperson, fy.ApprovalDate,
+  fy.OrderStatus, fy.RejectionStatus, fy.Reasonforrejection, fy.Dateofrejection
+  FROM FinancialCustody fy
+  LEFT JOIN usersCompany ON usersCompany.PhoneNumber = fy.Requestby`
+    db.serialize(function () {
+      db.all(
+        `SELECT *,cb.NameSub,cy.NameCompany,cy.CommercialRegistrationNumber
+FROM (
+  SELECT 'الطلبات المفتوحة'  AS section, ${query}
+  WHERE COALESCE(fy.OrderStatus,'false')='false' AND COALESCE(fy.RejectionStatus,'false')='false' AND fy.IDCompany=${IDCompany} ${type}
+
+  UNION ALL
+
+  SELECT 'الطلبات المقبولة'  AS section,${query}
+  WHERE fy.OrderStatus='true' AND fy.IDCompany=${IDCompany} ${type}
+
+  UNION ALL
+
+  SELECT 'الطلبات المرفوضة' AS section, ${query}
+  WHERE fy.RejectionStatus='true' AND fy.IDCompany=${IDCompany} ${type}
+) t
+JOIN companySub cb ON cb.id = t.IDCompanySub
+JOIN company cy ON cy.id = t.IDCompany
+
+ORDER BY
+  CASE section
+    WHEN 'الطلبات المفتوحة' THEN 1
+    WHEN 'الطلبات المقبولة' THEN 2
+    WHEN 'الطلبات المرفوضة' THEN 3
+  END,
+  Date DESC;
+`,
+       
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const selectCountFcialCustodforreport = async (IDCompany, type = "") => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `WITH f AS (
+  SELECT
+    *,
+    CASE WHEN COALESCE(fy.OrderStatus,'false')='false'
+          AND COALESCE(fy.RejectionStatus,'false')='false' THEN 1 ELSE 0 END AS is_open,
+    CASE WHEN fy.OrderStatus='true' THEN 1 ELSE 0 END AS is_accepted,
+    CASE WHEN fy.RejectionStatus='true' THEN 1 ELSE 0 END AS is_rejected
+  FROM FinancialCustody fy WHERE   fy.IDCompany=${IDCompany} ${type}
+) 
+SELECT
+  COUNT(*)                                                   AS total_requests,
+  COALESCE(SUM(Amount), 0)                                   AS total_amount,
+
+  SUM(is_open)                                               AS open_requests,
+  COALESCE(SUM(CASE WHEN is_open=1     THEN Amount END), 0)  AS open_amount,
+
+  SUM(is_accepted)                                           AS accepted_requests,
+  COALESCE(SUM(CASE WHEN is_accepted=1 THEN Amount END), 0)  AS accepted_amount,
+
+  SUM(is_rejected)                                           AS rejected_requests,
+  COALESCE(SUM(CASE WHEN is_rejected=1 THEN Amount END), 0)  AS rejected_amount
+FROM f;
+`,
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 const SELECTTableBranchdeletionRequests = async (
   IDCompany,
   chack,
@@ -2487,7 +3314,7 @@ const SelectInvoicesubscripation = async (IDCompany, StartDate) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-    `SELECT 
+        `SELECT 
     su.*, 
     co.NameCompany,
     co.CommercialRegistrationNumber,
@@ -2514,6 +3341,82 @@ const SelectInvoicesubscripation = async (IDCompany, StartDate) => {
         function (err, result) {
           if (err) {
             resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+// COALESCE(ROUND(SUM(COALESCE(Difference, 0)), 1), 0) AS TotalDeviationDays   -- مجموع الانحراف (اختياري)
+
+const SelectReportTimeline = async (ProjectID, report_date) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+`WITH params(project_id, report_date) AS (VALUES (${ProjectID},'${report_date}')),
+stage_agg AS (
+  SELECT
+    ProjectID,
+    SUM(COALESCE(Days, 0))              AS ExpectedDurationDays, -- المدة المتوقعة للمشروع
+    MAX(date(EndDate))                  AS ExpectedDeliveryDate,
+    COUNT(*)                            AS StagesCount,           -- عدد المراحل
+    ROUND(SUM(COALESCE(Difference, 0)), 1) AS TotalDeviationDays   -- مجموع الانحراف (اختياري)
+  FROM StagesCUST
+  WHERE ProjectID = (SELECT project_id FROM params)
+)
+SELECT
+  p.id                                   AS ProjectID,
+  p.Nameproject,
+  p.TypeOFContract,
+  DATE(p.Contractsigningdate)            AS Contractsigningdate,
+  DATE(p.ProjectStartdate)               AS ProjectStartdate,
+  sa.ExpectedDurationDays                AS ExpectedDurationDays,
+  sa.StagesCount                         AS StagesCount,
+  sa.ExpectedDeliveryDate                AS ExpectedDeliveryDate,
+  /* إجمالي الأيام المستغرقة حتى تاريخ طباعة التقرير */
+CASE
+  WHEN p.ProjectStartdate IS NULL OR (SELECT report_date FROM params) IS NULL THEN NULL
+  WHEN julianday((SELECT report_date FROM params)) < julianday(p.ProjectStartdate) THEN 0
+  ELSE CAST(julianday((SELECT report_date FROM params)) - julianday(p.ProjectStartdate) AS INTEGER)
+END AS Totaldaysspent,
+
+/* إجمالي الأيام المتبقية لإنهاء المشروع */
+CASE
+  WHEN sa.ExpectedDeliveryDate IS NULL OR (SELECT report_date FROM params) IS NULL THEN NULL
+  WHEN julianday(sa.ExpectedDeliveryDate) <= julianday((SELECT report_date FROM params)) THEN 0
+  ELSE CAST(julianday(sa.ExpectedDeliveryDate) - julianday((SELECT report_date FROM params)) AS INTEGER)
+END AS Totaldaysremaining,
+  sa.TotalDeviationDays,
+  json_group_array(DISTINCT json_object(
+    'StageName', cu.StageName,
+    'Days', cu.Days,
+    'StartDate',   cu.StartDate,
+    'EndDate',     cu.EndDate,
+    'CloseDate',   COALESCE(NULLIF(cu.CloseDate, ''), '-'),
+    'Difference',cu.Difference
+  )) AS StageCust,
+ CASE WHEN  sn.Type IS  NULL THEN  '[]' ELSE   json_group_array(DISTINCT json_object(
+    'StageName', (SELECT ST.StageName FROM StagesCUST ST WHERE   ST.StageID =  sn.StagHOMID ),
+    'Type', sn.Type,
+    'DateNote',   sn.DateNote,
+    'Note',   sn.Note,
+    'RecordedBy',     sn.RecordedBy,
+    'countdayDelay',   sn.countdayDelay
+  )) END AS StageNotes
+FROM companySubprojects p
+JOIN stage_agg sa ON sa.ProjectID = p.id
+JOIN StagesCUST cu ON cu.ProjectID = p.id
+LEFT JOIN StageNotes sn ON sn.ProjectID = p.id
+WHERE p.id = (SELECT project_id FROM params)
+GROUP BY
+  p.id, p.Nameproject, p.TypeOFContract, p.Contractsigningdate, p.ProjectStartdate,
+  sa.ExpectedDurationDays, sa.StagesCount, sa.ExpectedDeliveryDate, sa.TotalDeviationDays;
+`,
+function (err, result) {
+          if (err) {
+            reject(err);
           } else {
             resolve(result);
           }
@@ -2627,5 +3530,19 @@ module.exports = {
   SELECTFROMTableStageTempletaObject,
   SELECTTablecompanyall,
   SELECTIDcompanyANDpreoject,
-  SelectInvoicesubscripation
+  SelectInvoicesubscripation,
+  selecttablecompanySubProjectall,
+  SELECTTablecompanySubuser,
+  SELECTFROMTableStageTempletadays,
+  SelectReportTimeline,
+  SelectOrdertabletotalreport,
+  SelectdetailsOrders,
+  selectdetailsFcialCustodforreport,
+  selectCountFcialCustodforreport,
+  SELECTTusersProjectProjectall,
+  SELECTTableStageCUST_IMAGE,
+  SELECTTableStagesCUST_Image,
+  SELECTTableStageStageSub,
+  selectStagestypeforProject,
+  selectStagestypeTemplet
 };

@@ -27,7 +27,7 @@ const { InsertNotifcation } = require("./InsertNotifcation");
  * @param {string} userName - اسم المستخدم الذي قام بالفعل
  * @param {string} type - نوع العملية (إنشاء | تعديل) - القيمة الافتراضية "إنشاء"
  */
-const Projectinsert = async (companySubId, userName, type = "إنشاء") => {
+const Projectinsert = async (companySubId,Nameproject, userName, type = "إنشاء") => {
   try {
     // ✅ استرجاع آخر مشروع متعلق بالشركة الفرعية
     const projectResult = await SELECTTablecompanySubProjectLast_id(
@@ -37,12 +37,12 @@ const Projectinsert = async (companySubId, userName, type = "إنشاء") => {
     );
 
     // ✅ جلب بيانات المستخدمين المرتبطين بالمشروع
-    const { token, users, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, users, arraynameuser, jobUser } = await Bringtokenuser(
       projectResult.NumberCompany,
       companySubId,
+      projectResult?.id,
       userName,
-      "all",
-      "project"
+      "all"
     );
 
     if (!users || users.length === 0) {
@@ -52,8 +52,12 @@ const Projectinsert = async (companySubId, userName, type = "إنشاء") => {
 
     // ✅ تجهيز بيانات الإشعار
     const notification = {
-      title: `${type} مشروع ${type === "إنشاء" ? "جديد" : projectResult.Nameproject}`,
-      body: `لقد قام ${userName} ب${type} مشروع ${type === "إنشاء" ? "جديد" : projectResult.Nameproject}`,
+      title: `${type} مشروع ${
+        type === "إنشاء" ?` جديد` : projectResult.Nameproject
+      }`,
+      body: `لقد قام ${userName} ب${type} مشروع ${
+        type === "إنشاء" ?`(${Nameproject}) جديد` : projectResult.Nameproject
+      }`,
     };
 
     const notificationType = "Public";
@@ -88,7 +92,6 @@ const Projectinsert = async (companySubId, userName, type = "إنشاء") => {
 
     // ✅ إرسال الإشعار للمستخدمين
     await massges(token, notification, notificationType, navigationId, data);
-
   } catch (error) {
     console.error("❌ خطأ أثناء إرسال إشعار المشروع:", error);
   }
@@ -100,16 +103,19 @@ const Projectinsert = async (companySubId, userName, type = "إنشاء") => {
  * @param {string} userName - اسم المستخدم الذي قام بالفعل
  * @param {string} type - نوع العملية (إنشاء | تعديل) - القيمة الافتراضية "إنشاء"
  */
-const Stageinsert = async (projectId, stageId = 0, userName, type = "إنشاء") => {
+const Stageinsert = async (
+  projectId,
+  stageId = 0,
+  userName,
+  type = "إنشاء"
+) => {
   try {
     // ✅ استرجاع بيانات المرحلة/المشروع
     const stageData = await SELECTTablecompanySubProjectStageCUSTONe(
       projectId,
       stageId,
       "notifcation",
-      type === "إنشاء"
-        ? "cu.projectID=?"
-        : "cu.projectID=? AND cu.StageID=?"
+      type === "إنشاء" ? "cu.projectID=?" : "cu.projectID=? AND cu.StageID=?"
     );
 
     // ✅ استرجاع بيانات المشروع (تاريخ البدء وغيره)
@@ -128,11 +134,11 @@ const Stageinsert = async (projectId, stageId = 0, userName, type = "إنشاء"
     );
 
     // ✅ جلب بيانات المستخدمين
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       stageData.NumberCompany,
+      stageData.IDcompanySub,
       projectId,
-      userName,
-      "Stage"
+      userName
     );
 
     if (!arraynameuser || arraynameuser.length === 0) {
@@ -142,12 +148,18 @@ const Stageinsert = async (projectId, stageId = 0, userName, type = "إنشاء"
 
     // ✅ تجهيز الإشعار
     const notification = {
-      title: `${type} مرحلة ${type === "إنشاء" ? "جديدة" : "في " + stageData.Nameproject}`,
-      body: `لقد قام ${userName} ب${type} مرحلة ${type === "إنشاء" ? "جديدة" : ""} في مشروع "${stageData.Nameproject}"`,
+      title: `${type} مرحلة ${
+        type === "إنشاء" ? "جديدة" : "في " + stageData.Nameproject
+      }`,
+      body: `لقد قام ${userName} ب${type} مرحلة ${
+        type === "إنشاء" ? "جديدة" : ""
+      } في مشروع "${stageData.Nameproject}"`,
     };
 
     const notificationType = "PageHomeProject";
-    const navigationId = `${stageData.IDcompanySub}:${JSON.stringify(projectDetails)}`;
+    const navigationId = `${stageData.IDcompanySub}:${JSON.stringify(
+      projectDetails
+    )}`;
 
     let data = {
       userName,
@@ -182,7 +194,6 @@ const Stageinsert = async (projectId, stageId = 0, userName, type = "إنشاء"
   }
 };
 
-
 /**
  * إرسال إشعار عند إنشاء أو تعديل مرحلة فرعية في مشروع
  * @param {number|string} ProjectID - رقم المشروع
@@ -190,7 +201,12 @@ const Stageinsert = async (projectId, stageId = 0, userName, type = "إنشاء"
  * @param {string} userName - اسم المستخدم الذي قام بالفعل
  * @param {string} type - نوع العملية (إنشاء | تعديل) - القيمة الافتراضية "إنشاء"
  */
-const StageSubinsert = async (ProjectID, StageID = 0, userName, type = "إنشاء") => {
+const StageSubinsert = async (
+  ProjectID,
+  StageID = 0,
+  userName,
+  type = "إنشاء"
+) => {
   try {
     // جلب بيانات المرحلة الفرعية
     const stageResult = await SELECTTablecompanySubProjectStagesSub(
@@ -203,34 +219,46 @@ const StageSubinsert = async (ProjectID, StageID = 0, userName, type = "إنشا
     );
 
     // جلب بيانات المشروع والمرحلة الرئيسية
-    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(ProjectID, StageID);
+    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(
+      ProjectID,
+      StageID,
+      "all",
+      ""
+    );
 
     // تجهيز كائن البيانات مع استبعاد الحقول غير المطلوبة
     const resultObject = Object.fromEntries(
       Object.entries(stageResult[0]).filter(
-        ([key]) => !["Nameproject", "StageName", "ProjectID", "StageID"].includes(key)
+        ([key]) =>
+          !["Nameproject", "StageName", "ProjectID", "StageID"].includes(key)
       )
     );
 
     // جلب توكن المستخدم ومعلوماته
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       projectHome.NumberCompany,
+      stageResult[0].IDcompanySub,
       ProjectID,
-      userName,
-      "Stage"
+      userName
     );
 
     // تجهيز إشعار المستخدم
     const notification = {
-      title: `${type} مرحلة فرعية ${type === "إنشاء" ? "جديدة" : "في " + stageResult[0].StageName}`,
+      title: `${type} مرحلة فرعية ${
+        type === "إنشاء" ? "جديدة" : "في " + stageResult[0].StageName
+      }`,
       body: `قام ${userName} ب${type} مرحلة ${
         type === "إنشاء" ? "جديدة" : ""
-      } في مشروع "${stageResult[0].Nameproject}" ضمن المرحلة "${stageResult[0].StageName}"`,
+      } في مشروع "${stageResult[0].Nameproject}" ضمن المرحلة "${
+        stageResult[0].StageName
+      }"`,
       // image: 'https://storage.googleapis.com/demo_backendmoshrif_bucket-2/Vector.png',
     };
 
     const notification_type = "PageHomeProject";
-    const navigationId = `${stageResult[0].IDcompanySub}:${JSON.stringify(projectHome)}`;
+    const navigationId = `${stageResult[0].IDcompanySub}:${JSON.stringify(
+      projectHome
+    )}`;
 
     // تجهيز بيانات الإشعار
     let data = {
@@ -258,7 +286,6 @@ const StageSubinsert = async (ProjectID, StageID = 0, userName, type = "إنشا
 
     // إرسال الإشعار فعليًا
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in StageSubinsert:", error);
   }
@@ -273,7 +300,14 @@ const StageSubinsert = async (ProjectID, StageID = 0, userName, type = "إنشا
  * @param {string} userName - اسم المستخدم الذي قام بالفعل
  * @param {string} type - نوع العملية (اضاف | تعديل) - القيمة الافتراضية "اضاف"
  */
-const StageSubNote = async (ProjectID, StageID, StageSubID, note, userName, type = "اضاف") => {
+const StageSubNote = async (
+  ProjectID,
+  StageID,
+  StageSubID,
+  note,
+  userName,
+  type = "اضاف"
+) => {
   try {
     // جلب بيانات المرحلة الفرعية
     const stageSubResult = await SELECTTablecompanySubProjectStagesSub(
@@ -284,21 +318,33 @@ const StageSubNote = async (ProjectID, StageID, StageSubID, note, userName, type
     );
 
     // جلب بيانات المشروع والمرحلة الرئيسية
-    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(ProjectID, StageID);
+    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(
+      ProjectID,
+      StageID,
+      "all",
+      ""
+    );
 
     // تجهيز كائن البيانات مع استبعاد الحقول غير المطلوبة
     const resultObject = Object.fromEntries(
       Object.entries(stageSubResult[0]).filter(
-        ([key]) => !["Nameproject", "StageName", "ProjectID", "StageID", "IDcompanySub"].includes(key)
+        ([key]) =>
+          ![
+            "Nameproject",
+            "StageName",
+            "ProjectID",
+            "StageID",
+            "IDcompanySub",
+          ].includes(key)
       )
     );
 
     // جلب توكن المستخدم ومعلوماته
-    const { token, jobUser } = await BringtokenuserCustom(
+    const { token, jobUser } = await Bringtokenuser(
       projectHome.NumberCompany,
+      stageSubResult[0].IDcompanySub,
       ProjectID,
-      userName,
-      "Stage"
+      userName
     );
 
     // تجهيز إشعار المستخدم
@@ -323,13 +369,10 @@ const StageSubNote = async (ProjectID, StageID, StageSubID, note, userName, type
 
     // إرسال الإشعار فعليًا
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in StageSubNote:", error);
   }
 };
-
-
 
 /**
  * إرسال إشعار عند إغلاق أو فتح مرحلة في مشروع
@@ -338,17 +381,27 @@ const StageSubNote = async (ProjectID, StageID, StageSubID, note, userName, type
  * @param {string} userName - اسم المستخدم الذي قام بالفعل
  * @param {string} type - نوع العملية (اغلاق | فتح) - القيمة الافتراضية "اغلاق"
  */
-const CloseOROpenStagenotifcation = async (ProjectID, StageID, userName, type = "اغلاق") => {
+const CloseOROpenStagenotifcation = async (
+  ProjectID,
+  StageID,
+  userName,
+  type = "اغلاق"
+) => {
   try {
     // جلب بيانات المشروع والمرحلة
-    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(ProjectID, StageID);
+    const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(
+      ProjectID,
+      StageID,
+      "all",
+      ""
+    );
 
     // جلب توكن المستخدم ومعلوماته
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       projectHome.NumberCompany,
+      projectHome.IDcompanySub,
       ProjectID,
-      userName,
-      "Stage"
+      userName
     );
 
     // تجهيز الإشعار
@@ -359,7 +412,9 @@ const CloseOROpenStagenotifcation = async (ProjectID, StageID, userName, type = 
     };
 
     const notification_type = "PageHomeProject";
-    const navigationId = `${projectHome.IDcompanySub}:${JSON.stringify(projectHome)}`;
+    const navigationId = `${projectHome.IDcompanySub}:${JSON.stringify(
+      projectHome
+    )}`;
 
     // تجهيز بيانات الإشعار
     let data = {
@@ -385,7 +440,6 @@ const CloseOROpenStagenotifcation = async (ProjectID, StageID, userName, type = 
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in CloseOROpenStageNotification:", error);
   }
@@ -414,22 +468,25 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
     // جلب بيانات المشروع الرئيسي
     const projectHome = await SELECTTablecompanySubProjectStageCUSTONe(
       stageSub.ProjectID,
-      stageSub.StageID
+      stageSub.StageID,
+      "all",
+      ""
     );
 
     // إنشاء نسخة من بيانات المرحلة بدون الحقول غير الضرورية
     const resultObject = Object.fromEntries(
       Object.entries(stageSub).filter(
-        ([key]) => !["Nameproject", "StageName", "ProjectID", "StageID"].includes(key)
+        ([key]) =>
+          !["Nameproject", "StageName", "ProjectID", "StageID"].includes(key)
       )
     );
 
     // جلب توكن المستخدم
-    const { token } = await BringtokenuserCustom(
+    const { token } = await Bringtokenuser(
       projectHome?.NumberCompany,
+      stageSub.IDcompanySub,
       stageSub.ProjectID,
-      userName,
-      "Stage"
+      userName
     );
 
     // إعداد الإشعار
@@ -452,7 +509,6 @@ const AchievmentStageSubNote = async (StageSubID, userName, type = "إنجاز")
 
     // إرسال الإشعار
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in AchievmentStageSubNote:", error);
   }
@@ -488,11 +544,11 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
     );
 
     // جلب توكن المستخدم والمستخدمين المرتبطين
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       result.NumberCompany,
+      result.IDcompanySub,
       idProject,
-      userName,
-      "Delay"
+      userName
     );
 
     // إعداد الإشعار
@@ -536,12 +592,10 @@ const Delayinsert = async (idProject, StageID, userName, type = "إضافة") =>
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in Delayinsert:", error);
   }
 };
-
 
 /**
  * إرسال إشعار عند إعادة ترتيب مراحل مشروع
@@ -568,11 +622,11 @@ const RearrangeStageProject = async (idProject, userName) => {
     );
 
     // جلب توكن المستخدم والمستخدمين المرتبطين
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       result.NumberCompany,
+      result.IDcompanySub,
       idProject,
-      userName,
-      "Delay"
+      userName
     );
 
     // إعداد الإشعار
@@ -582,7 +636,9 @@ const RearrangeStageProject = async (idProject, userName) => {
     };
 
     const notification_type = "PageHomeProject";
-    const navigationId = `${result.IDcompanySub}:${JSON.stringify(resultObject)}`;
+    const navigationId = `${result.IDcompanySub}:${JSON.stringify(
+      resultObject
+    )}`;
 
     // بيانات الإشعار
     let data = {
@@ -608,7 +664,6 @@ const RearrangeStageProject = async (idProject, userName) => {
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in RearrangeStageProject:", error);
   }
@@ -651,8 +706,15 @@ const Financeinsertnotification = async (
     // جلب البيانات حسب إذا كانت إضافة جديدة أو تعديل
     const result =
       idEdit === null
-        ? await SELECTTablecompanySubProjectfornotification(projectID, stringSql)
-        : await SELECTTablecompanySubProjectfornotificationEdit(idEdit, stringSql, idColumn);
+        ? await SELECTTablecompanySubProjectfornotification(
+            projectID,
+            stringSql
+          )
+        : await SELECTTablecompanySubProjectfornotificationEdit(
+            idEdit,
+            stringSql,
+            idColumn
+          );
 
     if (!result) return;
 
@@ -664,8 +726,9 @@ const Financeinsertnotification = async (
     );
 
     // جلب توكن المستخدم والمستخدمين المرتبطين
-    const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+    const { token, arraynameuser, jobUser } = await Bringtokenuser(
       result.NumberCompany,
+      result.IDcompanySub,
       result.projectID,
       userName,
       kind === "طلب" ? "chate" : "Finance",
@@ -708,12 +771,10 @@ const Financeinsertnotification = async (
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in Financeinsertnotification:", error);
   }
 };
-
 
 // اشعارات التعليقات والاعجابات
 /**
@@ -738,7 +799,9 @@ const Postsnotification = async (
 
     // إنشاء نسخة من البيانات بدون الحقول غير الضرورية
     const resultObject = Object.fromEntries(
-      Object.entries(result).filter(([key]) => !["ProjectID", "postBy"].includes(key))
+      Object.entries(result).filter(
+        ([key]) => !["ProjectID", "postBy"].includes(key)
+      )
     );
 
     // جلب توكن المستخدم والمستخدمين المرتبطين
@@ -750,11 +813,12 @@ const Postsnotification = async (
     );
 
     // تحديد النص الظاهر في الإشعار
-    const actionText = type === "Comment" && kind === "تعليق"
-      ? "جديد"
-      : type === "Likes" && kind === "اعجاب"
-      ? "منشور"
-      : "الإعجاب بمنشور";
+    const actionText =
+      type === "Comment" && kind === "تعليق"
+        ? "جديد"
+        : type === "Likes" && kind === "اعجاب"
+        ? "منشور"
+        : "الإعجاب بمنشور";
 
     const commentText = type === "Comment" ? `<<${result.commentText}>>` : "";
 
@@ -798,7 +862,6 @@ const Postsnotification = async (
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in Postsnotification:", error);
   }
@@ -865,12 +928,10 @@ const PostsnotificationCansle = async (
 
     // إرسال الإشعار للمستخدمين
     await massges(token, notification, notification_type, navigationId, data);
-
   } catch (error) {
     console.error("Error in PostsnotificationCansle:", error);
   }
 };
-
 
 //  اشعارات الدردشة
 
@@ -894,7 +955,10 @@ const ChateNotfication = async (
   try {
     let nameChate = StageID;
     let arrayuser, tokenuser, job;
-    let bodymassge, insertnavigation = "pr.id", IDCompanySub = 0, Nameproject = "";
+    let bodymassge,
+      insertnavigation = "pr.id",
+      IDCompanySub = 0,
+      Nameproject = "";
 
     const specialStages = ["قرارات", "استشارات", "اعتمادات"];
 
@@ -904,15 +968,20 @@ const ChateNotfication = async (
       Nameproject = Project?.Nameproject;
 
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
-        const Stage = await SELECTTablecompanySubProjectStageCUSTONe(idProject, StageID);
+        const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+          idProject,
+          StageID,
+          "all",
+          ""
+        );
         nameChate = Stage.StageName;
       }
 
-      const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+      const { token, arraynameuser, jobUser } = await Bringtokenuser(
         Project.NumberCompany,
+        Project?.IDCompanySub,
         idProject,
-        userName,
-        "chate"
+        userName
       );
 
       arrayuser = arraynameuser;
@@ -975,7 +1044,7 @@ const ChateNotfication = async (
       nameRoom: nameChate,
       Nameproject: Nameproject,
       StageID: StageID,
-      IDcompanySub:IDCompanySub,
+      IDcompanySub: IDCompanySub,
       jobUser: job,
     };
 
@@ -990,13 +1059,17 @@ const ChateNotfication = async (
     );
     data = { ...data, id: idmax };
 
-    await massges(tokenuser, notification, notification_type, navigationId, data);
-
+    await massges(
+      tokenuser,
+      notification,
+      notification_type,
+      navigationId,
+      data
+    );
   } catch (error) {
     console.error("Error in ChateNotfication:", error);
   }
 };
-
 
 /**
  * إرسال إشعار عند حذف رسالة دردشة
@@ -1006,7 +1079,13 @@ const ChateNotfication = async (
  * @param {string} userName - اسم المستخدم الذي حذف الرسالة
  * @param {string|number} chatID - معرف الرسالة المحذوفة
  */
-const ChateNotficationdelete = async (idProject, StageID, massgs, userName = "", chatID) => {
+const ChateNotficationdelete = async (
+  idProject,
+  StageID,
+  massgs,
+  userName = "",
+  chatID
+) => {
   try {
     let nameChate, arrayuser, tokenuser, bodymassge;
     let insertnavigation = "pr.id";
@@ -1014,18 +1093,38 @@ const ChateNotficationdelete = async (idProject, StageID, massgs, userName = "",
     const specialStages = ["قرارات", "استشارات", "اعتمادات"];
 
     if (!specialStages.includes(StageID)) {
-      const Stage = await SELECTTablecompanySubProjectStageCUSTONe(idProject, StageID);
-      nameChate = Number(StageID) || StageID === "A1" || StageID === ":A1" ? Stage.StageName : StageID;
+      const Stage = await SELECTTablecompanySubProjectStageCUSTONe(
+        idProject,
+        StageID,
+        "all",
+        ""
+      );
+      nameChate =
+        Number(StageID) || StageID === "A1" || StageID === ":A1"
+          ? Stage.StageName
+          : StageID;
 
       const Project = await SELECTProjectStartdate(idProject);
-      const { token, arraynameuser } = await BringtokenuserCustom(Stage.NumberCompany, idProject, userName, "chate");
+      const { token, arraynameuser } = await Bringtokenuser(
+        company.id,
+        0,
+        idProject,
+        userName,
+        StageID
+      );
 
       arrayuser = arraynameuser;
       tokenuser = token;
       bodymassge = `دردشة مشروع ${Project?.Nameproject} قسم ${nameChate}`;
     } else {
       const company = await SelectVerifycompanyexistence(idProject);
-      const { token, arraynameuser } = await Bringtokenuser(company.id, idProject, userName, StageID, "RE.CommercialRegistrationNumber=?");
+      const { token, arraynameuser } = await Bringtokenuser(
+        company.id,
+        0,
+        idProject,
+        userName,
+        StageID
+      );
 
       arrayuser = arraynameuser;
       tokenuser = token;
@@ -1051,15 +1150,28 @@ const ChateNotficationdelete = async (idProject, StageID, massgs, userName = "",
       chatID,
     };
 
-    const idmax = await InsertNotifcation(arrayuser, notification, notification_type, navigationId, data, idProject, insertnavigation);
+    const idmax = await InsertNotifcation(
+      arrayuser,
+      notification,
+      notification_type,
+      navigationId,
+      data,
+      idProject,
+      insertnavigation
+    );
     data = { ...data, id: idmax };
 
-    await massges(tokenuser, notification, notification_type, navigationId, data);
+    await massges(
+      tokenuser,
+      notification,
+      notification_type,
+      navigationId,
+      data
+    );
   } catch (error) {
     console.error("Error in ChateNotficationdelete:", error);
   }
 };
-
 
 // ChateNotfication(1,'طلبات','كيف الحال');
 
@@ -1122,7 +1234,6 @@ const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
   }
 };
 
-
 // طلبات العهد
 /**
  * إرسال إشعار لطلبات العهدة أو قبول/رفض العهدة
@@ -1131,7 +1242,12 @@ const AddOrUpdatuser = async (PhoneNumber, Validity, type, userName) => {
  * @param {string} type - نوع العملية ("request" | "acceptance" | "reject") - القيمة الافتراضية "request"
  * @param {number} id - معرف الطلب عند التعامل مع القبول/الرفض
  */
-const CovenantNotfication = async (IDCompanySub, PhoneNumber, type = "request", id = 0) => {
+const CovenantNotfication = async (
+  IDCompanySub,
+  PhoneNumber,
+  type = "request",
+  id = 0
+) => {
   try {
     let result;
     let tokens;
@@ -1142,9 +1258,10 @@ const CovenantNotfication = async (IDCompanySub, PhoneNumber, type = "request", 
     if (type === "request") {
       // جلب بيانات المستخدم الذي طلب العهدة
       result = await SELECTTableLoginActivatActivaty(PhoneNumber);
-      const { token, arraynameuser, jobUser } = await BringtokenuserCustom(
+      const { token, arraynameuser, jobUser } = await Bringtokenuser(
         result.IDCompany,
         IDCompanySubs,
+        0,
         result.userName,
         "all",
         "CovenantBrinsh"
@@ -1213,7 +1330,6 @@ const CovenantNotfication = async (IDCompanySub, PhoneNumber, type = "request", 
   }
 };
 
-
 // bring token all users
 /**
  * جلب توكنات المستخدمين وأسماؤهم المرتبطين بمشروع أو شركة فرعية
@@ -1221,82 +1337,11 @@ const CovenantNotfication = async (IDCompanySub, PhoneNumber, type = "request", 
  * @param {number|string} ProjectID - رقم المشروع
  * @param {string} userName - اسم المستخدم الذي قام بالفعل (يُستثنى من الإشعار)
  * @param {string} [type="all"] - نوع التصفية ("all" | "PublicationsBransh" ...)
- * @param {string} [wheretype="PR.id =?"] - شرط البحث في قاعدة البيانات
  * @returns {Promise<{ token: string[], users: object[], arraynameuser: string[], jobUser: string }>}
  */
 const Bringtokenuser = async (
   IDCompany,
-  ProjectID,
-  userName,
-  type = "all",
-  wheretype = "PR.id =?"
-) => {
-  let token = [];
-  let arraynameuser = [];
-  let jobUser;
-
-  const users = await SELECTTableusersCompanySub(IDCompany, ProjectID, type, wheretype);
-
-  await Promise.all(
-    users.map(async (item) => {
-      // استثناء المستخدم الحالي (الذي قام بالفعل)
-      if (item.userName === userName) {
-        jobUser = item.job;
-        return;
-      }
-
-      // في حالة المنشورات أو التسجيل التجاري
-      if (type === "PublicationsBransh" || wheretype === "RE.CommercialRegistrationNumber=?") {
-        if (item.jobdiscrption === "موظف") {
-          token.push(item.token);
-          arraynameuser.push(item.userName);
-        } else {
-          // إذا لم يكن "موظف" → تحقق من صلاحياته
-          const validity = item.Validity ? JSON.parse(item.Validity) : [];
-          validity.forEach((element) => {
-            const hasProject = element.project?.some(
-              (p) => p.idProject === ProjectID
-            );
-            if (hasProject) {
-              token.push(item.token);
-              arraynameuser.push(item.userName);
-            }
-          });
-        }
-      }
-
-      // الحالة الافتراضية: wheretype = "PR.id =?"
-      else if (wheretype === "PR.id =?") {
-        token.push(item.token);
-        arraynameuser.push(item.userName);
-      }
-
-      // حالات أخرى
-      else {
-        if (item.jobdiscrption === "موظف") {
-          token.push(item.token);
-          arraynameuser.push(item.userName);
-        }
-      }
-    })
-  );
-
-  return { token, users, arraynameuser, jobUser };
-};
-
-
-// bring token custom users
-/**
- * جلب توكنات المستخدمين بناءً على الصلاحيات/العهود/المشاريع
- * @param {number|string} IDCompany - رقم الشركة
- * @param {number|string} ProjectID - رقم المشروع
- * @param {string} userName - اسم المستخدم الحالي (مستثنى)
- * @param {string} [type="all"] - نوع التصفية (all | Finance ...)
- * @param {string} [kind="sub"] - نوع التصفية (sub | CovenantBrinsh ...)
- * @returns {Promise<{ token: string[], users: object[], arraynameuser: string[], jobUser: string }>}
- */
-const BringtokenuserCustom = async (
-  IDCompany,
+  IDcompanySub,
   ProjectID,
   userName,
   type = "all",
@@ -1306,73 +1351,27 @@ const BringtokenuserCustom = async (
   let arraynameuser = [];
   let jobUser;
 
-  const users = await SELECTTableusersCompanySub(IDCompany, ProjectID, type);
-
+  const users = await SELECTTableusersCompanySub(
+    IDCompany,
+    IDcompanySub,
+    ProjectID,
+    type,
+    kind
+  );
   await Promise.all(
     users.map(async (item) => {
-      // استثناء المستخدم الحالي
+      // استثناء المستخدم الحالي (الذي قام بالفعل)
       if (item.userName === userName) {
         jobUser = item.job;
-        return;
-      }
-
-      // حالة Admin أو مالية عند العهد
-      if (item.job === "Admin" || (item.job === "مالية" && kind === "CovenantBrinsh")) {
+      } else {
         token.push(item.token);
         arraynameuser.push(item.userName);
-        return;
-      }
-
-      // تحقق من الصلاحيات
-      const validity = item.Validity ? JSON.parse(item.Validity) : [];
-
-      for (const element of validity) {
-        // لازم نفس الفرع
-        if (parseInt(element.idBrinsh) !== parseInt(item.IDcompanySub)) continue;
-
-        // حالة العهد وقبول العهود
-        if (kind === "CovenantBrinsh" && element.Acceptingcovenant === true) {
-          token.push(item.token);
-          arraynameuser.push(item.userName);
-          continue;
-        }
-
-        // مدير الفرع أو غير sub
-        if (element.job === "مدير الفرع" || kind !== "sub") {
-          if (kind !== "sub") {
-            if (element.jobdiscrption === "موظف") {
-              token.push(item.token);
-              arraynameuser.push(item.userName);
-            }
-          } else {
-            token.push(item.token);
-            arraynameuser.push(item.userName);
-          }
-          continue;
-        }
-
-        // تحقق من المشاريع
-        for (const project of element.project || []) {
-          if (project.idProject === ProjectID) {
-            if (type === "Finance") {
-              const hasFinanceNotif = project.ValidityProject?.includes("إشعارات المالية");
-              if (hasFinanceNotif) {
-                token.push(item.token);
-                arraynameuser.push(item.userName);
-              }
-            } else {
-              token.push(item.token);
-              arraynameuser.push(item.userName);
-            }
-          }
-        }
       }
     })
   );
 
   return { token, users, arraynameuser, jobUser };
 };
-
 
 // Projectinsert(1);
 

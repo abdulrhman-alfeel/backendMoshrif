@@ -5,6 +5,14 @@ const db = require("./sqlite");
 //  ALTER TABLE company ADD COLUMN DisabledFinance TEXT NULL DEFAULT 'true'
 //  ALTER TABLE Requests ADD COLUMN checkorderout TEXT NULL DEFAULT 'false'
 
+
+// SELECT
+//   COUNT(*) AS total,
+//   SUM(CASE WHEN lower(COALESCE(Done,'false')) = 'false' THEN 1 ELSE 0 END) AS open_count,
+//   SUM(CASE WHEN lower(COALESCE(Done,'false')) = 'true' AND lower(COALESCE(checkorderout,'false')) = 'false'  THEN 1 ELSE 0 END) AS closed_count,
+//   SUM(CASE WHEN lower(COALESCE(checkorderout,'false')) = 'true' THEN 1 ELSE 0 END) AS confirmed_count
+// FROM Requests;
+
 const CreateTable = () => {
   db.run(`CREATE TABLE IF NOT EXISTS companyRegistration (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,7 +20,7 @@ const CreateTable = () => {
         BuildingNumber INTEGER NOT NULL,StreetName TEXT NOT NULL,
         NeighborhoodName TEXT NOT NULL, PostalCode TEXT NOT NULL, City TEXT NOT NULL,Country TEXT NOT NULL,TaxNumber INTEGER NOT NULL,SubscriptionStartDate DATE NULL DEFAULT CURRENT_DATE,Api TEXT NULL DEFAULT 'false',PhoneNumber TEXT NOT NULL,userName TEXT NOT NULL
       )`);
-  db.run(`CREATE TABLE IF NOT EXISTS company (
+db.run(`CREATE TABLE IF NOT EXISTS company (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         CommercialRegistrationNumber INTEGER NOT NULL,NameCompany TEXT NOT NULL,
         BuildingNumber INTEGER NOT NULL,StreetName TEXT NOT NULL,
@@ -31,10 +39,19 @@ const CreateTable = () => {
     `CREATE TABLE IF NOT EXISTS usersCompany(id INTEGER PRIMARY KEY AUTOINCREMENT,IDCompany INTEGER NOT NULL,userName TEXT NOT NULL, IDNumber INTEGER NOT NULL,PhoneNumber TEXT NOT NULL, image TEXT NULL,jobdiscrption NOT NULL ,job TEXT NOT NULL,jobHOM TEXT  NULL, DateOFjoin DATE NULL DEFAULT CURRENT_DATE,Activation NULL DEFAULT 'true',Validity JSON NULL,FOREIGN KEY (IDCompany) REFERENCES company (id) ON DELETE RESTRICT ON UPDATE RESTRICT )`
   );
   db.run(
+    `CREATE TABLE IF NOT EXISTS usersBransh(id INTEGER PRIMARY KEY AUTOINCREMENT,idBransh INTEGER NOT NULL,user_id INTEGER NOT NULL, job TEXT NULL DEFAULT 'عضو',Acceptingcovenant TEXT NULL DEFAULT 'false',ValidityBransh JSON NULL,DateOFjoin DATE NULL DEFAULT CURRENT_DATE)`
+  );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS usersProject(id INTEGER PRIMARY KEY AUTOINCREMENT,idBransh INTEGER NOT NULL,ProjectID INTEGER NOT NULL,user_id INTEGER NOT NULL, ValidityProject JSON NULL,DateOFjoin DATE NULL DEFAULT CURRENT_DATE)`
+  );
+  db.run(
     `CREATE TABLE IF NOT EXISTS LoginActivaty(id INTEGER PRIMARY KEY AUTOINCREMENT,IDCompany INTEGER NOT NULL,userName TEXT NOT NULL, IDNumber INTEGER NOT NULL,PhoneNumber TEXT NOT NULL, image TEXT NULL , DateOFlogin DATE NULL DEFAULT CURRENT_DATE,DateEndLogin DATE NULL,Activation NULL DEFAULT 'true',job TEXT NOT NULL,jobdiscrption TEXT NOT NULL,Validity JSON NULL,codeVerification INTEGER NOT NULL,token TEXT NULL)`
   );
   db.run(
     `CREATE TABLE IF NOT EXISTS companySubprojects(id INTEGER PRIMARY KEY AUTOINCREMENT,IDcompanySub INTEGER NOT NULL,Nameproject TEXT NOT NULL, Note TEXT NULL,TypeOFContract TEXT NOT NULL, GuardNumber INTEGER NULL ,LocationProject TEXT NULL , ProjectStartdate DATE NULL ,Imageproject TEXT NULL,Contractsigningdate DATE NULL DEFAULT CURRENT_DATE,numberBuilding INTEGER NULL,Disabled TEXT NULL DEFAULT 'true',Referencenumber INTEGER NULL,FOREIGN KEY (IDcompanySub) REFERENCES companySub (id) ON DELETE RESTRICT ON UPDATE RESTRICT)`
+  );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS companySubprojectsAudite(id INTEGER PRIMARY KEY AUTOINCREMENT,ProjectID INTEGER NOT NULL,IDcompanySub INTEGER NOT NULL,Nameproject TEXT NOT NULL, Note TEXT NULL,TypeOFContract TEXT NOT NULL, GuardNumber INTEGER NULL ,LocationProject TEXT NULL , ProjectStartdate DATE NULL ,Imageproject TEXT NULL,Contractsigningdate DATE NULL DEFAULT CURRENT_DATE,numberBuilding INTEGER NULL,Disabled TEXT NULL DEFAULT 'true',Referencenumber INTEGER NULL,FOREIGN KEY (IDcompanySub) REFERENCES companySub (id) ON DELETE RESTRICT ON UPDATE RESTRICT)`
   );
 
 
@@ -44,16 +61,22 @@ AFTER INSERT ON companySubprojects
 BEGIN
     INSERT INTO companySubprojectsAudite (id, ProjectID, IDcompanySub,Nameproject,Note,TypeOFContract,
     GuardNumber,LocationProject,ProjectStartdate,Imageproject,Contractsigningdate,numberBuilding,Disabled,
-    Referencenumber
+    Referencenumber,Project_Space,Cost_per_Square_Meter
     )
     VALUES (NEW.id, NEW.ProjectID, NEW.IDcompanySub,NEW.Nameproject,NEW.Note,NEW.TypeOFContract,
     NEW.GuardNumber,NEW.LocationProject,NEW.ProjectStartdate,NEW.Imageproject,NEW.Contractsigningdate,NEW.numberBuilding,NEW.Disabled,
-    NEW.Referencenumber);
+    NEW.Referencenumber,NEW.Project_Space,NEW.Cost_per_Square_Meter);
 END;
-    `)
+    `);
+
+// منصة مشرف من الاعمال الذي قمت بتطويرها لدى شركة شفق الانشائية للمقاولات المعمارية حيث تقوم بادارة المشاريع و انشطة المقاولات والإشراف الفني للمباني وذلك عن طريق الإشراف والمتابعة الالكترونية بين الملاك والمقاولين والمشرفين والمهندسين المسؤولين عن الموقع وتسجيلها وتوثيقها الكترونيا لتسهل على الملاك التواصل مع الأطراف المرتبطة بالمشروع واستدعاء التقارير عند الحاجة
+
 
 
   // templet ****************************************
+  db.run(
+    `CREATE TABLE IF NOT EXISTS Stagestype(id INTEGER PRIMARY KEY AUTOINCREMENT,IDCompany INTEGER NOT NULL,Type TEXT NULL )`
+  );
   db.run(
     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageIDtemplet INTEGER PRIMARY KEY AUTOINCREMENT,StageID TEXT NULL,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL )`
   );
@@ -64,13 +87,14 @@ END;
 
   // CUSTOMER TEBLE *************************************
   db.run(
-    `CREATE TABLE IF NOT EXISTS StagesCUST(StageCustID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER  NULL ,ProjectID INTEGER NULL ,Type nvarchar[50]  NULL,StageName TEXT NOT NULL, Days INTEGER NULL,StartDate DATE NOT NULL, EndDate DATE NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL ,Difference decimal NULL,Done NULL DEFAULT 'false',NoteOpen TEXT NULL,
-    OpenBy nvarchar[50] NULL,NoteClosed TEXT NULL,
-    ClosedBy nvarchar[50] NULL)`
+    `CREATE TABLE IF NOT EXISTS StagesCUST(StageCustID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER  NULL ,ProjectID INTEGER NULL ,Type nvarchar[50]  NULL,StageName TEXT NOT NULL, Days INTEGER NULL,StartDate DATE NOT NULL, EndDate DATE NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL ,Difference decimal NULL,Done NULL DEFAULT 'false',NoteOpen TEXT NULL,OpenBy nvarchar[50] NULL,NoteClosed TEXT NULL,ClosedBy nvarchar[50] NULL)`
+  );
+  db.run(
+    `CREATE TABLE IF NOT EXISTS StagesCUST_Image(id INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER  NULL ,ProjectID INTEGER NULL ,url nvarchar[50]  NULL, addedby TEXT NOT NULL , Date DATE NULL DEFAULT CURRENT_DATE)`
   );
   db.run(
     `CREATE TABLE IF NOT EXISTS StageNotes(StageNoteID INTEGER PRIMARY KEY AUTOINCREMENT,StagHOMID INTEGER  NULL ,ProjectID INTEGER NULL ,Type nvarchar[50] NULL,Note nvarchar[max] NULL, DateNote NULL DEFAULT CURRENT_DATE,
-      RecordedBy nvarchar[50] NULL, UpdatedDate NULL DEFAULT CURRENT_DATE ,countdayDelay INTEGER NULL ,ImageAttachment TEXT NULL )`
+      RecordedBy nvarchar[50] NULL, UpdatedDate NULL DEFAULT CURRENT_DATE,countdayDelay INTEGER NULL ,ImageAttachment TEXT NULL )`
   );
   db.run(
     `CREATE TABLE IF NOT EXISTS StagesSub(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StagHOMID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,CloseDate TEXT NULL,Done NULL DEFAULT 'false', Note JSON NULL , closingoperations JSON NULL )`
@@ -172,26 +196,52 @@ END;
   db.run(`CREATE TABLE IF NOT EXISTS Invoice (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , Amount DECIMAL NOT NULL ,Subscription_end_date DATE DEFAULT CURRENT_TIMESTAMP,State TEXT NULL )`);
   // console.log((100 / 30) * (30 - 25));
 
-  // db.run(
-  //   `CREATE TABLE IF NOT EXISTS BranchdeletionRequests (id INTEGER PRIMARY KEY AUTOINCREMENT , IDBranch INTEGER NOT NULL ,IDCompany INTEGER NOT NULL, check INTEGER NOT NULL , PhoneNumber INTEGER NOT NULL ,Date DATE DEFAULT CURRENT_TIMESTAMP)`
-  // )
+
 
 // جديد
-//   db.run(`
-//     ALTER TABLE company
-//     ADD COLUMN State TEXT NULL DEFAULT 'true';`)
-//   db.run(`
-//     ALTER TABLE company
-//     ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
+ 
+
+
+  // db.run(`
+  //   ALTER TABLE StagesCUST
+  //   ADD COLUMN Ratio TEXT NULL DEFAULT 0;`)
+  // db.run(`
+  //   ALTER TABLE StagesCUST
+  //   ADD COLUMN attached TEXT NULL;`)
+  // db.run(`
+  //   ALTER TABLE StagesTemplet
+  //   ADD COLUMN attached TEXT NULL;`)
+  // db.run(`
+  //   ALTER TABLE StagesTemplet
+  //   ADD COLUMN IDCompany INTEGER NOT NULL DEFAULT 1;`)
+  // db.run(`
+  //   ALTER TABLE StagesTemplet
+  //   ADD COLUMN Ratio INTEGER NOT NULL DEFAULT 0;`)
+  // db.run(`
+  //   ALTER TABLE StagesSubTemplet
+  //   ADD COLUMN IDCompany INTEGER NOT NULL DEFAULT 1;`)
+  // db.run(`
+  //   ALTER TABLE StagesTemplet
+  //   ADD COLUMN Stagestype_id INTEGER  NULL ;`)
+  // db.run(`
+  //   ALTER TABLE StagesSubTemplet
+  //   ADD COLUMN Stagestype_id INTEGER  NULL ;`)
+
+  // db.run(`
+  //   ALTER TABLE company
+  //   ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+  // db.run(`
+  //   ALTER TABLE company
+  //   ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
 
 //  db.run( `ALTER TABLE company ADD COLUMN usertype TEXT NULL DEFAULT 'شركات'`);
 //  db.run(`
 //     ALTER TABLE  StagesSub
 //     ADD COLUMN attached TEXT NULL `)
+// db.run(`
+//   ALTER TABLE subscripation
+//   ADD COLUMN price DECIMAL;`)
 
-  // db.run(`
-  //   ALTER TABLE subscripation
-  //   ADD COLUMN price DECIMAL;`)
   // db.run(`
   //   ALTER TABLE StagesCUST
   //   ADD COLUMN Referencenumber INTEGER NULL;`)
@@ -212,6 +262,21 @@ END;
   //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
   //
+  // db.run(`
+  //   ALTER TABLE companySubprojects
+  //   ADD COLUMN Project_Space INTEGER NULL DEFAULT 0`);
+  // db.run(`
+  //   ALTER TABLE companySubprojects
+  //   ADD COLUMN Cost_per_Square_Meter DECIMAL NULL DEFAULT 0`);
+  // db.run(`
+  //   ALTER TABLE companySubprojectsAudite
+  //   ADD COLUMN Project_Space INTEGER NULL DEFAULT 0`);
+  // db.run(`
+  //   ALTER TABLE companySubprojectsAudite
+  //   ADD COLUMN Cost_per_Square_Meter DECIMAL NULL DEFAULT 0`);
+
+
+
   // db.run(`
   //   ALTER TABLE companySubprojects
   //   ADD COLUMN cost INTEGER NULL `)

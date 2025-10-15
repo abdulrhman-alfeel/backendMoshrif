@@ -19,7 +19,7 @@ const {
   convertTimeToMonth,
 } = require("../../middleware/Aid");
 const { UpdateStateComany, Updatesubscripation } = require("../../sql/update");
-const { bucket } = require("../../bucketClooud");
+const { bucket, uploadFile } = require("../../bucketClooud");
 const path = require("path");
 const fs = require("fs");
 const { HtmlStatmentSubscription } = require("../../pdf/writHtml");
@@ -160,17 +160,7 @@ async function checkCompanySubscriptions() {
 
 // شهر غير معروف
 // console.log(convertTimeToMonth(moment().format("YYYY-MM-DD")));
-async function uploadFile(outputPrefix, filePath) {
-  try {
-    await bucket.upload(filePath, {
-      destination: outputPrefix,
-    });
 
-    console.log("✅ File uploaded successfully");
-  } catch (err) {
-    console.error("❌ Upload failed:", err);
-  }
-}
 
 const bringInvoicedetails = (uploadQueue) => {
   return async (req, res) => {

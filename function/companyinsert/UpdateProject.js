@@ -53,9 +53,11 @@ const {
   RearrangeStageProject,
   Financeinsertnotification,
 } = require("../notifcation/NotifcationProject");
-const { deleteFileSingle, implmentOpreationSingle } = require("../../middleware/Fsfile");
 const {
-  BringCountUserinProject,
+  deleteFileSingle,
+  implmentOpreationSingle,
+} = require("../../middleware/Fsfile");
+const {
   PercentagecalculationforSTage,
 } = require("../companyselect/bringProject");
 
@@ -79,9 +81,6 @@ const UpdaterateCost = async (
   } else if (type === "cost") {
     const dataProject = await SELECTSUMAmountandBring(id);
     result = dataProject.RemainingBalance;
-  } else {
-    const countuser = await BringCountUserinProject(IDCompany, 0, id);
-    result = countuser?.countuser;
   }
   await Updaterateandcost(id, result, "companySubprojects", type, typeid);
 };
@@ -98,7 +97,6 @@ const addallcostandrate = async () => {
     // console.log(element.id);
     await UpdaterateCost(element.id);
     await UpdaterateCost(element.id, "cost");
-    await UpdaterateCost(element.id, "countuser", "id", 1);
   }
 };
 
@@ -113,7 +111,6 @@ const addrateallinstage = async () => {
 
 const updatelastproject = async () => {
   await Updaterateandcost(149, 0, "companySubprojects", "rate", "id");
-  await Updaterateandcost(149, 0, "companySubprojects", "countuser", "id");
   const result = await SELECTStageallid(149);
   for (let index = 0; index < result.length; index++) {
     const element = result[index];
@@ -175,11 +172,12 @@ const UpdataDataProject = (uploadQueue) => {
         LocationProject,
         numberBuilding,
         Referencenumber,
+        Cost_per_Square_Meter,
+        Project_Space,
         ProjectID,
       } = req.body;
 
       const StartDate = await SELECTProjectStartdate(ProjectID);
-
       await UpdateTablecompanySubProject([
         IDcompanySub,
         Nameproject,
@@ -189,14 +187,20 @@ const UpdataDataProject = (uploadQueue) => {
         LocationProject,
         numberBuilding,
         Referencenumber,
+        Cost_per_Square_Meter,
+        Project_Space,
         ProjectID,
       ]);
       if (StartDate?.numberBuilding !== numberBuilding) {
-        await RearrangeStageID(ProjectID, StartDate, numberBuilding);
+        await RearrangeStageID(
+          ProjectID,
+          StartDate,
+          numberBuilding,
+          userSession?.IDCompany
+        );
       }
       res.send({ success: "تمت العملية بنجاح" }).status(200);
       // console.log(ProjectID, "update");
-
     } catch (error) {
       console.log(error);
     }
@@ -235,7 +239,12 @@ const CloseOROpenProject = (uploadQueue) => {
 };
 
 // وظيفة تقوم باعادة ترتيب المراحل وايامها
-const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
+const RearrangeStageID = async (
+  ProjectID,
+  StartDate,
+  numberBuilding,
+  IDCompany
+) => {
   try {
     const DataSTage = await SELECTTablecompanySubProjectStageCUST(ProjectID);
 
@@ -243,7 +252,11 @@ const RearrangeStageID = async (ProjectID, StartDate, numberBuilding) => {
     for (let index = 0; index < DataSTage.length; index++) {
       const element = DataSTage[index];
 
-      const dataSimble = await StageTempletXsl(element.StageID, "update");
+      const dataSimble = await SELECTFROMTableStageTempletadays(
+        element.StageID,
+        element.Type,
+        IDCompany
+      );
       let Days = await AccountDays(numberBuilding, dataSimble.Days);
 
       tables.push({
@@ -420,71 +433,119 @@ const UpdateNotesStage = (uploadQueue) => {
   };
 };
 
-//  وظيفة تعديل بيانات المرحلة الرئيسية
+
 const UpdateDataStage = (uploadQueue) => {
   return async (req, res) => {
     try {
+      // ✅ التحقق من الجلسة
       const userSession = req.session.user;
       if (!userSession) {
-        res.status(401).send("Invalid session");
         console.log("Invalid session");
+        return res.status(401).send("Invalid session");
       }
+
+      // ✅ تسجيل الحركة
       Addusertraffic(
         userSession.userName,
         userSession?.PhoneNumber,
         "UpdateDataStage"
       );
-      const { ProjectID, StageID, StageName, Days } = req.body;
 
+      const { ProjectID, StageID, StageName, Days, Ratio, attached } = req.body;
+
+      // ✅ التحقق من المرحلة الحالية
       const verify = await SELECTTablecompanySubProjectStageCUSTONe(
         ProjectID,
         StageID,
-        "Update"
+     
       );
-      let Dayscont = Days;
 
-      let massege = "تمت العملية بنجاح";
-      if (verify !== undefined) {
-        if (parseInt(Days) !== parseInt(verify.Days)) {
-          massege =
+      let DaysValue = Days;
+      let message = "تمت العملية بنجاح";
+
+      if (verify) {
+        if (Number(Days) !== Number(verify.Days)) {
+          message =
             "تمت العملية بنجاح من دون تغيير تعديل ايام المرحله فهناك مراحل قد اغلقت";
         }
-        Dayscont = verify.Days;
+        DaysValue = verify.Days;
       }
+
+      // ✅ جلب المرحلة مع مجموع النسب
       const ObjectStage = await SELECTTablecompanySubProjectStageCUSTONe(
         ProjectID,
         StageID,
-        "all"
+        "all",
+        `,(SELECT SUM(Ratio) 
+           FROM StagesCUST 
+           WHERE   ProjectID = cu.ProjectID) AS TotalRatio`
       );
 
-      const regex = /\b\d{2,3}\b/;
-      let indexStage = String(ObjectStage.StageName).match(regex);
-      if (indexStage === null) {
-        indexStage = String(ObjectStage.StageName).match(/\b\d{1,4}\b/);
+      const currentRatio = ObjectStage.TotalRatio || 0;
+      const totalRatio = currentRatio + Number(Ratio);
+
+      // ✅ تحقق من المجموع
+      if (totalRatio > 100) {
+        return res
+          .status(400)
+          .send({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
       }
+
+      // ✅ استخراج رقم المرحلة من اسمها
+      // const regex = /\b\d{2,3}\b/;
+      // let indexStage = String(ObjectStage.StageName).match(regex);
+      // if (!indexStage) {
+      //   indexStage = String(ObjectStage.StageName).match(/\b\d{1,4}\b/);
+      // }
+
+      const originalName = String(ObjectStage.StageName);
+
+      // ❶ إزالة أي أرقام موجودة مسبقًا، سواء داخل قوس أو خارجه
+      let cleanedName = StageName.replace(/\s*\(?\b\d{1,4}\b\)?\s*/g, '').trim();
+
+      // ❷ استخراج الرقم الجديد من الاسم الأصلي
+      const regex = /\b\d{2,3}\b/;
+      let indexStage = originalName.match(regex);
+
+      if (!indexStage) {
+        indexStage = originalName.match(/\b\d{1,4}\b/);
+      }
+
+      const stageNumber = indexStage?.[0] || "";
+
+      // ❸ إضافة الرقم داخل قوسين إذا وُجد
+      const finalStageName = stageNumber ? `${cleanedName} (${stageNumber})` : cleanedName;
+
+
+
+      // ✅ التحديث
       await UPDATETablecompanySubProjectStageCUST([
-        `${StageName} (${indexStage[0]})`,
-        Dayscont,
+        finalStageName,
+        DaysValue,
+        Ratio,
+        attached,
         StageID,
         ProjectID,
       ]);
-      if (verify === undefined) {
-        const StartDate = await SELECTProjectStartdate(ProjectID);
-        let date = StartDate["Contractsigningdate"];
-        if (StartDate["ProjectStartdate"] !== null) {
-          date = StartDate["ProjectStartdate"];
-        }
-        const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
-        await DeleteTablecompanySubProjectphase(ProjectID);
-        await Stage(table, date, "update");
-      }
 
-      res.send({ success: massege }).status(200);
-      // اشعارات
+      // // ✅ إعادة بناء المراحل إذا كانت جديدة
+      // if (!verify) {
+      //   const date =
+      //     ObjectStage.ProjectStartdate || ObjectStage.Contractsigningdate;
+
+      //   const table = await SELECTTablecompanySubProjectStageCUST(ProjectID);
+      //   await DeleteTablecompanySubProjectphase(ProjectID);
+      //   await Stage(table, date, "update");
+      // }
+
+      // ✅ إرسال الرد النهائي
+      res.status(200).send({ success: message });
+
+      // ✅ إشعار
       await Stageinsert(ProjectID, StageID, userSession.userName, "تعديل");
     } catch (error) {
-      console.log(error);
-      res.send({ success: "خطاء في تنفيذ العملية" }).status(401);
+      console.error("UpdateDataStage error:", error);
+      res.status(500).send({ success: "خطاء في تنفيذ العملية" });
     }
   };
 };
@@ -553,9 +614,8 @@ const UpdateDataStageSub = (uploadQueue) => {
         userSession?.PhoneNumber,
         "UpdateDataStageSub"
       );
-        await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
-     
-      
+      await UPDATETablecompanySubProjectStagesSub([StageSubName, StageSubID]);
+
       res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
     } catch (error) {
       console.log(error);
@@ -587,7 +647,7 @@ const UpdateDataStageSubv2 = (uploadQueue) => {
           "StageSubName=?,attached=?"
         );
         await uploaddata(req.file);
-        implmentOpreationSingle("upload",attached);
+        implmentOpreationSingle("upload", attached);
       }
       res.send({ success: "تم تنفيذ العملية بنجاح" }).status(200);
     } catch (error) {
@@ -1301,5 +1361,5 @@ module.exports = {
   opreationDeletProject,
   UpdaterateCost,
   UpdaterateStage,
-  UpdateDataStageSubv2
+  UpdateDataStageSubv2,
 };

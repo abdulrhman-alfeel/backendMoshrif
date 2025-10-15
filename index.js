@@ -5,7 +5,6 @@
 // systemUpdet.js
 // companySub.js
 
-
 // INsertteble.js
 // createteble.js
 // selected.js
@@ -78,6 +77,7 @@ const { SELECTTablecompany } = require("./sql/selected/selected.js");
 const { UpdateStateComany } = require("./sql/update.js");
 const { calculateendDate } = require("./middleware/Aid.js");
 const subScription = require("./routes/subScription.js");
+const db = require("./sql/sqlite.js");
 
 // Set up middlewares
 app.use(cors());
@@ -193,6 +193,216 @@ app.get("/deleteFileUpload", async (req, res) => {
   }
 });
 
+
+app.get('/deleteStage',async(req,res)=>{
+  const {id} = req.query;
+         db.serialize(function () {
+          db.run(
+            `DELETE  StagesSub  WHERE ProjectID=?`,[id],
+     
+            function (err) {
+              if (err) {
+                console.error(err.message);
+              }
+              // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+            }
+          );
+        });
+            res.send({ success: "تمت العملية بنجاح" }).status(200);
+
+})
+
+app.post("/insertDataStage", async (req, res) => {
+  try {
+    // console.log(req.body);
+    const { StageCUST, StageSub } = req.body;
+    if (StageCUST.length > 0) {
+      for (let index = 0; index < StageCUST.length; index++) {
+        const element = StageCUST[index];
+        // console.log(element);
+        db.serialize(function () {
+          db.run(
+            `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,CloseDate,OrderBy,Difference,Done,OpenBy,NoteClosed,ClosedBy,Referencenumber,rate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            [
+              element.StageID,
+              element.ProjectID,
+              element.Type,
+              element.StageName,
+              element.Days,
+              element.StartDate,
+              element.EndDate,
+              element.CloseDate,
+              element.OrderBy,
+              element.Difference,
+              element.Done,
+              element.OpenBy,
+              element.NoteClosed,
+              element.ClosedBy,
+              element.Referencenumber,
+              element.rate,
+            ],
+            function (err) {
+              if (err) {
+                console.error(err.message);
+              }
+              // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+            }
+          );
+        });
+      }
+    }
+    if (StageSub.length > 0) {
+      for (let index = 0; index < StageSub.length; index++) {
+        const elementchild = StageSub[index];
+        // console.log(elementchild);
+        db.serialize(function () {
+          db.run(
+            `INSERT INTO StagesSub (StagHOMID, ProjectID, StageSubName,CloseDate,Done,closingoperations,attached) VALUES (?,?,?,?,?,?,?)`,
+            [
+              elementchild.StagHOMID,
+              elementchild.ProjectID,
+              elementchild.StageSubName,
+              elementchild.CloseDate,
+              elementchild.Done,
+              elementchild.closingoperations,
+              elementchild.attached,
+            ],
+            function (err) {
+              if (err) {
+                console.error(err.message);
+              }
+              // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+            }
+          );
+        });
+      }
+    }
+    res.send({ success: "تمت العملية بنجاح" }).status(200);
+  } catch (error) {
+    console.log(error);
+    res.send({ success: "فشل تنفيذ العملية" }).status(200);
+  }
+});
+
+const axios = require("axios"); // تأكد من أنك استوردت axios
+const { promisify } = require("util");
+const sendInChunks = async (stageCUSTData, stageSubData, chunkSize = 50) => {
+  // تقسيم كل من StageCUST و StageSub إلى قطع أصغر
+  const stageCUSTChunks = [];
+  const stageSubChunks = [];
+
+  // تقسيم StageCUST إلى قطع أصغر
+  for (let i = 0; i < stageCUSTData.length; i += chunkSize) {
+    stageCUSTChunks.push(stageCUSTData.slice(i, i + chunkSize));
+  }
+
+  // تقسيم StageSub إلى قطع أصغر
+  for (let i = 0; i < stageSubData.length; i += chunkSize) {
+    stageSubChunks.push(stageSubData.slice(i, i + chunkSize));
+  }
+  // إرسال كل جزء على حدة
+  // إرسال كل قطع البيانات بالتوازي أو بالتتابع
+  for (
+    let i = 0;
+    i < Math.max(stageCUSTChunks.length, stageSubChunks.length);
+    i++
+  ) {
+    try {
+      const response = await axios.post(
+        // "http:192.168.0.81:8080/insertDataStage",
+        "https://mushrf.net/insertDataStage",
+        {
+          StageCUST: stageCUSTChunks[i] || [], // إذا كانت هناك قطع مفقودة
+          StageSub: stageSubChunks[i] || [],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("الاستجابة من الخادم:", response.status, response.data);
+    } catch (error) {
+      console.error("خطأ في إرسال القطعة:", error);
+    }
+  }
+};
+
+const insertDataproject = async () => {
+  let arrayStageCUST = [];
+  let arrayStageSub = [];
+
+  try {
+    const dbAll = promisify(db.all).bind(db);
+
+    // جلب بيانات StagesCUST
+    arrayStageCUST = await dbAll(
+      `SELECT * FROM StagesTemplet WHERE Type="تشطيب بدون قبو"`
+    );
+
+    // جلب بيانات StagesSub
+    for (const element of arrayStageCUST) {
+      const result = await dbAll(
+        `SELECT *,StageID AS StagHOMID, NULL AS closingoperations,  -- عمود ثابت بقيمة null
+  'false' AS Done,           -- عمود ثابت بقيمة string 'false'
+  189 AS ProjectID    FROM StagesSubTemplet WHERE StageID='${element.StageID}' `
+      );
+      console.log(result);
+      arrayStageSub.push(...result);
+    }
+
+    console.log("عدد StagesCUST:", arrayStageCUST.length);
+    console.log("عدد StagesSub:", arrayStageSub.length);
+
+    // إرسال البيانات في دفعات
+    await sendInChunks([], arrayStageSub);
+
+    return {
+      StageCUST: arrayStageCUST,
+      StageSub: arrayStageSub,
+    };
+  } catch (error) {
+    console.error("حدث خطأ:", error);
+  }
+};
+// insertDataproject();
+// const insertDataproject = async () => {
+//   let arrayStageCUST = [];
+//   let arrayStageSub = [];
+
+//   try {
+//     const dbAll = promisify(db.all).bind(db);
+
+//     // جلب بيانات StagesCUST
+//     arrayStageCUST = await dbAll(
+//       `SELECT * FROM StagesCUST WHERE ProjectID=206`
+//     );
+
+//     // جلب بيانات StagesSub
+//     for (const element of arrayStageCUST) {
+//       const result = await dbAll(
+//         `SELECT * FROM StagesSub WHERE StagHOMID='${element.StageID}' AND ProjectID=${element.ProjectID}`
+//       );
+//       arrayStageSub.push(...result);
+//     }
+
+//     console.log("عدد StagesCUST:", arrayStageCUST.length);
+//     console.log("عدد StagesSub:", arrayStageSub.length);
+
+//     // إرسال البيانات في دفعات
+//     await sendInChunks(arrayStageCUST, arrayStageSub);
+
+//     return {
+//       StageCUST: arrayStageCUST,
+//       StageSub: arrayStageSub,
+//     };
+//   } catch (error) {
+//     console.error("حدث خطأ:", error);
+//   }
+// };
+
+// insertDataproject();
+
 app.post(
   "/api/file",
   verifyJWT,
@@ -235,23 +445,16 @@ app.post(
   }
 );
 
-
-app.get('/updatecomapny',async (req,res)=>{
-  const idcompany = req.query.id
+app.get("/updatecomapny", async (req, res) => {
+  const idcompany = req.query.id;
   const datacompany = await SELECTTablecompany(idcompany);
 
-  const state = datacompany.State === 'true'? "false":"true";
-  const Suptype = datacompany.Suptype === 'مجاني'? "مدفوع": "مجاني"
+  const state = datacompany.State === "true" ? "false" : "true";
+  const Suptype = datacompany.Suptype === "مجاني" ? "مدفوع" : "مجاني";
   await UpdateStateComany(state, idcompany, "State");
   await UpdateStateComany(Suptype, idcompany, "Suptype");
-  res.status(200).send({success:'تمت العملية بنجاح '})
-
-})
-
-
-
-
-
+  res.status(200).send({ success: "تمت العملية بنجاح " });
+});
 
 CreateTable();
 
@@ -308,15 +511,17 @@ cron.schedule("0 0 * * *", () => {
   checkCompanySubscriptions();
 });
 const month = moment.parseZone(new Date()).format("yy-MM");
-cron.schedule(`0 0 ${calculateendDate(month)} ${moment(new Date()).format("MM")} *`, () => {
-  verificationSend(
-    "502464530",
-    null,
-    "⏰ تشغيل اضافة الفواتير الشهرية  للأشتراكات..."
-  );
-  operationInvoice();
-});
-
+cron.schedule(
+  `0 0 ${calculateendDate(month)} ${moment(new Date()).format("MM")} *`,
+  () => {
+    verificationSend(
+      "502464530",
+      null,
+      "⏰ تشغيل اضافة الفواتير الشهرية  للأشتراكات..."
+    );
+    operationInvoice();
+  }
+);
 
 server.listen(PORT, () => {
   console.log(PORT, "SERVER ALREADY");

@@ -12,6 +12,7 @@ const {
   BringDataFinancialCustody,
   bringDataCompanyRegistration,
   BringNameCompany,
+  BringreportFinancialCustody,
 } = require("../function/companyselect/bringCompany");
 const {
   UpdateCompanybrinsh,
@@ -31,62 +32,65 @@ const { verifyJWT } = require("../middleware/jwt");
 
 const company = ({ uploadQueue }) => {
   const router = express.Router();
-  router.use(verifyJWT);
+  // router.use(verifyJWT);
 
   router.route("/").post(insertDataCompany(uploadQueue));
   router
     .route("/AgreedRegistrationCompany")
-    .get(AgreedRegistrationCompany(uploadQueue));
+    .get(verifyJWT,AgreedRegistrationCompany(uploadQueue));
   router
     .route("/UpdatedataRegistration")
-    .put(UpdatedataRegistration(uploadQueue));
+    .put(verifyJWT,UpdatedataRegistration(uploadQueue));
   router
     .route("/bringCompanyRegitration")
-    .get(bringDataCompanyRegistration(uploadQueue));
+    .get(verifyJWT,bringDataCompanyRegistration(uploadQueue));
   router
     .route("/DeleteCompanyRegistration")
-    .delete(DeleteCompanyRegistration(uploadQueue));
+    .delete(verifyJWT,DeleteCompanyRegistration(uploadQueue));
 
-  router.route("/").get(bringDataCompany(uploadQueue));
+  router.route("/").get(verifyJWT,bringDataCompany(uploadQueue));
   router
     .route("/OpenOrCloseopreationStopfinance")
-    .get(OpenOrCloseopreationStopfinance(uploadQueue));
-  router.route("/").put(UpdateDataCompany(uploadQueue));
+    .get(verifyJWT,OpenOrCloseopreationStopfinance(uploadQueue));
+  router.route("/").put(verifyJWT,UpdateDataCompany(uploadQueue));
 
-  router.route("/brinshName").get(BringNameCompany(uploadQueue));
-  router.route("/UpdateApiCompany").get(UpdateApiCompany(uploadQueue));
+  router.route("/brinshName").get(verifyJWT,BringNameCompany(uploadQueue));
+  router.route("/UpdateApiCompany").get(verifyJWT,UpdateApiCompany(uploadQueue));
 
-  router.route("/brinsh").post(inseertCompanybrinsh(uploadQueue));
-  router.route("/brinsh/bring").post(biringDatabrinshCompany(uploadQueue));
-  router.route("/brinsh/Update").put(UpdateCompanybrinsh(uploadQueue));
+  router.route("/brinsh").post(verifyJWT,inseertCompanybrinsh(uploadQueue));
+  router.route("/brinsh/bring").get(verifyJWT,biringDatabrinshCompany(uploadQueue));
+  router.route("/brinsh/Update").put(verifyJWT,UpdateCompanybrinsh(uploadQueue));
   router
     .route("/brinsh/InsertLinkevaluation")
-    .post(InsertLinkevaluation(uploadQueue));
+    .post(verifyJWT,InsertLinkevaluation(uploadQueue));
 
   // عمليات العهد
   router
     .route("/brinsh/insertRequestFinancialCustody")
-    .post(insertRequestFinancialCustody(uploadQueue));
+    .post(verifyJWT,insertRequestFinancialCustody(uploadQueue));
   router
     .route("/brinsh/BringDataFinancialCustody")
-    .get(BringDataFinancialCustody(uploadQueue));
+    .get(verifyJWT,BringDataFinancialCustody(uploadQueue));
+  router
+    .route("/BringreportFinancialCustody")
+    .get(verifyJWT,BringreportFinancialCustody(uploadQueue));
   router
     .route("/brinsh/Acceptandrejectrequests")
-    .put(Acceptandrejectrequests(uploadQueue));
+    .put(verifyJWT,Acceptandrejectrequests(uploadQueue));
   router
     .route("/brinsh/Deletecovenantrequests")
-    .get(Deletecovenantrequests(uploadQueue));
+    .get(verifyJWT,Deletecovenantrequests(uploadQueue));
   router
     .route("/brinsh/Updatecovenantrequests")
-    .put(Updatecovenantrequests(uploadQueue));
+    .put(verifyJWT,Updatecovenantrequests(uploadQueue));
 
   // حذف فرع
   router
     .route("/brinsh/deleteBranch")
-    .get(Branchdeletionprocedures(uploadQueue));
+    .get(verifyJWT,Branchdeletionprocedures(uploadQueue));
   router
     .route("/brinsh/Implementedbyopreation")
-    .delete(Implementedbyopreation(uploadQueue));
+    .delete(verifyJWT,Implementedbyopreation(uploadQueue));
   return router;
 };
 

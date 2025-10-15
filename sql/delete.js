@@ -78,6 +78,16 @@ const DeleteTableNotifcation = () => {
     );
   });
 };
+const DeleteuserBransh = (id1,id2,type1="user_id",type2="idBransh",table="usersBransh",add="") => {
+  db.serialize(function () {
+    db.run(
+      `DELETE FROM  ${table}  WHERE ${add} ${type1}=? AND ${type2}=? `,[id1,id2],
+      function (err) {
+        // console.log(`Row with the ID has been inserted.`);
+      }
+    );
+  });
+};
 
 const DELETETableLoginActivaty = (data) => {
   db.serialize(function () {
@@ -234,5 +244,6 @@ module.exports = {
   DeleteTableProjectdataforchat,
   DeleteTableFinancialCustody,
   DeleteTablecompanySubProjectallapi,
-  deletePostFromDatabase
+  deletePostFromDatabase,
+  DeleteuserBransh
 };

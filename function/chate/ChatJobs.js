@@ -1,15 +1,10 @@
-const { DeleteTableProjectdataforchat } = require("../../sql/delete");
-const { insertTableProjectdataforchat } = require("../../sql/INsertteble");
 const {
-  SELECTTablecompanySubProject,
-  SELECTTablecompanySubProjectLast_id,
-  SELECTTableProjectdataforchat,
   SELECTTablecompanySubProjectStageCUST,
+  selecttablecompanySubProjectall,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyonObject,
 } = require("../../sql/selected/selectuser");
-const { UPDATETableProjectdataforchat } = require("../../sql/update");
 const { ClassChatOpration, ClassChatOprationView } = require("./ChatJobsClass");
 
 //   عمليات استقبال وارسال ومشاهدة شات المراحل
@@ -59,37 +54,15 @@ const filterProjectforaddinsertArray = (PhoneNumber, IDfinlty = 0) => {
   try {
     return new Promise(async (resolve, reject) => {
       const Datausere = await SELECTTableusersCompanyonObject(PhoneNumber);
-      let result = [];
+      const result = await selecttablecompanySubProjectall(
+        0,
+        IDfinlty,
+        Datausere.id,
+        "true",
+        "LIMIT 3",
+        "forchatAdmin"
+      );
 
-      let validity =
-        Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
-      if (Datausere.job !== "Admin") {
-        await Promise.all(
-          validity.map(async (element) => {
-            const where = element.project
-              .map((items) => items.idProject)
-              .reduce((item, r) => `${String(item) + " , " + r}`);
-            const typeproject = `AND ca.id IN (${where})`;
-            result = await SELECTTablecompanySubProject(
-              element.idBrinsh,
-              IDfinlty,
-              "forchatAdmin",
-              "true",
-              typeproject,
-              "LIMIT 10"
-            );
-          })
-        );
-      } else {
-        result = await SELECTTablecompanySubProject(
-          Datausere?.IDCompany,
-          IDfinlty,
-          "forchatAdmin",
-          "true",
-          "",
-          "LIMIT 10"
-        );
-      }
       resolve(result);
     });
   } catch (error) {

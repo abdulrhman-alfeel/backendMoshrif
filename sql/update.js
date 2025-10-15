@@ -1,15 +1,17 @@
 const db = require("./sqlite");
 // already
 
-
-const UpdateStateComany = (updat,updatwhere,typename="subscriptionEndDate") =>{
+const UpdateStateComany = (
+  updat,
+  updatwhere,
+  typename = "subscriptionEndDate"
+) => {
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE company SET ${typename}=? WHERE id=?`,
-          [updat,updatwhere],
+          [updat, updatwhere],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -25,11 +27,10 @@ const UpdateStateComany = (updat,updatwhere,typename="subscriptionEndDate") =>{
       reject(err);
     }
   });
-}
-const Updatesubscripationwhendeletproject = (updatwhere) =>{
+};
+const Updatesubscripationwhendeletproject = (updatwhere) => {
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE subscripation SET EndDate= CURRENT_DATE  WHERE ProjectID=? AND strftime('%Y-%m',StartDate)=strftime('%Y-%m',CURRENT_DATE )`,
@@ -49,15 +50,14 @@ const Updatesubscripationwhendeletproject = (updatwhere) =>{
       reject(err);
     }
   });
-}
-const Updatesubscripation = (updat,updatwhere,typename="price") =>{
+};
+const Updatesubscripation = (updat, updatwhere, typename = "price") => {
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE subscripation SET ${typename}=? WHERE id=?`,
-          [updat,updatwhere],
+          [updat, updatwhere],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -73,15 +73,19 @@ const Updatesubscripation = (updat,updatwhere,typename="price") =>{
       reject(err);
     }
   });
-}
-const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub") =>{
+};
+const UpdateMoveingDataBranshtoBrinsh = (
+  fromId,
+  toId,
+  type,
+  typename = "IDcompanySub"
+) => {
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE ${type} SET ${typename}=? WHERE ${typename}=?`,
-          [toId,fromId],
+          [toId, fromId],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -97,14 +101,20 @@ const UpdateMoveingDataBranshtoBrinsh = (fromId,toId,type,typename="IDcompanySub
       reject(err);
     }
   });
-}
-const Updaterateandcost = (fromId,toId,type,typedata,typename="IDcompanySub") =>{
+};
+const Updaterateandcost = (
+  fromId,
+  toId,
+  type,
+  typedata,
+  typename = "IDcompanySub"
+) => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
         db.run(
           `UPDATE ${type} SET ${typedata}=? WHERE ${typename}=?`,
-          [toId,fromId],
+          [toId, fromId],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -120,15 +130,14 @@ const Updaterateandcost = (fromId,toId,type,typedata,typename="IDcompanySub") =>
       reject(err);
     }
   });
-}
-const UpdaterateandcostStage = (rate,StageID,ProjectID) =>{
+};
+const UpdaterateandcostStage = (rate, StageID, ProjectID) => {
   return new Promise((resolve, reject) => {
     try {
-
       db.serialize(function () {
         db.run(
           `UPDATE StagesCUST SET rate=? WHERE StageID=? AND ProjectID=?`,
-          [rate,StageID,ProjectID],
+          [rate, StageID, ProjectID],
           function (err) {
             if (err) {
               console.log(err.message);
@@ -144,11 +153,9 @@ const UpdaterateandcostStage = (rate,StageID,ProjectID) =>{
       reject(err);
     }
   });
-}
+};
 
-
-
-const UpdateTablecompany = (data,type='') => {
+const UpdateTablecompany = (data, type = "") => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
@@ -194,22 +201,21 @@ const UpdateTablecompanyRegistration = (data) => {
     }
   });
 };
-const UpdateTableinnuberOfcurrentBranchescompany = (data,type="NumberOFcurrentBranches") => {
+const UpdateTableinnuberOfcurrentBranchescompany = (
+  data,
+  type = "NumberOFcurrentBranches"
+) => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
-        db.run(
-          `UPDATE company SET ${type}=? WHERE id=?`,
-          data,
-          function (err) {
-            if (err) {
-              console.log(err.message);
-              reject(err);
-            }
-            resolve(true);
-            console.log(`Row with the ID  has been inserted.`);
+        db.run(`UPDATE company SET ${type}=? WHERE id=?`, data, function (err) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
           }
-        );
+          resolve(true);
+          console.log(`Row with the ID  has been inserted.`);
+        });
       });
     } catch (err) {
       console.log(err);
@@ -264,10 +270,9 @@ const UpdateTableLinkevaluation = (data) => {
   });
 };
 
-const UpdateTableuserComppany = (data,type ='job=?') => {
+const UpdateTableuserComppany = (data, type = "job=?") => {
   return new Promise((resolve, reject) => {
     try {
-  
       db.serialize(function () {
         db.run(
           `UPDATE usersCompany SET IDCompany=?, userName=?, IDNumber=?,PhoneNumber=?,${type} WHERE id=?`,
@@ -289,12 +294,65 @@ const UpdateTableuserComppany = (data,type ='job=?') => {
     }
   });
 };
-const UpdateTableuserComppanyValidity = (data) => {
+const UpdateTableuserComppanyValidity = (data, type = "Validity") => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(`UPDATE usersCompany SET ${type}=? WHERE id=?`, data);
+      db.serialize(function () {
+        db.run(
+          `UPDATE usersCompany SET ${type}=? WHERE id=?`,
+          data,
+          function (err) {
+            // console.log("updatetableusercompany", data);
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+const UpdateTableusersBransh = (data, type = "job=?") => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(
+        `UPDATE usersBransh SET ${type} WHERE user_id=? AND idBransh=?`,
+        data
+      );
+      db.serialize(function () {
+        db.run(
+          `UPDATE usersBransh SET ${type} WHERE user_id=? AND idBransh=?`,
+          data,
+          function (err) {
+            // console.log("updatetableusercompany", data);
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      });
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+const UpdateTableusersProject = (data) => {
   return new Promise((resolve, reject) => {
     try {
       db.serialize(function () {
         db.run(
-          `UPDATE usersCompany SET Validity=? WHERE id=?`,
+          `UPDATE usersProject SET ValidityProject=? WHERE user_id=? AND ProjectID=?`,
           data,
           function (err) {
             // console.log("updatetableusercompany", data);
@@ -314,10 +372,7 @@ const UpdateTableuserComppanyValidity = (data) => {
   });
 };
 
-
-
-const UpdateTablecompanySubProjectapi = (data,type="id") => {
-
+const UpdateTablecompanySubProjectapi = (data, type = "id") => {
   db.run(
     `UPDATE companySubprojects  SET Nameproject=?, Note=?,GuardNumber=?,LocationProject=?,numberBuilding=? WHERE   IDcompanySub=?  AND  ${type}=?   AND EXISTS (
         SELECT 1
@@ -335,9 +390,9 @@ const UpdateTablecompanySubProjectapi = (data,type="id") => {
     }
   );
 };
-const UpdateTablecompanySubProject = (data,type="id") => {
+const UpdateTablecompanySubProject = (data, type = "id") => {
   db.run(
-    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=?,numberBuilding=? ,Referencenumber=? WHERE ${type}=?`,
+    `UPDATE companySubprojects SET IDcompanySub=?, Nameproject=?, Note=?,TypeOFContract=?,GuardNumber=?,LocationProject=?,numberBuilding=?, Referencenumber=? , Cost_per_Square_Meter=? , Project_Space=? WHERE ${type}=?`,
     data,
     function (err) {
       if (err) {
@@ -412,9 +467,56 @@ const UpdateTableLoginActivatytoken = (PhoneNumber, tokennew, tokenold) => {
 
 // Templet************
 
-const UPDATETablecompanySubProjectStagetemplet = (data) => {
+const UPDATETablecompanySubProjectStagetemplet = (data, IDCompany, res) => {
+  const { StageIDtemplet, Type, StageName, Days, Ratio, attached } = data;
+
+  let update = [];
+  let value = [];
+  let query = "UPDATE StagesTemplet SET ";
+
+  if (Type) {
+    update.push(" Type=?");
+    value.push(Type);
+  }
+  if (StageName) {
+    update.push("StageName=?");
+    value.push(StageName);
+  }
+  if (Days) {
+    update.push("Days=?");
+    value.push(Days);
+  }
+  if (Ratio) {
+    update.push("Ratio=?");
+    value.push(Ratio);
+  }
+
+  if (attached && attached?.startsWith("http")) {
+    update.push("attached=?");
+    value.push(attached);
+  }
+  if (update.length === 0) {
+    return res.status(400).json({ message: "لا توجد بيانات لتحديثها" });
+  }
+
+  query += update.join(",  ");
+  query += "WHERE StageIDtemplet=? AND IDCompany=?";
+  value.push(StageIDtemplet, IDCompany);
+  console.log(query, value);
+  db.run(query, value, function (err) {
+    if (err) {
+      console.log(err.message);
+    }
+    console.log(`Row with the ID ${this.lastID} has been inserted.`);
+  });
+};
+
+const UPDATETablecompanySubProjectStageSubtemplet = (
+  data,
+  type = "StageSubName=?"
+) => {
   db.run(
-    `UPDATE StagesTemplet SET Type=?, StageName=?, Days=? WHERE StageID=?`,
+    `UPDATE StagesSubTemplet SET ${type} WHERE StageSubID=? AND IDCompany=? `,
     data,
     function (err) {
       if (err) {
@@ -424,25 +526,60 @@ const UPDATETablecompanySubProjectStagetemplet = (data) => {
     }
   );
 };
-const UPDATETablecompanySubProjectStageSubtemplet = (data,type="StageSubName=?") => {
-  db.run(
-    `UPDATE StagesSubTemplet SET ${type} WHERE StageSubID=? `,
-    data,
-    function (err) {
+const UPDATETableStagetype = (Type, id, IDCompany) => {
+  db.serialize(function () {
+    // 1. تحديث الجدول Stagestype
+    db.run(`UPDATE Stagestype SET Type=? WHERE id=?`, [Type, id], function (err) {
       if (err) {
-        console.log(err.message);
+        return console.error("Error updating Stagestype:", err.message);
       }
-      console.log(`Row with the ID ${this.lastID} has been inserted.`);
-    }
-  );
+
+      console.log(`Updated Stagestype where id=${id}`);
+
+      // 2. تحديث الجدول StagesSubTemplet
+      db.run(
+        `UPDATE StagesTemplet SET Type=? WHERE Stagestype_id=? AND IDCompany=?`,
+        [Type, id, IDCompany],
+        function (err) {
+          if (err) {
+            return console.error("Error updating StagesSubTemplet:", err.message);
+          }
+
+          console.log(`Updated StagesTemplet where Stagestype_id=${id} and IDCompany=${IDCompany}`);
+          
+          // 3. تحديث الجدول StagesCUST
+    
+        }
+      );
+
+
+      db.all(`SELECT  StageIDtemplet FROM StagesTemplet WHERE Stagestype_id=${id}`,function(err,row){
+        console.log(row);
+        const sqlString = `UPDATE StagesCUST SET Type=? WHERE Referencenumber=?`;
+        for (let index = 0; index < row.length; index++) {
+          const element = row[index];
+          console.log(element);
+          db.run(sqlString, [Type, element.StageIDtemplet], function (err) {
+            if (err) {
+              return console.error("Error updating StagesCUST:", err.message);
+            }
+      
+            console.log(`Updated StagesCUST where Referencenumber=${id}`);
+          });
+        }
+      })
+
+    });
+  });
 };
+
 // ****^*****^
 
 // STAGE WITH DATA SUB STAGE AND NOTES STAGE AND NOTES SUB STAGE
 
 const UPDATETablecompanySubProjectStageCUST = (data) => {
   db.run(
-    `UPDATE StagesCUST SET StageName=?,Days=? WHERE StageID=? AND ProjectID=?`,
+    `UPDATE StagesCUST SET StageName=?,Days=?,Ratio=?,attached=? WHERE StageID=? AND ProjectID=?`,
     data,
     function (err) {
       if (err) {
@@ -466,7 +603,7 @@ const UPDATEStopeProjectStageCUST = (data, kind = "Closed") => {
   });
 };
 const UPDATEStopeProjectStageCUSTv2 = (data) => {
-  let sqlString = `UPDATE StagesCUST SET Type=?, StageName=?, Days=? WHERE Referencenumber=? `;
+  let sqlString = `UPDATE StagesCUST SET Type=?, StageName=?, Days=?,Ratio=?,attached=? WHERE Referencenumber=? `;
   db.run(sqlString, data, function (err) {
     if (err) {
       console.log(err.message);
@@ -487,7 +624,43 @@ const UPDATETablecompanySubProjectStageNotes = (data) => {
     }
   );
 };
-const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name",namecolmn="StageSubName=?") => {
+// ALTER TABLE StagesCUST ADD COLUMN date_iso TEXT;
+
+// UPDATE StagesCUST
+// SET CloseDate =
+//   substr(CloseDate,12,4) || '-' ||
+//   (CASE substr(CloseDate,5,3)
+//      WHEN 'Jan' THEN '01' WHEN 'Feb' THEN '02' WHEN 'Mar' THEN '03'
+//      WHEN 'Apr' THEN '04' WHEN 'May' THEN '05' WHEN 'Jun' THEN '06'
+//      WHEN 'Jul' THEN '07' WHEN 'Aug' THEN '08' WHEN 'Sep' THEN '09'
+//      WHEN 'Oct' THEN '10' WHEN 'Nov' THEN '11' WHEN 'Dec' THEN '12'
+//    END)
+//   || '-' || printf('%02d', CAST(substr(CloseDate,9,2) AS INT));
+const UPDATECONVERTDATE = (type = "EndDate", table = "StagesCUST") => {
+  db.run(
+    `UPDATE ${table}
+SET ${type} =
+  substr(${type},12,4) || '-' ||
+  (CASE substr(${type},5,3)
+     WHEN 'Jan' THEN '01' WHEN 'Feb' THEN '02' WHEN 'Mar' THEN '03'
+     WHEN 'Apr' THEN '04' WHEN 'May' THEN '05' WHEN 'Jun' THEN '06'
+     WHEN 'Jul' THEN '07' WHEN 'Aug' THEN '08' WHEN 'Sep' THEN '09'
+     WHEN 'Oct' THEN '10' WHEN 'Nov' THEN '11' WHEN 'Dec' THEN '12'
+   END)
+  || '-' || printf('%02d', CAST(substr(${type},9,2) AS INT));`,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been inserted.`);
+    }
+  );
+};
+const UPDATETablecompanySubProjectStagesSub = (
+  data,
+  kind = "Name",
+  namecolmn = "StageSubName=?"
+) => {
   let stringSql =
     kind === "Name"
       ? `UPDATE StagesSub SET ${namecolmn} WHERE StageSubID=?`
@@ -502,16 +675,17 @@ const UPDATETablecompanySubProjectStagesSub = (data, kind = "Name",namecolmn="St
   });
 };
 const UPDATETablecompanySubProjectStagesSubv2 = (data) => {
-    
-  db.run(`UPDATE StagesSub SET StageSubName=?,attached=? WHERE Referencenumber=?`, data, function (err) {
-    if (err) {
-      console.log(err.message);
+  db.run(
+    `UPDATE StagesSub SET StageSubName=?,attached=? WHERE Referencenumber=?`,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been inserted.`);
     }
-    console.log(`Row with the ID ${this.lastID} has been inserted.`);
-  });
+  );
 };
-
-
 
 const UPDATETablecompanySubProjectStageSubNotes = (data) => {
   db.run(
@@ -540,7 +714,6 @@ const UPDATETablecompanySubProjectexpense = (data) => {
   );
 };
 const UPDATETablecompanySubProjectexpenseapi = (data) => {
-
   db.run(
     `UPDATE Expense SET Amount=?, Data=?,ClassificationName=?,Date=?,Taxable=?,InvoiceNo=? WHERE Referencenumberfinanc=? AND EXISTS (
     SELECT 1
@@ -556,7 +729,6 @@ const UPDATETablecompanySubProjectexpenseapi = (data) => {
   );
 };
 const UPDATETablecompanySubProjectexpenseInvoiceNoapi = (data) => {
-
   db.run(
     `UPDATE Expense SET InvoiceNo=? WHERE Referencenumberfinanc=? AND EXISTS (
     SELECT 1
@@ -602,10 +774,8 @@ const UPDATETablecompanySubProjectREVENUEapi = (data) => {
   );
 };
 
-
-
-//  حفظ الملفات 
-const UPDATETablecompanySubProjectFinancial = (data,type="Revenue") => {
+//  حفظ الملفات
+const UPDATETablecompanySubProjectFinancial = (data, type = "Revenue") => {
   db.run(
     `UPDATE ${type} SET  Image=? WHERE Referencenumberfinanc=? AND EXISTS (
     SELECT 1
@@ -708,7 +878,7 @@ const UPDATETableinRequests = (data) => {
     console.log(error);
   }
 };
-const UPDATETableinRequestsDone = (data,type="Done=?,Implementedby=?") => {
+const UPDATETableinRequestsDone = (data, type = "Done=?,Implementedby=?") => {
   try {
     db.run(
       `UPDATE Requests SET ${type} WHERE RequestsID=?`,
@@ -780,7 +950,7 @@ const UPDATETableChate = (data) => {
       console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
     }
   );
-}
+};
 const UPDATETableProjectdataforchat = (data) => {
   db.run(
     `UPDATE Projectdataforchat SET Disabled=? WHERE ProjectID=? AND PhoneNumber=?`,
@@ -794,7 +964,7 @@ const UPDATETableProjectdataforchat = (data) => {
   );
 };
 // Approvingperson=?,ApprovalDate=?,OrderStatus=?
-const UPDATETableFinancialCustody = (type,id) => {
+const UPDATETableFinancialCustody = (type, id) => {
   try {
     db.serialize(function () {
       db.run(
@@ -810,7 +980,11 @@ const UPDATETableFinancialCustody = (type,id) => {
     console.log(error);
   }
 };
-const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id,DateDay) => {
+const UPDATETableprepareOvertimeassignment = (
+  Overtimeassignment,
+  id,
+  DateDay
+) => {
   try {
     db.serialize(function () {
       db.run(
@@ -826,8 +1000,15 @@ const UPDATETableprepareOvertimeassignment = (Overtimeassignment,id,DateDay) => 
     console.log(error);
   }
 };
-const UPDATETablecheckPreparation = (checktime,checkfile,id,type1="CheckIntime",type2="CheckInFile",Numberofworkinghours="") => {
-  try {    
+const UPDATETablecheckPreparation = (
+  checktime,
+  checkfile,
+  id,
+  type1 = "CheckIntime",
+  type2 = "CheckInFile",
+  Numberofworkinghours = ""
+) => {
+  try {
     db.serialize(function () {
       db.run(
         `UPDATE Prepare  SET ${type1}='${checktime}',${type2}='${checkfile}' ${Numberofworkinghours}  WHERE id =${id}`,
@@ -893,5 +1074,9 @@ module.exports = {
   UPDATETablecompanySubProjectStagesSubv2,
   UpdateStateComany,
   Updatesubscripation,
-  Updatesubscripationwhendeletproject
+  Updatesubscripationwhendeletproject,
+  UpdateTableusersBransh,
+  UpdateTableusersProject,
+  UPDATECONVERTDATE,
+  UPDATETableStagetype
 };

@@ -15,17 +15,111 @@ const SELECTTableusersall = () => {
     });
   });
 };
+const SELECTTableusersCompanyall = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.all(`SELECT * FROM usersCompany `, function (err, result) {
+        if (err) {
+          reject(err);
+          console.error(err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
 const SELECTTableusersCompany = (
   id,
   type = "",
-  LIMIT = "ORDER BY id ASC LIMIT 20",
-  kind = "*"
+  LIMIT = "ORDER BY us.id ASC LIMIT 20",
+  kind = "",
+  add = "",
+  pro = ""
 ) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT ${kind} FROM usersCompany WHERE IDCompany=? AND Activation="true" ${type} ${LIMIT}`,
+        `
+        SELECT us.*,
+    json_group_array(DISTINCT 
+                  CASE  WHEN cs.NameSub IS NOT NULL THEN
+        json_object(
+            'NameBransh', cs.NameSub,
+            'job', ub.job,
+            'idBransh', ub.idBransh
+        ) ELSE json_object() END
+    ) AS Validity
+   ${add}
+FROM usersCompany us
+LEFT JOIN usersBransh ub ON (ub.user_id = us.id ${kind} )
+LEFT JOIN usersProject up ON up.idBransh = ub.idBransh AND up.user_id= us.id ${pro}
+LEFT JOIN companySub cs ON cs.id = ub.idBransh
+WHERE IDCompany = ? 
+AND us.Activation = "true"
+  ${type} 
+GROUP BY us.id ${LIMIT}
+      `,
         [id],
+        function (err, result) {
+          let array = [];
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            result.forEach((row) => {
+              const user = {
+                ...row,
+                Validity: row.Validity ? JSON.parse(row.Validity) : [], // فك المصفوفة JSON هنا
+                ValidityProject: row.ValidityProject
+                  ? JSON.parse(row.ValidityProject)
+                  : [], // فك المصفوفة JSON هنا
+                ValidityBransh: row.ValidityBransh
+                  ? JSON.parse(row.ValidityBransh)
+                  : [], // فك المصفوفة JSON هنا
+              };
+              array.push(user);
+            });
+            resolve(array);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableusersBransh = (
+  data,
+  table = "usersBransh",
+  type1 = "user_id",
+  type2 = "idBransh"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.get(
+        `SELECT * FROM ${table} WHERE ${type1}=? AND ${type2}=? `,
+        data,
+        function (err, result) {
+          if (err) {
+            resolve(false);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const SELECTTableusersBranshmanger = (
+  data,
+  table = "usersBransh",
+  type2 = "idBransh"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(async () => {
+      db.get(
+        `SELECT uC.userName,cy.NameCompany FROM ${table} us LEFT JOIN usersCompany uC ON uC.id = us.user_id LEFT JOIN company cy ON cy.id = uC.IDCompany WHERE us.job='مدير الفرع' AND us.${type2}=?  `,
+        data,
         function (err, result) {
           if (err) {
             reject(err);
@@ -44,7 +138,7 @@ const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT ${type} FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
+        `SELECT us.${type}, br.Acceptingcovenant FROM usersCompany us LEFT JOIN usersBransh br ON br.user_id = us.id   WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -97,13 +191,32 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
     });
   });
 };
+const SELECTTablevalidityuserinBransh = (PhoneNumber, idBransh, number) => {
+  return new Promise((resolve, reject) => {
+    console.log(PhoneNumber, idBransh, parseInt(number),'hhh');
+    db.serialize(async () => {
+      db.all(
+        `SELECT CASE WHEN  (SELECT pr.ProjectID FROM usersProject pr  LEFT JOIN usersCompany us ON us.id = pr.user_id WHERE ProjectID=ps.id AND trim(us.PhoneNumber)=trim(?) ) THEN 'true' ELSE 'false' END  AS cheack,ps.id  ,ps.Nameproject FROM companySubprojects  ps  WHERE  ps.IDcompanySub=? AND ps.id > ? ORDER BY ps.id ASC LIMIT 10`,
+        [PhoneNumber, idBransh, parseInt(number)],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.log(err.message);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 
-const SELECTTableusersCompanyVerificationobject = (PhoneNumber) => {
+const SELECTTableusersCompanyVerificationobject = (PhoneNumber, ProjectID) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT * FROM usersCompany WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
-        [PhoneNumber],
+        `SELECT * FROM usersProject pr LEFT JOIN usersCompany us ON us.id = pr.user_id  WHERE trim(us.PhoneNumber)=trim(?) AND pr.ProjectID =?`,
+        [PhoneNumber, ProjectID],
         function (err, result) {
           if (err) {
             reject(err);
@@ -178,64 +291,122 @@ const SELECTTableusersCompanyVerificationID = (id) => {
 const SELECTTableusersCompanySub = (
   IDCompany,
   IDcompanySub,
+  ProjectID,
   type = "all",
-  wheretype = "PR.id =?"
+  kind = "sub"
 ) => {
   return new Promise((resolve, reject) => {
+    let query = `
+SELECT 
+    ca.token,
+    ca.userName,
+    ca.Validity,
+    ca.job,
+    ca.jobdiscrption,
+    RE.id AS IDcompany,
+    Su.id AS IDcompanySub,
+    Su.NameSub,
+    Su.PhoneNumber,
+    Su.Email,
+    uC.id AS UserCompanyID,
+    uC.job AS UserJob,
+    uP.ProjectID
+FROM 
+    LoginActivaty ca
+LEFT JOIN company RE 
+    ON RE.id = ca.IDCompany
+LEFT JOIN companySub Su 
+    ON Su.NumberCompany = RE.id
+LEFT JOIN usersCompany uC 
+    ON uC.PhoneNumber = ca.PhoneNumber
+LEFT JOIN usersBransh uB 
+    ON uB.user_id = uC.id
+LEFT JOIN usersProject uP 
+    ON uP.idBransh = Su.id 
+   AND uP.user_id = uC.id
+LEFT JOIN companySubprojects cS 
+    ON cS.id = uP.ProjectID
+WHERE 
+    ca.IDCompany = ?
+    AND (
+        -- إذا كان أدمن
+        uC.job = 'Admin'
+`;
+
+    if (IDcompanySub === 0) {
+      query += `
+        OR (uC.job = 'مدير الفرع')
+  `;
+    } else {
+      query += `
+        -- إذا كان مدير فرع ويطابق رقم الفرع
+        OR (uC.job = 'مدير الفرع' AND uB.idBransh = ${IDcompanySub})
+  `;
+    }
+
+    if (type === "PublicationsBransh") {
+      query += `
+        -- إذا موظف عادي (مع التحقق أن الوصف "موظف")
+        OR (
+            ca.jobdiscrption = 'موظف'
+        )
+  `;
+    } else {
+      query += `
+        -- إذا موظف عادي (مع التحقق أن الوصف "موظف") مرتبط بمشروع
+        OR (
+            uC.job NOT IN ('Admin','مدير الفرع')
+            AND ca.jobdiscrption = 'موظف'
+            AND uP.ProjectID = ${ProjectID}
+        )
+  `;
+    }
+
+    if (kind === "CovenantBrinsh") {
+      query += `
+        OR (
+            ca.job IN ("Admin","مالية") 
+            OR uB.Acceptingcovenant = "true"
+        )
+  `;
+    }
+
+    if (type === "Finance") {
+      query += `
+        OR (
+            uP.ValidityProject LIKE '%إشعارات المالية%'
+        )
+  `;
+    }
+
+    query += `
+        -- إذا كان عميل مرتبط بمشروع معين
+        OR (
+            ca.jobdiscrption = 'مستخدم'
+            AND uP.ProjectID = ${ProjectID}
+        )
+    );
+`;
 
     db.serialize(async () => {
-      db.all(
-        type === "all" && wheretype !== "RE.CommercialRegistrationNumber=?"
-          ? `SELECT ca.token , ca.userName,ca.Validity,ca.job,Su.id AS IDcompanySub, Su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id   WHERE ca.IDCompany=? AND Su.id=? AND Activation="true"`
-          : wheretype === "RE.CommercialRegistrationNumber=?"
-          ? ` SELECT 
-        ca.token, 
-        ca.userName, 
-        ca.Validity, 
-        ca.job, 
-        ca.jobdiscrption,
-        RE.id AS IDcompany
-        FROM 
-        LoginActivaty ca 
-        LEFT JOIN 
-        company RE ON RE.id = ca.IDCompany 
-        WHERE  
-        ca.IDCompany =? 
-        AND
-        ${wheretype}  `
-          : `SELECT 
-        ca.token, 
-        ca.userName, 
-        ca.Validity, 
-        ca.job, 
-        ca.jobdiscrption,
-        RE.id AS IDcompany,
-        PR.IDcompanySub
-        FROM 
-        LoginActivaty ca 
-        LEFT JOIN 
-        company RE ON RE.id = ca.IDCompany 
-        LEFT JOIN 
-        companySubprojects PR 
-        WHERE  
-        ca.IDCompany =? 
-        AND
-        ${wheretype}`,
-        // `SELECT ca.token , ca.userName,ca.Validity,ca.job,PR.IDcompanySub, su.NameSub,RE.id AS IDcompany,Su.PhoneNumber,Su.Email FROM LoginActivaty ca LEFT JOIN company RE ON RE.id = ca.IDCompany LEFT JOIN companySub Su ON Su.NumberCompany = RE.id  LEFT JOIN companySubprojects PR ON PR.IDcompanySub = RE.id   WHERE  PR.id=? AND Activation="true"`
-        [IDCompany, IDcompanySub],
-        function (err, result) {
-          if (err) {
-            reject(err);
-            console.error(err.message);
-          } else {
-            resolve(result);
-          }
+      db.all(query, [IDCompany], function (err, result) {
+        if (err) {
+          reject(err);
+          console.error(err.message);
+        } else {
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
+// WHERE value LIKE '%مرحلة%'
+// SELECT JSON_SEARCH(ValidityProject, 'one', 'إشعارات المالية') AS found_path
+// FROM usersProject ;
 
+// SELECT *
+// FROM usersProject, json_each(ValidityProject)
+// WHERE ValidityProject LIKE '%إشعارات المالية%'
 // التحقق من كود الدخول
 
 const SELECTTableLoginActivaty = (codeVerification, PhoneNumber) => {
@@ -465,4 +636,8 @@ module.exports = {
   SELECTuserjustforHR,
   SELECTTableusersCompanyVerificationobject,
   SELECTTableusersall,
+  SELECTTableusersBransh,
+  SELECTTableusersCompanyall,
+  SELECTTableusersBranshmanger,
+  SELECTTablevalidityuserinBransh,
 };

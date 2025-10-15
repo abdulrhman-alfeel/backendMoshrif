@@ -34,6 +34,8 @@ const {
 const ProjectOpreationsinsert =  () => {
   return async (req, res) => {
   try {
+        const dataCampny = req.session.data;
+
     const {
       IDcompanySub,
       Nameproject,
@@ -55,7 +57,9 @@ const ProjectOpreationsinsert =  () => {
       LocationProject,
       numberBuilding,
       Referencenumber,
-      Contractsigningdate
+      Contractsigningdate,
+      dataCampny?.id
+
     );
     await Projectinsert(IDcompanySub, userName);
     res
@@ -101,7 +105,7 @@ const ProjectOpreationsUpdate =  () => {
       "Referencenumber"
     );
     if (StartDate?.numberBuilding !== numberBuilding) {
-      await RearrangeStageID(StartDate.id, StartDate, numberBuilding);
+      // await RearrangeStageID(StartDate.id, StartDate, numberBuilding);
     }
     await Projectinsert(StartDate.IDcompanySub, userName, "تعديل");
     res

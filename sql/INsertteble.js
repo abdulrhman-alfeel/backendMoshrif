@@ -95,11 +95,77 @@ const insertTableuserComppany = (data) => {
     return false;
   }
 };
+const insertTableusersBranshAcceptingcovenant = (data) => {
+  try {
+    console.log(data);
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO usersBransh (idBransh,user_id,job,Acceptingcovenant) VALUES (?,?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.error(err.message);
+          }
+          // console.log(`Row with the ID  has been inserted.`);
+        }
+      );
+    });
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};
+const insertTableusersBransh = (data) => {
+  try {
+    console.log(
+      `INSERT INTO usersBransh (idBransh,user_id,job) VALUES (?,?,?)`,
+      data
+    );
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO usersBransh (idBransh,user_id,job) VALUES (?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.error(err.message);
+          }
+          console.log(`Row with the ID  has been inserted.`, this.lastID);
+        }
+      );
+    });
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};
+
+const insertTableusersProject = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO usersProject (idBransh,ProjectID,user_id,ValidityProject) VALUES (?,?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.error(err.message);
+          }
+          // console.log(`Row with the ID  has been inserted.`);
+        }
+      );
+    });
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};
 
 const insertTableLoginActivaty = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,jobdiscrption,Validity,codeVerification,token) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO LoginActivaty (IDCompany,userName,IDNumber,PhoneNumber,image,DateOFlogin,DateEndLogin,job,jobdiscrption,codeVerification,token) VALUES (?, ?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -128,32 +194,144 @@ const insertTablecompanySubProject = (data) => {
   });
 };
 const insertTablecompanySubProjectv2 = (data) => {
-  db.serialize(function () {
-    db.run(
-      `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,cost,rate,countuser) VALUES (?,?,?,?,?,?,?,?,0,0,0)`,
-      data,
-      function (err) {
-        if (err) {
-          console.error(err.message);
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO companySubprojects (IDcompanySub, Nameproject, Note,TypeOFContract,GuardNumber,LocationProject,numberBuilding,Referencenumber,Cost_per_Square_Meter,Project_Space,cost,rate,countuser) VALUES (?,?,?,?,?,?,?,?,?,?,0,0,0)`,
+        data,
+        function (err) {
+          if (err) {
+            console.error(err.message);
+          };
+          // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+          resolve(this.lastID);
         }
-        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
-      }
-    );
+      );
+    });
   });
 };
 
 // Templet************
 
+const insertTableStagestype = async (IDCompany,type) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      // حاول تجيب id إذا موجود
+      db.get(
+        "SELECT id FROM Stagestype WHERE IDCompany=? AND trim(Type) = trim(?)",
+        [IDCompany,type],
+        async function (err, row) {
+          if (row) {
+            resolve(row.id); // إذا موجود نرجع الـ id
+          } else {
+            // إذا غير موجود نضيف ونرجع id الجديد
+            db.run(
+              "INSERT INTO Stagestype (IDCompany,Type) VALUES (?,?)",
+              [IDCompany,type],
+              function (err, result) {
+                resolve(this.lastID);
+              }
+            );
+          }
+        }
+      );
+    });
+  });
+};
+const insertTableallStagestype = () => {
+  db.serialize(() => {
+    db.all(
+      `SELECT Type,IDCompany
+       FROM StagesTemplet st
+       WHERE st.rowid = (
+         SELECT MIN(s2.rowid) 
+         FROM StagesTemplet s2 
+         WHERE TRIM(s2.Type) = TRIM(st.Type)
+       );`,
+      (err, rows) => {
+        if (err) {
+          console.error("Select error:", err);
+          return;
+        }
+
+        rows.forEach((element) => {
+          // إدخال في Stagestype
+          db.run(
+            "INSERT INTO Stagestype (IDCompany,Type) VALUES (?,?)",
+            [element.IDCompany,element.Type],
+            function (err) {
+              if (err) {
+                console.error("Insert error:", err);
+                return;
+              }
+
+              const newTypeId = this.lastID;
+              console.log("Inserted Type:", element.Type, " => ID:", newTypeId);
+
+              // تحديث StagesTemplet
+              db.run(
+                `UPDATE StagesTemplet 
+                 SET Stagestype_id = ? 
+                 WHERE TRIM(Type) = TRIM(?)`,
+                [newTypeId, element.Type],
+                function (err) {
+                  if (err) {
+                    console.error("Update StagesTemplet error:", err);
+                    return;
+                  }
+                  console.log("Updated StagesTemplet rows:", this.changes);
+
+                  // جلب StageID
+                  db.all(
+                    "SELECT StageID FROM StagesTemplet WHERE Stagestype_id = ?",
+                    [newTypeId],
+                    (err, stageRows) => {
+                      if (err) {
+                        console.error("Select StageID error:", err);
+                        return;
+                      }
+
+                      stageRows.forEach((stage) => {
+                        // تحديث StagesSubTemplet
+                        db.run(
+                          `UPDATE StagesSubTemplet 
+                           SET Stagestype_id = ? 
+                           WHERE StageID = ?`,
+                          [newTypeId, stage.StageID],
+                          function (err) {
+                            if (err) {
+                              console.error("Update SubTemplet error:", err);
+                              return;
+                            }
+                            console.log(
+                              `Updated StagesSubTemplet for StageID ${stage.StageID}`
+                            );
+                          }
+                        );
+                      });
+                    }
+                  );
+                }
+              );
+            }
+          );
+        });
+      }
+    );
+  });
+};
+
+
 const insertTablecompanySubProjectStagetemplet = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesTemplet (StageID,Type, StageName, Days) VALUES (?,?, ?,?)`,
+      `INSERT INTO StagesTemplet (StageID,Type, StageName, Days,Ratio,attached,IDCompany,Stagestype_id) VALUES (?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
           console.error(err.message);
         }
-        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -161,7 +339,7 @@ const insertTablecompanySubProjectStagetemplet = (data) => {
 const insertTablecompanySubProjectStageSubtemplet = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesSubTemplet (StageID, StageSubName) VALUES (?, ?)`,
+      `INSERT INTO StagesSubTemplet (StageID, StageSubName,IDCompany,Stagestype_id) VALUES (?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -173,15 +351,16 @@ const insertTablecompanySubProjectStageSubtemplet = (data) => {
   });
 };
 const insertTablecompanySubProjectStageSubtemplet2 = (data) => {
+ 
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesSubTemplet (StageID, StageSubName,attached) VALUES (?, ?,?)`,
+      `INSERT INTO StagesSubTemplet (StageID, StageSubName,attached,IDCompany,Stagestype_id) VALUES (?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
           console.error(err.message);
         }
-        // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+        console.log(`Row with the ID ${this.lastID} has been inserted.`);
       }
     );
   });
@@ -193,7 +372,7 @@ const insertTablecompanySubProjectStageSubtemplet2 = (data) => {
 const insertTablecompanySubProjectStageCUST = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,rate) VALUES (?,?,?,?,?,?,?,?,0)`,
+      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,Ratio,attached,rate) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
@@ -207,13 +386,26 @@ const insertTablecompanySubProjectStageCUST = (data) => {
 const insertTablecompanySubProjectStageCUSTv2 = (data) => {
   db.serialize(function () {
     db.run(
-      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,Referencenumber,rate) VALUES (?,?,?,?,?,?,?,?,?,0)`,
+      `INSERT INTO StagesCUST (StageID, ProjectID, Type,StageName,Days,StartDate,EndDate,OrderBy,Referencenumber,Ratio,attached,rate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
       data,
       function (err) {
         if (err) {
           console.error(err.message);
         }
         // console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      }
+    );
+  });
+};
+const insertTableStageCUST_IMAGE = (data) => {
+  db.serialize(function () {
+    db.run(
+      `INSERT INTO StagesCUST_Image (StageID, ProjectID, url,addedby) VALUES (?,?,?,?)`,
+      data,
+      function (err) {
+        if (err) {
+          console.error(err.message);
+        }
       }
     );
   });
@@ -488,7 +680,6 @@ const insertTableLikesPostPublic = (data) => {
       `INSERT INTO Likes (PostId,userName) VALUES (?,?)`,
       data,
       function (err) {
-        
         if (err) {
           console.log(err.message);
         }
@@ -625,11 +816,13 @@ const insertTableBranchdeletionRequests = (data) => {
   }
 };
 
-
-
 // عمليات التحضير
 
-const insertTablecheckPreparation = (data,type1="CheckIntime",type2="CheckInFile") => {
+const insertTablecheckPreparation = (
+  data,
+  type1 = "CheckIntime",
+  type2 = "CheckInFile"
+) => {
   try {
     db.serialize(function () {
       db.run(
@@ -645,7 +838,7 @@ const insertTablecheckPreparation = (data,type1="CheckIntime",type2="CheckInFile
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 const inserttableAvailabilityday = (data) => {
   try {
@@ -663,7 +856,7 @@ const inserttableAvailabilityday = (data) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
 const inserttableFlowmove = (data) => {
   try {
     db.serialize(function () {
@@ -680,7 +873,7 @@ const inserttableFlowmove = (data) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
 const inserttableUserPrepare = (data) => {
   try {
     db.serialize(function () {
@@ -705,6 +898,7 @@ const inserTableSubscripation = (data) => {
         "INSERT INTO subscripation (IDCompany,ProjectID,StartDate,EndDate) VALUES (?,?,?,?)",
         data,
         function (err) {
+          console.log(data);
           if (err) {
             console.log(err.message);
           }
@@ -731,7 +925,7 @@ const inserTableInvoice = (data) => {
   } catch (error) {
     console.log(error);
   }
-}
+};
 //
 module.exports = {
   inserTableInvoice,
@@ -756,6 +950,8 @@ module.exports = {
   insertTablePostPublic,
   insertTableCommentPostPublic,
   insertTableuserComppany,
+  insertTableusersBransh,
+  insertTableusersProject,
   insertTableLoginActivaty,
   insertTableChateStage,
   insertTableViewsChateStage,
@@ -777,5 +973,9 @@ module.exports = {
   inserttableFlowmove,
   insertTablecompanySubProjectStageSubtemplet2,
   insertTablecompanySubProjectStageCUSTv2,
-  insertTablecompanySubProjectStagesSubv2
+  insertTablecompanySubProjectStagesSubv2,
+  insertTableusersBranshAcceptingcovenant,
+  insertTableStagestype,
+  insertTableallStagestype,
+  insertTableStageCUST_IMAGE
 };

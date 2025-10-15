@@ -17,40 +17,20 @@ async function uploaddata(file) {
 
 }
 
-   const uploadFile = async (filePath, destination) => {
+async function uploadFile(outputPrefix, filePath) {
+  try {
+    await bucket.upload(filePath, {
+      destination: outputPrefix,
+    });
 
-        return new Promise((resolve, reject) => {
-        
-        const fileStream = fs.createReadStream(filePath);
-        
-        const file = bucket.file(destination);
-        
-        fileStream.pipe(file.createWriteStream())
-        
-        .on('finish', () => {
-        
-        
-        fs.unlinkSync(filePath, (err) => {
-        
-        if (err) console.error('File deletion error:', err);
-        
-        });
-        
-        resolve();
-        
-        })
-        
-        .on('error', (err) => {
-        
-        console.error('Upload error:', err);
-        
-        reject(err);
-        
-        });
-        
-        });
-        
-        };
+    console.log("✅ File uploaded successfully");
+  } catch (err) {
+    console.error("❌ Upload failed:", err);
+  }
+}
+
+
+   
 async function DeleteBucket (nameOld){
   try {
     const file = bucket.file(nameOld);
@@ -98,6 +78,6 @@ async function checkIfFileExists(fileName) {
       console.log("Error checking file existence:", error);
     }
   });
-}
+};
 
-module.exports = { uploaddata, bucket,uploadFile, checkIfFileExists,DeleteBucket,RenameBucket };
+module.exports = {uploaddata, bucket,uploadFile, checkIfFileExists,DeleteBucket,RenameBucket };

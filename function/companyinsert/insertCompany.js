@@ -181,12 +181,12 @@ const inseertCompanybrinsh = () => {
             );
             // console.log(check,checkGloble)
             if (check > 0) {
-              await CheckAdmin(check, IDcompanySub.id, NumberCompany);
+              await CheckAdmin(check, IDcompanySub.id);
             }
             const Globaluser =
               checkGloble !== undefined ? Object.entries(checkGloble) : [];
             if (Globaluser.length > 0) {
-              await CheckGlobal(checkGloble, IDcompanySub.id, NumberCompany);
+              await CheckGlobal(checkGloble, IDcompanySub.id);
             }
 
             res

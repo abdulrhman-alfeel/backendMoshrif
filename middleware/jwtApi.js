@@ -10,6 +10,7 @@ const verifyJWTapi = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
     const data = await SELECTTablecompanyApi(token);
     if(Boolean(data)){
+      
       req.session.data = data;
       next();
     }else{

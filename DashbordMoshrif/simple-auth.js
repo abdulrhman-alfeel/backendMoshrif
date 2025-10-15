@@ -46,7 +46,6 @@ router.post("/login", async (req, res, next) => {
         futureDate.toDateString(),
         result[0]?.job,
         result[0]?.jobdiscrption,
-        result[0]?.Validity,
         output,
         null,
       ];

@@ -1,6 +1,6 @@
 const express = require("express");
 const { userCompany } = require("../function/companyinsert/insertuserCompany");
-const { BringUserCompany, BringUserCompanyinBrinsh, BringvalidityuserinBransh, BringUserCompanyinv2 } = require("../function/companyselect/userCompanyselect");
+const { BringUserCompany, BringvalidityuserinBransh, BringUserCompanyinv2 } = require("../function/companyselect/userCompanyselect");
 const { userCompanyUpdat, UpdatUserCompanyinBrinsh,DeletUser,UpdateToken, InsertmultipleProjecsinvalidity, UpdatUserCompanyinBrinshV2, userCompanyUpdatdashbord } = require("../function/companyinsert/UpdatuserCompany");
 const { verifyJWT } = require("../middleware/jwt");
 const { BringDataNotifcation,FilterNotifcation, FilterNotifcationv2, BringDataNotifcationv2 } = require("../function/notifcation/InsertNotifcation");
@@ -36,8 +36,6 @@ router.route('/BringUserCompanyinv2')
 
 router.route('/BringUserCompany')
 .get(BringUserCompany(uploadQueue))
-router.route('/BringUserCompanyBrinsh')
-.get(BringUserCompanyinBrinsh(uploadQueue))
 
 router.route('/BringDataNotifcation')
 .get(BringDataNotifcation(uploadQueue))

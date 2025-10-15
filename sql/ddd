@@ -1,0 +1,70 @@
+    `CREATE TABLE IF NOT EXISTS companySubprojects(id INTEGER PRIMARY KEY AUTOINCREMENT,IDcompanySub INTEGER NOT NULL,Nameproject TEXT NOT NULL, Note TEXT NULL,TypeOFContract TEXT NOT NULL, GuardNumber INTEGER NULL ,LocationProject TEXT NULL , ProjectStartdate DATE NULL ,Imageproject TEXT NULL,Contractsigningdate DATE NULL DEFAULT CURRENT_DATE,numberBuilding INTEGER NULL,Disabled TEXT NULL DEFAULT 'true',Referencenumber INTEGER NULL,FOREIGN KEY (IDcompanySub) REFERENCES companySub (id) ON DELETE RESTRICT ON UPDATE RESTRICT)`
+        `CREATE TABLE IF NOT EXISTS StagesCUST(StageCustID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER  NULL ,ProjectID INTEGER NULL ,Type nvarchar[50]  NULL,StageName TEXT NOT NULL, Days INTEGER NULL,StartDate DATE NOT NULL, EndDate DATE NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL ,Difference decimal NULL,Done NULL DEFAULT 'false',NoteOpen TEXT NULL,OpenBy nvarchar[50] NULL,NoteClosed TEXT NULL,ClosedBy nvarchar[50] NULL)`
+
+
+
+
+
+
+
+WITH params(project_id, report_date) AS (VALUES (125,"2025-09-30")),
+stage_agg AS (
+  SELECT
+    ProjectID,
+    SUM(COALESCE(Days, 0))              AS ExpectedDurationDays, -- المدة المتوقعة للمشروع
+  MAX(date(EndDate))                            AS ExpectedDeliveryDate,
+    COUNT(*)                            AS StagesCount,           -- عدد المراحل
+    ROUND(SUM(COALESCE(Difference,0)),1) AS TotalDeviationDays    -- مجموع الانحراف (اختياري)
+  FROM StagesCUST
+  WHERE ProjectID = (SELECT project_id FROM params)
+)
+SELECT
+  p.id                                   AS ProjectID,
+  p.Nameproject                          AS "اسم المشروع",
+  p.TypeOFContract                       AS "نوع المشروع",
+  DATE(p.Contractsigningdate)            AS "تاريخ توقيع العقد",
+  DATE(p.ProjectStartdate)               AS "تاريخ بدء المشروع",
+  sa.ExpectedDurationDays                AS "المدة المتوقعة للمشروع (يوم)",
+  sa.StagesCount                         AS "عدد مراحل المشروع",
+  sa.ExpectedDeliveryDate                AS "تاريخ التسليم المتوقع",
+  /* إجمالي الأيام المستغرقة حتى تاريخ طباعة التقرير */
+CASE
+  WHEN p.ProjectStartdate IS NULL OR (SELECT report_date FROM params) IS NULL THEN NULL
+  WHEN julianday((SELECT report_date FROM params)) < julianday(p.ProjectStartdate) THEN 0
+  ELSE CAST(julianday((SELECT report_date FROM params)) - julianday(p.ProjectStartdate) AS INTEGER)
+END AS "إجمالي الأيام المستغرقة",
+
+/* إجمالي الأيام المتبقية لإنهاء المشروع */
+CASE
+  WHEN sa.ExpectedDeliveryDate IS NULL OR (SELECT report_date FROM params) IS NULL THEN NULL
+  WHEN julianday(sa.ExpectedDeliveryDate) <= julianday((SELECT report_date FROM params)) THEN 0
+  ELSE CAST(julianday(sa.ExpectedDeliveryDate) - julianday((SELECT report_date FROM params)) AS INTEGER)
+END AS "إجمالي الأيام المتبقية",
+  sa.TotalDeviationDays    AS "مجموع الانحراف (يوم)",
+  json_group_array(DISTINCT json_object(
+     'Days', cu.Days,
+     'StartDate',   cu.StartDate,
+      'EndDate',     cu.EndDate,
+      'CloseDate',   cu.CloseDate,
+    'Difference',cu.Difference
+  )) AS StageCust,
+  CASE WHEN  sn.Type IS  NULL THEN  '[]' ELSE   json_group_array(DISTINCT json_object(
+    'StageName', (SELECT ST.StageName FROM StagesCUST ST WHERE   ST.StageID =  sn.StagHOMID ),
+    'Type', sn.Type,
+    'DateNote',   sn.DateNote,
+    'RecordedBy',     sn.RecordedBy,
+    'countdayDelay',   sn.countdayDelay
+  )) END AS StageNote
+FROM companySubprojects p
+JOIN stage_agg sa ON sa.ProjectID = p.id
+JOIN StagesCUST cu ON cu.ProjectID = p.id
+LEFT JOIN StageNotes sn ON sn.ProjectID = p.id
+
+WHERE p.id = (SELECT project_id FROM params)
+GROUP BY
+  p.id, p.Nameproject, p.TypeOFContract, p.Contractsigningdate, p.ProjectStartdate,
+  sa.ExpectedDurationDays, sa.StagesCount, sa.ExpectedDeliveryDate, sa.TotalDeviationDays;
+
+
+
+

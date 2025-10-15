@@ -1,22 +1,27 @@
+const path = require("path");
+const fs = require("fs");
 const redis = require("../../middleware/cache");
 const {
-  SELECTTablecompanySub,
-  SELECTTablecompanyName,
-  SELECTTablecompanySubProject,
   SELECTTablecompany,
   SELECTTableFinancialCustody,
   SELECTTableMaxFinancialCustody,
   SELECTTablecompanyRegistrationall,
   SELECTTableUsernameBrinsh,
+  SELECTTablecompanySubuser,
+  selectdetailsFcialCustodforreport,
+  selectCountFcialCustodforreport,
 } = require("../../sql/selected/selected");
 const {
   SELECTTableusersCompanyonObject,
 } = require("../../sql/selected/selectuser");
+const { generateRequestsReportPDF } = require("../../pdf/convertotpdf");
+const { uploadFile } = require("../../bucketClooud");
+const { deleteFileSingle } = require("../../middleware/Fsfile");
 
 const bringDataCompanyRegistration = () => {
   return async (req, res) => {
     try {
-      const { type="companyRegistration", LastID=0 } = req.query;
+      const { type = "companyRegistration", LastID = 0 } = req.query;
       const company = await SELECTTablecompanyRegistrationall(type, LastID);
       res.send({ masseg: "sucssfuly", data: company }).status(200);
     } catch (err) {
@@ -58,7 +63,7 @@ const BringNameCompany = () => {
 const biringDatabrinshCompany = () => {
   return async (req, res) => {
     try {
-      const {IDCompany,type} = req.body;
+      const { IDCompany, type } = req.query;
       const userSession = req.session.user;
 
       if (!userSession) {
@@ -67,7 +72,7 @@ const biringDatabrinshCompany = () => {
       }
 
       const key = `Bransh:${userSession?.PhoneNumber}:${IDCompany}`;
-      
+
       const cached = await redis.get(key);
       if (cached && type === "cache") {
         const cachedData = JSON.parse(cached);
@@ -75,9 +80,7 @@ const biringDatabrinshCompany = () => {
         return res.send({ masseg: "succfuly", ...cachedData }).status(200);
       }
 
-      
       const result = await getCompanyBranchesForUser(IDCompany, userSession);
-
       res
         .send({
           masseg: "succfuly",
@@ -85,7 +88,7 @@ const biringDatabrinshCompany = () => {
         })
         .status(200);
 
-      await redis.set(key, JSON.stringify(result), "EX",   60 * 1000 );
+      await redis.set(key, JSON.stringify(result), "EX", 60 * 1000);
     } catch (error) {
       console.log(error);
     }
@@ -94,49 +97,10 @@ const biringDatabrinshCompany = () => {
 
 // Standalone function to get company branches and related data for a user
 async function getCompanyBranchesForUser(IDCompany, userSession) {
-  const Datausere = await SELECTTableusersCompanyonObject(
-    userSession.PhoneNumber
-  );
-
-  const validity =
-    Datausere.Validity !== null ? JSON.parse(Datausere.Validity) : [];
-  const company = await SELECTTablecompanyName(IDCompany);
-   
-  let arrayBrinsh = [];
-  if (userSession.job !== "Admin") {
-
-    const where =validity.length > 0 && validity
-      ?.map((items) => items?.idBrinsh)
-      ?.reduce((item, r) => `${String(item) + " , " + r}`);
-    if (where) {
-    const typeproject = `id IN (${where})`;
-    const dataCompany = await SELECTTablecompanySub(
-      IDCompany,
-      "*",
-      typeproject
-    );
-    arrayBrinsh = dataCompany;
-  }
-  } else {
-    const dataCompany = await SELECTTablecompanySub(IDCompany);
-    arrayBrinsh = dataCompany;
-  }
-
-  let ObjectData = [];
-  for (let index = 0; index < arrayBrinsh.length; index++) {
-    const element = arrayBrinsh[index];
-    const Count = await SELECTTablecompanySubProject(element?.id, 0, "Count");
-    // const evaluation = await SELECTTablecompanySubLinkevaluation(element?.id);
-    if (element !== undefined) {
-      const ObjectBrinsh = {
-        ...element,
-        CountProject: Count[0]["COUNT(*)"],
-        // Linkevaluation: Boolean(evaluation?.urlLink) ? evaluation?.urlLink : "",
-        Linkevaluation: "",
-      };
-      ObjectData.push(ObjectBrinsh);
-    }
-  }
+  // const Datausere = await SELECTTableusersCompanyonObject(
+  //   userSession.PhoneNumber
+  // );
+  const arrayBrinsh = await SELECTTablecompanySubuser(userSession.PhoneNumber);
   const Covenantnumber = await SELECTTableMaxFinancialCustody(
     IDCompany,
     "count",
@@ -144,10 +108,10 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
   );
 
   return {
-    data: ObjectData,
-    nameCompany: company.NameCompany,
-    CommercialRegistrationNumber: company.CommercialRegistrationNumber,
-    Country: company.Country,
+    data: arrayBrinsh,
+    nameCompany: arrayBrinsh[0].NameCompany,
+    CommercialRegistrationNumber: arrayBrinsh[0].CommercialRegistrationNumber,
+    Country: arrayBrinsh[0].Country,
     Covenantnumber: Covenantnumber.count,
   };
 }
@@ -171,40 +135,40 @@ const BringDataFinancialCustody = () => {
           : "Brinsh";
       let Bringaway;
       const IDCompany = userSession.IDCompany;
-      const kindRequest = req.query.kindRequest;
+      const {
+        kindRequest,
+        IDCompanySub,
+        type = "FinancialCustodyparty",
+      } = req.query;
       const LastID = req.query.LastID;
 
-      const IDCompanySub = req.query.IDCompanySub;
-      const Validityuser =
-        resultUser.job !== "Admin"
-          ? await KnowuserpermissioninCovenant(
-              JSON.parse(resultUser.Validity),
-              IDCompanySub,
-              userSession.PhoneNumber
-            )
-          : "";
+      let Validityuser = "";
+      if (type === "FinancialCustodyparty") {
+        Validityuser = await KnowuserpermissioninCovenant(
+          resultUser.Acceptingcovenant,
+          IDCompanySub,
+          userSession.PhoneNumber,
+          resultUser.job
+        );
+      }
+
       let plase = parseInt(LastID) === 0 ? ">" : "<";
       switch (kindRequest) {
         case "معلقة":
           Bringaway =
-            kindOpreation === "all"
-              ? `OrderStatus='false' AND RejectionStatus='false' AND fi.id ${plase} ${LastID} `
-              : `${Validityuser} AND OrderStatus='false' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
+           `${Validityuser}  OrderStatus='false' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
           break;
         case "مغلقة":
           Bringaway =
-            kindOpreation === "all"
-              ? `OrderStatus='true' AND fi.id ${plase} ${LastID}`
-              : `${Validityuser} AND OrderStatus='true' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
+           `${Validityuser}  OrderStatus='true' AND RejectionStatus='false' AND fi.id ${plase} ${LastID}`;
           break;
         case "مرفوضة":
           Bringaway =
-            kindOpreation === "all"
-              ? `RejectionStatus='true' AND fi.id ${plase} ${LastID}`
-              : `${Validityuser} AND RejectionStatus='true' AND fi.id ${plase} ${LastID}`;
+         `${Validityuser}  RejectionStatus='true' AND fi.id ${plase} ${LastID}`;
           break;
       }
       const result = await SELECTTableFinancialCustody(IDCompany, Bringaway);
+
       res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
     } catch (error) {
       console.log(error);
@@ -213,21 +177,88 @@ const BringDataFinancialCustody = () => {
   };
 };
 
-const KnowuserpermissioninCovenant = (Validity, IDCompanySub, userName) => {
+const KnowuserpermissioninCovenant = (
+  Acceptingcovenant,
+  IDCompanySub,
+  userName,
+  job
+) => {
   try {
-    const findBrinsh = Validity.find(
-      (items) =>
-        parseInt(items.idBrinsh) === parseInt(IDCompanySub) &&
-        items.Acceptingcovenant === true
-    );
-    if (findBrinsh) {
-      return `IDCompanySub=${IDCompanySub}`;
+    if (Acceptingcovenant === "true" || job === "Admin" || job === "مالية") {
+      return `IDCompanySub=${IDCompanySub} AND`;
     } else {
-      return `IDCompanySub=${IDCompanySub} AND Requestby=${userName}`;
+      return `IDCompanySub=${IDCompanySub} AND trim(Requestby)=trim(${userName}) AND`;
     }
   } catch (error) {
     console.log(error);
   }
+};
+
+const BringreportFinancialCustody = () => {
+  return async (req, res) => {
+    let { IDCompanySub = 0, type = "FinancialCustodyall" } = req.query;
+    const userSession = req.session.user;
+    if (!userSession) {
+      res.status(401).send("Invalid session");
+      return console.log("Invalid session");
+    }
+
+    let job = ["Admin", "مالية", "مدير الفرع"];
+
+    let where = "";
+
+    if (type === "FinancialCustodyparty") {
+      if (job.includes(userSession?.job)) {
+        where = `AND fy.IDCompanySub = ${IDCompanySub}`;
+      } else {
+        where = `AND fy.IDCompanySub = ${IDCompanySub} AND TRIM(fy.Requestby) = TRIM(${userSession.PhoneNumber})`;
+      }
+    }
+
+    const resulttotal = await selectCountFcialCustodforreport(
+      userSession?.IDCompany,
+      where
+    );
+    const result = await selectdetailsFcialCustodforreport(
+      userSession?.IDCompany,
+      where
+    );
+    let namemin =
+      type === "FinancialCustodyall"
+        ? result[0]?.NameCompany
+        : !job.includes(userSession?.job)
+        ? userSession.PhoneNumber
+        : result[0].NameSub;
+    let namefile = `${String(namemin).replace(/\s+/g, "")}_${type}.pdf`;
+    const outputPrefix = `${result[0].CommercialRegistrationNumber}/report/${namefile}`;
+
+    const filePath = path.join(__dirname, "../../upload", namefile);
+
+    await generateRequestsReportPDF({
+      result,
+      count: resulttotal,
+      company: result[0],
+      outputPath: filePath,
+      chunkSize: 500, // زِد/قلّل حسب الحجم
+      landscape: false,
+      type: type,
+    })
+      .then((info) => {
+        console.log("تم إنشاء التقرير:", info);
+      })
+      .catch(console.error);
+    if (fs.existsSync(filePath)) {
+      await uploadFile(outputPrefix, filePath);
+      deleteFileSingle(namefile, "upload");
+    } else {
+      return res
+        .status(400)
+        .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+    }
+    res
+      .status(200)
+      .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+  };
 };
 
 module.exports = {
@@ -236,4 +267,5 @@ module.exports = {
   BringDataFinancialCustody,
   bringDataCompanyRegistration,
   BringNameCompany,
+  BringreportFinancialCustody,
 };

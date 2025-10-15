@@ -426,120 +426,30 @@ router.get("/:id/subs", async (req, res, next) => {
 
     // جلب جميع فروع الشركة مع الأسماء الصحيحة للأعمدة
     const subs = await db.getAllRows(
-      `
-      SELECT 
-        id,
-        NumberCompany as companyId,
-        NameSub as name,
-        BranchAddress as address,
-        Email as email,
-        PhoneNumber as phone,
-        '' as manager,
-        0 as employeesCount,
-        1 as isActive,
-        datetime('now') as createdAt,
-        datetime('now') as updatedAt
-      FROM companySub 
-      WHERE NumberCompany = ? AND id > ?
-      ORDER BY id DESC LIMIT 10
+    `
+    SELECT 
+    su.id,
+    su.NumberCompany as companyId,
+    su.NameSub as name,
+    su.BranchAddress as address,
+    su.Email as email,
+    su.PhoneNumber as phone,
+    uc.userName as manager,
+    (SELECT COUNT(pr.ValidityProject) FROM usersProject pr WHERE pr.idBransh = br.idBransh) as employeesCount,
+    1 as isActive,
+    datetime('now') as createdAt,
+    datetime('now') as updatedAt
+    FROM companySub su LEFT JOIN usersBransh br ON br.idBransh = su.id AND br.job = 'مدير الفرع' JOIN usersCompany uc ON uc.id = br.user_id 
+    WHERE su.NumberCompany =? AND su.id > ?
+    ORDER BY su.id DESC LIMIT 10
     `,
       [id, number]
     );
 
-    // إضافة بيانات مدير الفرع وعدد الموظفين لكل فرع
-    const subsWithDetails = await Promise.all(
-      subs.map(async (sub) => {
-        // جلب موظفي الفرع
-        const employees = await db.getAllRows(
-          `
-          SELECT 
-            id,
-            userName as name,
-            job as position,
-            jobHOM as department,
-            Activation as isActive,
-            Validity
-          FROM usersCompany 
-          WHERE IDCompany = ?
-        `,
-          [id]
-        );
-
-        // فلترة الموظفين حسب الفرع
-        const branchEmployees = employees.filter((emp) => {
-          const isSpecialAdmin = emp.job === "Admin";
-
-          if (isSpecialAdmin) {
-            return true;
-          }
-
-          // باقي الموظفين حسب Validity
-          try {
-            if (emp.Validity) {
-              const validity = JSON.parse(emp.Validity);
-              if (Array.isArray(validity)) {
-                return validity.some(
-                  (item) =>
-                    item.idBrinsh &&
-                    item.idBrinsh.toString() === sub.id.toString()
-                );
-              } else {
-                return (
-                  validity.idBrinsh &&
-                  validity.idBrinsh.toString() === sub.id.toString()
-                );
-              }
-            }
-            return false;
-          } catch (e) {
-            return false;
-          }
-        });
-
-        // البحث عن مدير الفرع (استبعاد المهندسين الخاصين)
-        let branchManager = "غير محدد";
-
-        // فلترة المهندسين الخاصين أولاً
-        const nonSpecialEmployees = branchEmployees.filter((emp) => {
-          const nameLower = (emp.name || "").toLowerCase();
-          return !(
-            nameLower.includes("software engineer") ||
-            nameLower.includes("م.احمد العرامي") ||
-            nameLower.includes("م.احمد سعيد") ||
-            nameLower.includes("احمد العرامي") ||
-            nameLower.includes("احمد سعيد")
-          );
-        });
-
-        // البحث عن مدير من الموظفين العاديين فقط
-        const manager = nonSpecialEmployees.find((emp) => {
-          const jobLower = (emp.position || "").toLowerCase();
-          const deptLower = (emp.department || "").toLowerCase();
-
-          return (
-            jobLower.includes("مدير") ||
-            deptLower.includes("مدير") ||
-            (jobLower === "admin" && deptLower === "admin") ||
-            jobLower.includes("رئيس") ||
-            jobLower.includes("مشرف")
-          );
-        });
-
-        if (manager) {
-          branchManager = manager.name || "غير محدد";
-        }
-
-        return {
-          ...sub,
-          manager: branchManager,
-          employeesCount: branchEmployees.length,
-        };
-      })
-    );
 
     res.json({
       success: true,
-      data: subsWithDetails || [],
+      data: subs,
     });
   } catch (error) {
     console.error("خطأ في جلب فروع الشركة:", error);
@@ -720,187 +630,164 @@ router.delete("/subs/:subId", async (req, res, next) => {
 });
 
 router.get("/branches/:branchId/employees/stats", async (req, res, next) => {
-  try {
-    const { branchId } = req.params;
+try {
+  const { branchId } = req.params;
 
-    // التحقق من وجود الفرع
-    const branch = await db.getRow("SELECT * FROM companySub WHERE id = ?", [
-      branchId,
-    ]);
-    if (!branch) {
-      return res.status(404).json({
-        success: false,
-        error: "الفرع غير موجود",
-      });
+  // التحقق من وجود الفرع
+  const branch = await db.getRow("SELECT * FROM companySub WHERE id = ?", [branchId]);
+  if (!branch) {
+    return res.status(404).json({
+      success: false,
+      error: "الفرع غير موجود",
+    });
+  }
+
+  // جلب الموظفين المرتبطين بالفرع من جدول العلاقات الجديد
+  const employees = await db.getAllRows(
+    `
+    SELECT 
+    uc.id,
+    uc.userName,
+    uc.job AS position,
+    uc.jobHOM AS department,
+    uc.jobdiscrption AS jobDescription,
+    uc.Activation AS isActive
+    FROM usersCompany uc
+    JOIN usersBransh ubp ON ubp.user_id = uc.id
+    WHERE ubp.idBransh = ?
+    `,
+    [branchId]
+  );
+
+  // تضمين المهندسين أو المدراء الخاصين في جميع الفروع
+  const specialEmployees = await db.getAllRows(
+    `
+    SELECT 
+      uc.id,
+      uc.userName,
+      uc.job AS position,
+      uc.jobHOM AS department,
+      uc.jobdiscrption AS jobDescription,
+      uc.Activation AS isActive
+    FROM usersCompany uc
+    WHERE 
+    LOWER(uc.userName) LIKE '%احمد العرامي%' OR
+    LOWER(uc.userName) LIKE '%احمد سعيد%' OR
+    LOWER(uc.job) = 'Admin' AND LOWER(uc.jobHOM) = 'Admin'
+    `
+  );
+
+  // دمج الموظفين مع إزالة التكرارات بناءً على ID
+  const mergedEmployeesMap = new Map();
+  [...employees, ...specialEmployees].forEach(emp => {
+    mergedEmployeesMap.set(emp.id, emp);
+  });
+  const branchEmployees = Array.from(mergedEmployeesMap.values());
+
+  // دالة لتحديد نوع المستخدم
+  const getUserType = (job, department) => {
+    const jobLower = (job || "").toLowerCase();
+    const deptLower = (department || "").toLowerCase();
+
+    if (jobLower.includes("مالك") || deptLower.includes("مالك")) return "owner";
+    if (
+      jobLower.includes("admin") ||
+      jobLower.includes("مدير") ||
+      deptLower.includes("admin")
+    )
+      return "manager";
+    if (
+      jobLower.includes("مهندس") ||
+      jobLower.includes("استشاري") ||
+      jobLower.includes("مستشار")
+    )
+      return "engineer";
+    if (
+      jobLower.includes("مدخل بيانات") ||
+      jobLower.includes("مسئول طلبيات") ||
+      jobLower.includes("مالية")
+    )
+      return "admin_staff";
+    if (jobLower.includes("زائر") || deptLower.includes("زائر")) return "visitor";
+    return "employee";
+  };
+
+  // حساب الإحصائيات
+  const stats = {
+    total: branchEmployees.length,
+    active: branchEmployees.filter(
+      (e) => e.isActive === "true" || e.isActive === true
+    ).length,
+    inactive: branchEmployees.filter(
+      (e) => e.isActive === "false" || e.isActive === false
+    ).length,
+    byType: {
+      owners: 0,
+      managers: 0,
+      engineers: 0,
+      adminStaff: 0,
+      employees: 0,
+      visitors: 0,
+    },
+    details: [],
+  };
+
+  const typeGroups = {};
+  branchEmployees.forEach((emp) => {
+    const userType = getUserType(emp.position, emp.department);
+    const key = userType + "s";
+    stats.byType[key] = (stats.byType[key] || 0) + 1;
+
+    if (!typeGroups[userType]) {
+      typeGroups[userType] = {
+        type: userType,
+        count: 0,
+        active: 0,
+        positions: new Set(),
+      };
     }
 
-    // جلب موظفي الفرع
-    const employees = await db.getAllRows(
-      `
-      SELECT 
-        job as position,
-        jobHOM as department,
-        jobdiscrption as jobDescription,
-        Activation as isActive,
-        Validity
-      FROM usersCompany 
-      WHERE IDCompany = ?
-    `,
-      [branch.NumberCompany]
-    );
+    typeGroups[userType].count++;
+    if (emp.isActive === "true" || emp.isActive === true) {
+      typeGroups[userType].active++;
+    }
+    typeGroups[userType].positions.add(emp.position || "غير محدد");
+  });
 
-    // فلترة الموظفين حسب الفرع من حقل Validity أو المهندسين الخاصين
-    const branchEmployees = employees.filter((emp) => {
-      // أولاً، تحقق من المهندسين الثلاثة المحددين
-      const nameLower = (emp.name || "").toLowerCase();
-      const isSpecialAdmin =
-        nameLower.includes("software engineer") ||
-        nameLower.includes("م.احمد العرامي") ||
-        nameLower.includes("م.احمد سعيد") ||
-        nameLower.includes("احمد العرامي") ||
-        nameLower.includes("احمد سعيد") ||
-        (emp.position &&
-          emp.position.toLowerCase() === "admin" &&
-          emp.department &&
-          emp.department.toLowerCase() === "admin");
+  const typeLabels = {
+    owner: "مالك",
+    manager: "مدير/إداري",
+    engineer: "مهندس/استشاري",
+    admin_staff: "موظف إداري",
+    visitor: "زائر",
+    employee: "موظف",
+  };
 
-      if (isSpecialAdmin) {
-        return true; // إضافة هؤلاء لجميع الفروع
-      }
+  stats.details = Object.keys(typeGroups)
+    .map((type) => ({
+      type: type,
+      label: typeLabels[type] || "غير محدد",
+      count: typeGroups[type].count,
+      active: typeGroups[type].active,
+      inactive: typeGroups[type].count - typeGroups[type].active,
+      percentage: ((typeGroups[type].count / stats.total) * 100).toFixed(1),
+      positions: Array.from(typeGroups[type].positions),
+    }))
+    .sort((a, b) => b.count - a.count);
 
-      // باقي الموظفين حسب Validity
-      try {
-        if (emp.Validity) {
-          const validity = JSON.parse(emp.Validity);
-          // التحقق من أن validity هو array
-          if (Array.isArray(validity)) {
-            return validity.some(
-              (item) =>
-                item.idBrinsh &&
-                item.idBrinsh.toString() === branchId.toString()
-            );
-          } else {
-            // في حالة أن validity هو object مباشر
-            return (
-              validity.idBrinsh &&
-              validity.idBrinsh.toString() === branchId.toString()
-            );
-          }
-        }
-        return false;
-      } catch (e) {
-        console.warn("خطأ في تحليل JSON للموظف:", emp.id, e.message);
-        return false;
-      }
-    });
+  console.log(`✅ تم حساب إحصائيات ${stats.total} موظف`);
 
-    // دالة لتحديد نوع المستخدم (نسخة مبسطة)
-    const getUserType = (job, department) => {
-      const jobLower = (job || "").toLowerCase();
-      const deptLower = (department || "").toLowerCase();
+  res.json({
+    success: true,
+    branchId: parseInt(branchId),
+    stats: stats,
+    message: `تم حساب إحصائيات ${stats.total} موظف بنجاح`,
+  });
+} catch (error) {
+  console.error("خطأ في حساب إحصائيات الموظفين:", error);
+  next(error);
+}
 
-      if (jobLower.includes("مالك") || deptLower.includes("مالك"))
-        return "owner";
-      if (
-        jobLower.includes("admin") ||
-        jobLower.includes("مدير") ||
-        deptLower.includes("admin")
-      )
-        return "manager";
-      if (
-        jobLower.includes("مهندس") ||
-        jobLower.includes("استشاري") ||
-        jobLower.includes("مستشار")
-      )
-        return "engineer";
-      if (
-        jobLower.includes("مدخل بيانات") ||
-        jobLower.includes("مسئول طلبيات") ||
-        jobLower.includes("مالية")
-      )
-        return "admin_staff";
-      if (jobLower.includes("زائر") || deptLower.includes("زائر"))
-        return "visitor";
-      return "employee";
-    };
-
-    // حساب الإحصائيات
-    const stats = {
-      total: branchEmployees.length,
-      active: branchEmployees.filter(
-        (e) => e.isActive === "true" || e.isActive === true
-      ).length,
-      inactive: branchEmployees.filter(
-        (e) => e.isActive === "false" || e.isActive === false
-      ).length,
-      byType: {
-        owners: 0,
-        managers: 0,
-        engineers: 0,
-        adminStaff: 0,
-        employees: 0,
-        visitors: 0,
-      },
-      details: [],
-    };
-
-    // تجميع البيانات حسب النوع
-    const typeGroups = {};
-    branchEmployees.forEach((emp) => {
-      const userType = getUserType(emp.position, emp.department);
-
-      stats.byType[userType + "s"] = (stats.byType[userType + "s"] || 0) + 1;
-
-      if (!typeGroups[userType]) {
-        typeGroups[userType] = {
-          type: userType,
-          count: 0,
-          active: 0,
-          positions: new Set(),
-        };
-      }
-
-      typeGroups[userType].count++;
-      if (emp.isActive === "true" || emp.isActive === true) {
-        typeGroups[userType].active++;
-      }
-      typeGroups[userType].positions.add(emp.position || "غير محدد");
-    });
-
-    // تحويل النتائج إلى مصفوفة مع الأوصاف
-    const typeLabels = {
-      owner: "مالك",
-      manager: "مدير/إداري",
-      engineer: "مهندس/استشاري",
-      admin_staff: "موظف إداري",
-      visitor: "زائر",
-      employee: "موظف",
-    };
-
-    stats.details = Object.keys(typeGroups)
-      .map((type) => ({
-        type: type,
-        label: typeLabels[type] || "غير محدد",
-        count: typeGroups[type].count,
-        active: typeGroups[type].active,
-        inactive: typeGroups[type].count - typeGroups[type].active,
-        percentage: ((typeGroups[type].count / stats.total) * 100).toFixed(1),
-        positions: Array.from(typeGroups[type].positions),
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    console.log(`✅ تم حساب إحصائيات ${stats.total} موظف`);
-
-    res.json({
-      success: true,
-      branchId: parseInt(branchId),
-      stats: stats,
-      message: `تم حساب إحصائيات ${stats.total} موظف بنجاح`,
-    });
-  } catch (error) {
-    console.error("خطأ في حساب إحصائيات الموظفين:", error);
-    next(error);
-  }
 });
 
 // 12. GET /api/companies/:id/details - جلب تفاصيل شركة محددة (مطلوب من Frontend)

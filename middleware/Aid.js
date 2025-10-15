@@ -1,11 +1,14 @@
 const {
-  insertTablecompanySubProjectStageCUST,
   inserttableFlowmove,
   insertTablecompanySubProjectStagetemplet,
   insertTablecompanySubProjectStageSubtemplet,
   insertTablecompanySubProjectStageCUSTv2,
+  insertTableusersBransh,
+  insertTableusersProject,
+  insertTableallStagestype,
 } = require("../sql/INsertteble");
 const { DateTime } = require("luxon");
+const moment = require("moment-timezone");
 
 const convertArabicToEnglish = (arabicNumber) => {
   const arabicToEnglishMap = {
@@ -101,33 +104,33 @@ const DateDay = (date) =>
 // const hoursBetween = calculateHoursBetween('2023-01-01T08:00:00', '2023-01-01T17:30:00');
 // console.log(`Hours between: ${hoursBetween.toFixed(2)}`); // Output: 9.50
 // ترتيب المراحل
-
 const ChangeDate = (teble, StartDate) => {
   const d3Value = new Date(StartDate); // replace with your D3.Value
   const newData = [...teble];
 
-  newData[0].StartDate = d3Value.toDateString();
+  newData[0].StartDate = d3Value;
+  let days = newData[0].Days === 0 ? 1:newData[0].Days;
   const dataend = new Date(
-    d3Value.setDate(d3Value.getDate() + newData[0].Days)
+    d3Value.setDate(d3Value.getDate() + days)
   );
-  newData[0].EndDate = dataend.toDateString();
+  newData[0].EndDate = dataend;
   newData[0].OrderBy = 1;
 
   for (let i = 1; i < newData.length; i++) {
     newData[i].OrderBy = newData[i - 1].OrderBy + 1;
-    newData[i].StartDate = new Date(newData[i - 1].EndDate).toDateString();
+    newData[i].StartDate = new Date(newData[i - 1].EndDate);
+    let days2 = newData[i].Days === 0 ? 1:newData[i].Days;
     const datanextEnd = new Date(
       d3Value.setDate(
-        new Date(newData[i].StartDate).getDate() + newData[i].Days
+        new Date(newData[i].StartDate).getDate() + days2
       )
     );
-    newData[i].EndDate = datanextEnd.toDateString();
+    newData[i].EndDate = datanextEnd;
   }
   return newData;
 };
 const subscripation = {
   company: 100,
-
   singular: 150,
 };
 
@@ -142,20 +145,24 @@ const Stage = async (teble, StartDate, types = "new") => {
     // console.log(newData,'helllow');
 
     const newData = await ChangeDate(teble, StartDate);
-
+    console.log(newData[0].StartDate,newData[0].EndDate)
     for (let index = 0; index < newData.length; index++) {
       const item = teble[index];
       let number = types === "new" ? `(${index + 1})` : "";
+     
       await insertTablecompanySubProjectStageCUSTv2([
         item.StageID,
         item.ProjectID,
         item.Type,
         `${item.StageName} ${number}`,
         item.Days,
-        item.StartDate,
-        item.EndDate,
+        moment(item.StartDate).format("YYYY-MM-DD"),
+        moment(item.EndDate).format("YYYY-MM-DD"),
         item.OrderBy,
         item.Referencenumber,
+        item.Ratio,
+        item.attached,
+        item.rate
       ]);
     }
   } catch (err) {}
@@ -192,19 +199,20 @@ const AccountDays = (numberBuilding, Days) => {
   }
 };
 const xlsx = require("xlsx");
+const { SELECTTableusersCompanyall } = require("../sql/selected/selectuser");
+const { UPDATECONVERTDATE } = require("../sql/update");
 
-const StageTempletXsl2 = async (type = "StagesTempletEXcel.xlsx") => {
+const StageTempletXsl2 = async (type = "StagesTempletEXcel.xlsx",number=0) => {
   try {
     try {
       // Read the Excel file
       const workbook = xlsx.readFile(type);
 
       // Get the first sheet
-      const sheetName = workbook.SheetNames[0];
+      const sheetName = workbook.SheetNames[number];
       const worksheet = workbook.Sheets[sheetName];
 
       const datad = xlsx.utils.sheet_to_json(worksheet);
-
       return datad;
     } catch (error) {
       console.error(error);
@@ -374,6 +382,41 @@ const convertTimeToMonth = (time) => {
   return month;
 };
 
+
+const moveviltayeuseer =()=>{
+  return new Promise(async(resolve,reject)=>{
+    try {
+      const data = await SELECTTableusersCompanyall();
+      if(data && data.length > 0){
+        for (const item of data) {
+          const validity = item.Validity ? JSON.parse(item.Validity) : [];
+          for (const key of validity) {
+            if(key.idBrinsh){
+              await insertTableusersBransh([key.idBrinsh,item.id,key.job]);
+              for (const key2 of key.project) {
+                if(key2.idProject){
+
+                  await insertTableusersProject([key.idBrinsh,key2.idProject,item.id,JSON.stringify(key2.ValidityProject)]);
+                }
+              }
+            }
+            }
+        };
+        resolve(true)
+      }else{
+        resolve(false)
+      }
+    } catch (error) {
+      reject(error)
+    }
+  });
+}
+// moveviltayeuseer()
+// تحويل صيغة التاريخ
+// UPDATECONVERTDATE();
+// اضافة المعرفات والانواع لجدول الانواع 
+// insertTableallStagestype();
+
 module.exports = {
   calculateDaysDifference,
   Stage,
@@ -391,5 +434,6 @@ module.exports = {
   calculateendDate,
   switchWeek,
   converttimetotext,
-  convertTimeToMonth
+  convertTimeToMonth,
+  StageTempletXsl2
 };

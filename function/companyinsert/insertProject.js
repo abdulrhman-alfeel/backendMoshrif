@@ -1,7 +1,5 @@
 const {
   insertTablecompanySubProject,
-  insertTablecompanySubProjectStagetemplet,
-  insertTablecompanySubProjectStageSubtemplet,
   insertTablecompanySubProjectStageCUST,
   insertTablecompanySubProjectStagesSub,
   insertTablecompanySubProjectStageNotes,
@@ -13,10 +11,10 @@ const {
   insertTablecompanySubProjectRequestsForcreatOrder,
   insertTablecompanySubProjectv2,
   insertTablecompanySubProjectStagesSubv2,
+  insertTableStageCUST_IMAGE,
 } = require("../../sql/INsertteble");
 const {
   SELECTTablecompanySubProjectarchivesotherroad,
-  SELECTTablecompanySubProjectLast_id,
   SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate,
   SELECTTablecompanySubProjectStageCUST,
   SELECTTablecompanySubProjectStagesSub,
@@ -53,7 +51,9 @@ const {
 const { UpdaterateCost, UpdaterateStage } = require("./UpdateProject");
 const { Stage, AccountDays } = require("../../middleware/Aid");
 const xlsx = require("xlsx");
-const { insertDataprojectsubScripation } = require("../subscripation/opreationSubscripation");
+const {
+  insertDataprojectsubScripation,
+} = require("../subscripation/opreationSubscripation");
 const OpreationProjectInsertv2 = async (
   IDcompanySub,
   Nameproject,
@@ -63,10 +63,13 @@ const OpreationProjectInsertv2 = async (
   LocationProject,
   numberBuilding,
   Referencenumber,
-  Contractsigningdate
+  Contractsigningdate,
+  Cost_per_Square_Meter,
+  Project_Space,
+  IDCompany
 ) => {
   try {
-    await insertTablecompanySubProjectv2([
+    const idProject = await insertTablecompanySubProjectv2([
       IDcompanySub,
       Nameproject,
       Note,
@@ -75,14 +78,19 @@ const OpreationProjectInsertv2 = async (
       LocationProject,
       numberBuilding,
       Referencenumber,
+      Cost_per_Square_Meter,
+      Project_Space,
     ]);
-    const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
     if (TypeOFContract !== "حر") {
       let dataStages = await SELECTFROMTablecompanysubprojectStageTemplet(
-        TypeOFContract
+        TypeOFContract,
+        IDCompany
       );
-      const visity = await SELECTFROMTablecompanysubprojectStageTemplet("عام");
-      // console.log(visity);
+      const visity = await SELECTFROMTablecompanysubprojectStageTemplet(
+        "عام",
+        IDCompany
+      );
+
       let table = [];
       let tablesub = [];
       if (visity.length > 0) {
@@ -92,34 +100,40 @@ const OpreationProjectInsertv2 = async (
       for (let index = 0; index < dataStages.length; index++) {
         const element = dataStages[index];
         let Days = await AccountDays(numberBuilding, element.Days);
-
         table.push({
           ...element,
           Days: Math.round(Days),
-          ProjectID: idProject["last_id"],
+          ProjectID: idProject,
           StartDate: null,
           EndDate: null,
           CloseDate: null,
+          rate:0,
           Referencenumber: element.StageIDtemplet,
         });
 
         const resultSubTablet =
-          await SELECTFROMTablecompanysubprojectStagesubTeplet(element.StageID);
+          await SELECTFROMTablecompanysubprojectStagesubTeplet(
+            element.StageID,
+            element.Stagestype_id,
+            IDCompany
+          );
+
         resultSubTablet.forEach((pic) => {
           tablesub.push({
             StageID: pic.StageID,
-            ProjectID: idProject["last_id"],
+            ProjectID: idProject,
             StageSubName: pic.StageSubName,
             attached: pic.attached || null,
             Referencenumber: pic.StageSubID,
           });
         });
       }
+
       await Stage(table, Contractsigningdate);
       await StageSub(tablesub);
     }
-    await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-    return idProject["last_id"];
+    await AddFoldersStatcforprojectinsectionArchive(idProject);
+    return idProject;
   } catch (error) {
     console.log(error);
   }
@@ -141,13 +155,15 @@ const projectBrinshv2 = (uploadQueue) => {
         LocationProject,
         numberBuilding,
         Referencenumber,
+        Cost_per_Square_Meter,
+        Project_Space,
       } = req.body;
       const Contractsigningdate = new Date();
-      if (Boolean(Nameproject)) {
+      if (Nameproject || TypeOFContract) {
         const locationsstring = String(LocationProject).startsWith("https")
           ? LocationProject
           : null;
-       const idProject=  await OpreationProjectInsertv2(
+        const idProject = await OpreationProjectInsertv2(
           IDcompanySub,
           Nameproject,
           Note,
@@ -156,16 +172,18 @@ const projectBrinshv2 = (uploadQueue) => {
           locationsstring,
           numberBuilding,
           Referencenumber,
-          Contractsigningdate
+          Contractsigningdate,
+          Cost_per_Square_Meter,
+          Project_Space,
+          userSession?.IDCompany
         );
         res
           .send({
             success: "تم انشاء مشروع بنجاح",
           })
           .status(200);
-        await Projectinsert(IDcompanySub, userSession.userName);
-        await insertDataprojectsubScripation(userSession.IDCompany,idProject)
-
+        // await Projectinsert(IDcompanySub,Nameproject, userSession.userName);
+        await insertDataprojectsubScripation(userSession.IDCompany, idProject);
       } else {
         res
           .send({
@@ -180,118 +198,6 @@ const projectBrinshv2 = (uploadQueue) => {
           success: "فشل تنفيذ العملية",
         })
         .status(401);
-    }
-  };
-};
-const OpreationProjectInsert = async (
-  IDcompanySub,
-  Nameproject,
-  Note,
-  TypeOFContract,
-  GuardNumber,
-  LocationProject,
-  numberBuilding,
-  Contractsigningdate
-) => {
-  try {
-    await insertTablecompanySubProject([
-      IDcompanySub,
-      Nameproject,
-      Note,
-      TypeOFContract,
-      GuardNumber,
-      LocationProject,
-      numberBuilding,
-    ]);
-
-    if (TypeOFContract !== "حر") {
-      const idProject = await SELECTTablecompanySubProjectLast_id(IDcompanySub);
-      let dataStages = await SELECTFROMTablecompanysubprojectStageTemplet(
-        TypeOFContract
-      );
-      const visity = await SELECTFROMTablecompanysubprojectStageTemplet("عام");
-      let table = [];
-      let tablesub = [];
-      dataStages = [visity[0], ...dataStages];
-      for (let index = 0; index < dataStages.length; index++) {
-        const element = dataStages[index];
-        let Days = await AccountDays(numberBuilding, element.Days);
-
-        table.push({
-          ...element,
-          Days: Math.round(Days),
-          ProjectID: idProject["last_id"],
-          StartDate: null,
-          EndDate: null,
-          CloseDate: null,
-          Referencenumber: element.StageIDtemplet,
-        });
-
-        const resultSubTablet =
-          await SELECTFROMTablecompanysubprojectStagesubTeplet(element.StageID);
-        resultSubTablet.forEach((pic) => {
-          tablesub.push({
-            StageID: pic.StageID,
-            ProjectID: idProject["last_id"],
-            StageSubName: pic.StageSubName,
-            attached: pic.attached || null,
-            Referencenumber: pic.StageSubID,
-          });
-        });
-      }
-      await Stage(table, Contractsigningdate);
-      await StageSub(tablesub);
-    }
-
-    await AddFoldersStatcforprojectinsectionArchive(idProject["last_id"]);
-  } catch (error) {
-    console.log(error);
-  }
-};
-const projectBrinsh = (uploadQueue) => {
-  //
-  return async (req, res) => {
-    const userSession = req.session.user;
-    if (!userSession) {
-      res.status(401).send("Invalid session");
-      console.log("Invalid session");
-    }
-    try {
-      const {
-        IDcompanySub,
-        Nameproject,
-        Note,
-        TypeOFContract,
-        GuardNumber,
-        LocationProject,
-        numberBuilding,
-      } = req.body;
-      const Contractsigningdate = new Date();
-      if (Boolean(Nameproject)) {
-        await OpreationProjectInsert(
-          IDcompanySub,
-          Nameproject,
-          Note,
-          TypeOFContract,
-          GuardNumber,
-          LocationProject,
-          numberBuilding,
-          Contractsigningdate
-        );
-        res.status(200).send({
-          success: "تم انشاء مشروع بنجاح",
-        });
-        await Projectinsert(IDcompanySub, userSession.userName);
-      } else {
-        res.status(200).send({
-          success: "يجب اضافة اسم للمشروع ",
-        });
-      }
-    } catch (err) {
-      console.log(err);
-      res.status(401).send({
-        success: "فشل تنفيذ العملية",
-      });
     }
   };
 };
@@ -344,72 +250,6 @@ const AddFoldersStatcforprojectinsectionArchive = (idproject) => {
   }
 };
 
-// وظيفة ادخال البيانات في جدوول المراحل السنبل الرئيسي
-const StageTemplet = (uploadQueue) => {
-  return async (req, res) => {
-    try {
-      // const Type = req.body.Type;
-      // const StageName = req.body.StageName;
-      // const OrderBy = req.body.OrderBy;
-      // const Days = req.body.Days;
-      // const Difference = req.body.Difference;
-      const teble = req.body.teble;
-      for (let index = 0; index < teble.length; index++) {
-        const item = teble[index];
-        // console.log(item);
-        await insertTablecompanySubProjectStagetemplet([
-          item.id,
-          item.Type,
-          item.StageName,
-          item.Days,
-          item.OrderBy,
-        ]);
-      }
-      res
-        .send({
-          success: true,
-        })
-        .status(200);
-    } catch (err) {
-      console.log(err);
-      res
-        .send({
-          success: false,
-        })
-        .status(401);
-    }
-  };
-};
-
-// وظيف ادخال بييانات المراحلة الفرعية السنبل
-const StageSubTemplet = (uploadQueue) => {
-  return async (req, res) => {
-    try {
-      const teble = req.body.teble;
-      for (let index = 0; index < teble.length; index++) {
-        const item = teble[index];
-        // console.log(item);
-        await insertTablecompanySubProjectStageSubtemplet([
-          item.StageID,
-          item.StageSubName,
-        ]);
-      }
-      res
-        .send({
-          success: true,
-        })
-        .status(200);
-    } catch (err) {
-      console.log(err);
-      res
-        .send({
-          success: false,
-        })
-        .status(401);
-    }
-  };
-};
-
 // وظيفة ادخال البيانات في جدوول المراحل  الرئيسي
 
 // وظيف ادخال بييانات المراحلة الفرعية
@@ -430,68 +270,85 @@ const StageSub = async (teble) => {
     console.log(err);
   }
 };
-//
-
 // إضافة مرحلة جديدة إلى المشروع
 const InsertStage = (uploadQueue) => {
   return async (req, res) => {
     try {
+      // ✅ التحقق من الجلسة
       const userSession = req.session.user;
       if (!userSession) {
-        res.status(401).send("Invalid session");
         console.log("Invalid session");
+        return res.status(401).json({ error: "Invalid session" });
       }
-      const StageName = req.body.StageName;
-      const ProjectID = req.body.ProjectID;
-      const TypeOFContract = req.body.TypeOFContract;
-      const Days = req.body.Days;
-      if (ProjectID > 0 && Boolean(StageName)) {
-        const findName = await SELECTTablecompanySubProjectStageCUST(
-          ProjectID,
-          StageName
+
+      const { StageName, ProjectID, TypeOFContract, Days, Ratio, attached } =
+        req.body;
+
+      // ✅ التحقق من المدخلات
+      if (!ProjectID || ProjectID <= 0 || !StageName) {
+        return res
+          .status(400)
+          .json({ error: "يجب إدخال اسم المرحلة و رقم المشروع بشكل صحيح" });
+      }
+
+      // ✅ التحقق إذا كان الاسم موجود مسبقًا
+      const existingStage = await SELECTTablecompanySubProjectStageCUST(
+        ProjectID,
+        StageName
+      );
+      if (existingStage.length > 0) {
+        return res.status(400).json({ error: "اسم المرحلة موجود بالفعل" });
+      }
+
+      // ✅ جلب بيانات آخر مرحلة للمشروع
+      const result =
+        await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
+          ProjectID
         );
-        let Daye = Boolean(Days) ? Days : 0;
-        // console.log(findName);
-        if (findName.length <= 0) {
-          const result =
-            await SELECTTablecompanySubProjectStageCUSTAccordingEndDateandStageIDandStartDate(
-              ProjectID
-            );
-          // console.log(result);
 
-          let StartDate;
-          let EndDate;
-          let OrderBy;
-          Time = new Date(result.EndDate);
-          StartDate = Time.toDateString();
-          const dataend = new Date(Time.setDate(Time.getDate() + Daye));
-          EndDate = dataend.toDateString();
-          OrderBy = result.OrderBy === null ? 1 : parseInt(result.OrderBy) + 1;
-          // console.log(result);
+      // ✅ حساب مجموع النسب (الحالية + الجديدة)
+      const currentRatio = result.TotalRatio || 0;
+      const totalRatio = currentRatio + Number(Ratio);
 
-          await insertTablecompanySubProjectStageCUST([
-            result.StageID + 1,
-            ProjectID,
-            TypeOFContract,
-            `${StageName} ${OrderBy}`,
-            Daye,
-            StartDate,
-            EndDate,
-            OrderBy,
-          ]);
-
-          res.send({ success: "تمت العملية بنجاح" }).status(200);
-          await UpdaterateCost(ProjectID);
-          await Stageinsert(ProjectID, 0, userSession.userName);
-        } else {
-          res.send({ success: "اسم المرحلة موجود بالفعل" }).status(200);
-        }
-      } else {
-        res.send({ success: "يجب ادخال اسم للمرحلة الجديدة" }).status(200);
+      if (totalRatio > 100) {
+        return res
+          .status(400)
+          .json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
       }
+
+      // ✅ تجهيز بيانات المرحلة الجديدة
+      const daysValue = Days ? Number(Days) : 0;
+
+      const startDate = new Date(result.EndDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + daysValue);
+
+      const orderBy =
+        result.OrderBy === null ? 1 : parseInt(result.OrderBy, 10) + 1;
+
+      // ✅ إدخال المرحلة الجديدة
+      await insertTablecompanySubProjectStageCUST([
+        Number(result.StageID) + 1, // ID المرحلة الجديدة
+        ProjectID,
+        TypeOFContract,
+        `${StageName} (${orderBy})`, // إضافة رقم الترتيب للاسم
+        daysValue,
+        startDate.toISOString().split("T")[0],
+        endDate.toISOString().split("T")[0],
+        orderBy,
+        Ratio,
+        attached,
+        0,
+      ]);
+
+      // ✅ تحديث التكلفة وإشعار
+      await UpdaterateCost(ProjectID);
+      await Stageinsert(ProjectID, 0, userSession.userName);
+
+      return res.status(200).json({ success: "تمت إضافة المرحلة بنجاح" });
     } catch (error) {
-      console.log(error);
-      res.send({ success: " فشل العملية" }).status(401);
+      console.error("InsertStage error:", error);
+      return res.status(500).json({ error: "حدث خطأ أثناء إضافة المرحلة" });
     }
   };
 };
@@ -587,6 +444,44 @@ const insertStageSubv2 = (uploadQueue) => {
     }
   };
 };
+
+const insertStageCustImage = (uploadQueue) => {
+  return async (req, res) => {
+    try {
+      const userSession = req.session.user;
+      if (!userSession) {
+        res.status(401).send("Invalid session");
+        console.log("Invalid session");
+      }
+
+      const { StageID, ProjectID } = req.body;
+
+      if (!StageID || !ProjectID) {
+        return res
+          .status(400)
+          .json({ error: "يجب إدخال رقم المرحلة و رقم المشروع بشكل صحيح" });
+      }
+
+      if (req.file) {
+        await insertTableStageCUST_IMAGE([
+          StageID,
+          ProjectID,
+          req.file.filename,
+          userSession.PhoneNumber,
+        ]);
+        await uploaddata(req.file);
+        deleteFileSingle(req.file.filename, "upload");
+        res.send({ success: "تمت العملية بنجاح" }).status(200);
+      } else {
+        res.send({ success: "يرجى اكمال البيانات" }).status(200);
+      }
+    } catch (error) {
+      console.log(error);
+      res.send({ success: false }).status(401);
+    }
+  };
+};
+
 // وظيفة ادخال ملاحظات المرحلة الرئيسية
 const NotesStage = (uploadQueue) => {
   return async (req, res) => {
@@ -1046,7 +941,7 @@ const CloaseOROpenStage = async (Note, RecordedBy, StageID, ProjectID) => {
       const diffInMs = date2.getTime() - date1.getTime();
       const diffInDays = Math.floor(diffInMs / (1000 * 3600 * 24));
       await UPDATEStopeProjectStageCUST([
-        date1.toDateString(),
+        date1,
         diffInDays,
         "true",
         Note,
@@ -1443,9 +1338,6 @@ const InsertDatainTableRequests = (uploadQueue) => {
 
 //  updatechild folder
 module.exports = {
-  projectBrinsh,
-  StageTemplet,
-  StageSubTemplet,
   StageSub,
   NotesStage,
   NotesStageSub,
@@ -1459,10 +1351,9 @@ module.exports = {
   AddORCanselAchievment,
   ClassCloaseOROpenStage,
   InsertDatainTableRequests,
-
-  OpreationProjectInsert,
   OpreationProjectInsertv2,
   projectBrinshv2,
   AddORCanselAchievmentarrayall,
   insertStageSubv2,
+  insertStageCustImage,
 };

@@ -1,8 +1,6 @@
 const express = require("express");
 const {
   projectBrinsh,
-  StageTemplet,
-  StageSubTemplet,
   NotesStage,
   NotesStageSub,
   ExpenseInsert,
@@ -18,12 +16,12 @@ const {
   projectBrinshv2,
   AddORCanselAchievmentarrayall,
   insertStageSubv2,
+  insertStageCustImage,
 } = require("../function/companyinsert/insertProject");
 const { uploads } = require("../middleware/uploads");
 const {
   BringProject,
   BringStageTemplet,
-  BringStageSubTemplet,
   BringStage,
   BringStagev2,
   BringStagesub,
@@ -47,6 +45,10 @@ const {
   BringCountRequstsV2,
   BringProjectdashbord,
   FilterProjectdashbord,
+  BringreportTimeline,
+  BringreportRequessts,
+  BringStageCustImage,
+  BringreportStage
 } = require("../function/companyselect/bringProject");
 const {
   UpdataDataProject,
@@ -76,13 +78,9 @@ const companySub = ({ uploadQueue }) => {
 
   router.use(verifyJWT);
   //  عمليات الادخال
-  // router.route("/project").post(uploads.single("image"), projectBrinsh);
-  router.post("/project", projectBrinsh(uploadQueue));
   router.post("/v2/project", projectBrinshv2(uploadQueue));
-
-  router.post("/StageTemplet", StageTemplet(uploadQueue));
-  router.post("/StageSubTemplet", StageSubTemplet(uploadQueue));
   router.post("/Stage", InsertStage(uploadQueue));
+  router.post("/StageCustImage",  uploads.single("file"),insertStageCustImage(uploadQueue));
   router.post("/StageSub", insertStageSub(uploadQueue));
   router.post("/v2/StageSub",  uploads.single("file"),insertStageSubv2(uploadQueue));
   router.post("/ClassCloaseOROpenStage", ClassCloaseOROpenStage(uploadQueue));
@@ -123,20 +121,22 @@ const companySub = ({ uploadQueue }) => {
     uploads.any("image"),
     InsertDatainTableRequests(uploadQueue)
   );
-
-  // //  عمليات الطلب
+// insertStageTemplet
+// BringxlsxTemplet
+  //  عمليات الطلب
   router.get("/v2/BringProject", BringProjectdashbord(uploadQueue));
   router.get("/BringProject", BringProject(uploadQueue));
   router.get("/BringDataprojectClosed", BringDataprojectClosed(uploadQueue));
   router.get("/CloseOROpenProject", CloseOROpenProject(uploadQueue));
   router.get("/FilterProject", FilterProject(uploadQueue));
   router.get("/v2/FilterProject", FilterProjectdashbord(uploadQueue));
-  // router.get("/BringProjectindividual", BringProjectindividual(uploadQueue));
   router.get("/BringProjectObjectone", BringProjectObjectone(uploadQueue));
   router.get("/BringStageTemplet", BringStageTemplet(uploadQueue));
-  router.get("/BringStageSubTemplet", BringStageSubTemplet(uploadQueue));
   router.get("/BringStage", BringStage(uploadQueue));
   router.get("/v2/BringStage", BringStagev2(uploadQueue));
+
+  router.get("/BringStageCustImage", BringStageCustImage(uploadQueue));
+  
   router.get("/BringStageOneObject", BringStageOneObject(uploadQueue));
   router.get("/BringStagesub", BringStagesub(uploadQueue));
   router.get("/BringStageNotes", BringStageNotes(uploadQueue));
@@ -158,6 +158,9 @@ const companySub = ({ uploadQueue }) => {
   router.get("/v2/BringCountRequsts", BringCountRequstsV2(uploadQueue));
 
   router.get("/BringReportforProject", BringReportforProject(uploadQueue));
+  router.get("/BringreportTimeline", BringreportTimeline(uploadQueue));
+  router.get("/BringreportRequessts", BringreportRequessts(uploadQueue));
+  router.get("/BringreportStage", BringreportStage(uploadQueue));
 
   //  عملية التعديل
   router.put("/projectUpdat", UpdataDataProject(uploadQueue));
@@ -166,6 +169,7 @@ const companySub = ({ uploadQueue }) => {
   router.put("/UpdateDataStage", UpdateDataStage(uploadQueue));
   router.put("/UpdateDataStageSub", UpdateDataStageSub(uploadQueue));
   router.put("/v2/UpdateDataStageSub", uploads.single("file"),UpdateDataStageSubv2(uploadQueue));
+  
   // حذف المشروع
   router.get(
     "/DeletProjectwithDependencies",
@@ -214,7 +218,7 @@ const companySub = ({ uploadQueue }) => {
   );
   router.get("/Confirmarrivdrequest", Confirmarrivdrequest(uploadQueue));
 
-  // //
+  //
   router.get("/DeleteRequests", DeleteRequests(uploadQueue));
   return router;
 };
