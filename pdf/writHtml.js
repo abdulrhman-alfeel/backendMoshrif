@@ -1,4 +1,4 @@
-const { DateDay, converttimetotext } = require("../middleware/Aid");
+const { DateDay, converttimetotext, esc } = require("../middleware/Aid");
 
 const Totaltofixt = (number) => {
   return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(
@@ -1165,13 +1165,6 @@ function Separationoftypes(items) {
 };
 
 
-const esc = (v) =>
-  String(v ?? "-")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 
 const HtmlStatmentallRequests = (result, count, company, type = "all") => {
   let nameProject = "";
@@ -1273,19 +1266,19 @@ ${styles}
     </div>
     <div style="flex-direction: row;display:flex;justify-content: space-around;width:100%;border: 1px solid  #1448e7; border-radius: 15px;margin-top:20px ">
       <div >
-        <h1 style="font-size: 17px;"> مستلمة في الموقع </h1>
+        <h1 style="font-size: 17px;"> تم التسليم </h1>
              <h1 style="font-size: 17px;text-align: center;">${
                count.confirmed_count
              }</h1>
       </div>
       <div>
-        <h1 style="font-size: 17px;">قيد التسليم</h1>
+        <h1 style="font-size: 17px;">قيد التوصيل</h1>
         <h1 style="font-size: 17px; text-align: center;">${
           count.closed_count
         }</h1>
       </div>
       <div>
-        <h1 style="font-size: 17px;">قيد المراجعه</h1>
+        <h1 style="font-size: 17px;"> قيد الانتظار </h1>
         <h1 style="font-size: 17px;text-align: center;">${count.open_count}</h1>
       </div>
     </div>

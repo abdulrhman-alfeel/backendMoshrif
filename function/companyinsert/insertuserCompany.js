@@ -74,14 +74,14 @@ const userCompany = () => {
 
 // اخراج معلومات مدير الفرع
 const CheckAdmin = async (check, resultSend) => {
-  await insertTableusersBransh(resultSend, check, "مدير الفرع");
+  await insertTableusersBransh([resultSend, check, "مدير الفرع"]);
 };
 
 // اخراج بيانات الاعضاء
 const CheckGlobal = async (checkGloble, resultSend) => {
-  for (let index = 0; index < Object.entries(checkGloble).length; index++) {
-    const element = Object.entries(checkGloble)[index];
-    await insertTableusersBransh(resultSend, element?.id, "عضو");
+  for (let index = 0; index < Object.values(checkGloble).length; index++) {
+    const element = Object.values(checkGloble)[index];
+    await insertTableusersBransh([resultSend, element?.id, "عضو"]);
   }
 };
 

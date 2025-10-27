@@ -64,6 +64,7 @@ const OpreactionSend_message = async (data) => {
     if (!chackdata) {
       const newData = Datadistribution(data);
       if (Number(data?.StageID)) {
+
         await insertTableChateStage(newData);
         result = await SELECTTableChateStageOtherroad(data.idSendr);
         //  ادخال البيانات جدول البوستات
@@ -87,16 +88,16 @@ const OpreactionSend_message = async (data) => {
         result.Reply = JSON.parse(result.Reply);
         result.arrived = true;
         result.kind = "new";
-        if (data?.StageID !== "تحضير") {
-          await ChateNotfication(
-            data.ProjectID,
-            data?.StageID,
-            data.message,
-            data.Sender,
-            data.Reply,
-            data.File
-          );
-        }
+        // if (data?.StageID !== "تحضير") {
+        //   await ChateNotfication(
+        //     data.ProjectID,
+        //     data?.StageID,
+        //     data.message,
+        //     data.Sender,
+        //     data.Reply,
+        //     data.File
+        //   );
+        // }
       }
     } else {
       result = {
@@ -111,6 +112,38 @@ const OpreactionSend_message = async (data) => {
 
   return result;
 };
+
+
+
+
+const sendNote = async (ProjectID,messages,Files,user,Reply={})=>{
+  const generateID = () => Math.random().toString(36).substring(2,10);
+  // const datareply = {
+  //   Data: item.Data,
+  //   Date: item.Date,
+  //   type:item.Type,
+  //   Sender:item.InsertBy
+  // };
+  const idSender = `${user.PhoneNumber}${generateID()}`;
+  const objectMasseg = {
+    idSendr:idSender,
+    ProjectID:ProjectID,
+    StageID:'طلبات',
+    Sender :user.userName,
+    message:messages,
+    timeminet: moment().toISOString(),
+    File:Files,
+    Reply:Reply,
+    arrived:true,
+    kind:'new'
+  };
+
+   const result = await OpreactionSend_message(objectMasseg);
+  io.to(`${ProjectID}:طلبيات`)
+        .timeout(50)
+        .emit("received_message", result);
+
+}
 
 const bringdatachate = async (data, type = "new") => {
   let sqltype =
@@ -423,6 +456,7 @@ const verification = async (data) => {
 const { GoogleAuth } = require("google-auth-library");
 const { Deleteposts } = require("../postpublic/updatPost");
 const { lstat } = require("fs");
+const moment = require("moment");
 const initializeUpload = () => {
   return async (req, res) => {
     // قراءة بيانات الاعتماد من ملف JSON
@@ -514,4 +548,5 @@ module.exports = {
   insertdatafile,
   generateResumableUrl,
   filterTableChat,
+  sendNote
 };

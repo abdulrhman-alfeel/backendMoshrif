@@ -17,7 +17,6 @@ const BringPost = () => {
   return async (req, res) => {
     try {
       const { CompanyID, PostID, user } = req.query;
-      console.log("hello");
 
       const now = new Date();
       const userSession = req.session.user;
@@ -36,7 +35,7 @@ const BringPost = () => {
 
       const arrayPosts = await BringPostforEmploaysCompany(
         CompanyID,
-        "2025-07-14",
+        formattedDate,
         PostID,
         user,
         userSession.jobdiscrption,
@@ -178,6 +177,7 @@ const SearchPosts = () => {
         userSession.jobdiscrption,
         user
       );
+    
       // let arraynew = [];
 
       // for (let index = 0; index < result.length; index++) {

@@ -177,43 +177,52 @@ const SELECTTablecompanySubCount = (id) => {
 // فروع الشركة
 const SELECTTablecompanySubuser = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
+
     db.serialize(function () {
       db.all(
-        `SELECT 
-    RE.*,
-    EX.NameCompany,
-    EX.CommercialRegistrationNumber,
-    EX.Country,
-    (SELECT COUNT(*) 
-    FROM companySubprojects 
-    WHERE IDcompanySub = RE.id 
-      AND Disabled = 'true') AS CountProject
-    FROM usersCompany uC
-    LEFT JOIN usersBransh uB 
-          ON uC.id = uB.user_id 
-          AND uC.job NOT IN ('Admin') 
-    LEFT JOIN company EX 
-          ON EX.id = uC.IDCompany
-    LEFT JOIN companySub RE 
-          ON RE.NumberCompany = EX.id
-    LEFT JOIN Linkevaluation Li 
-          ON Li.IDcompanySub = RE.id
-    WHERE trim(uC.PhoneNumber) = trim(${PhoneNumber})   AND (
-       uC.job = 'Admin'
-       OR EXISTS (
-            SELECT 1
-            FROM usersBransh uB2
-            WHERE uB2.user_id = uC.id
-              AND uB2.idBransh = RE.id   -- الفروع المخوّل لها المستخدم فقط
-       )
-  ); `,
+        `WITH u AS (
+  SELECT id, IDCompany, job
+  FROM usersCompany
+  WHERE TRIM(PhoneNumber) = TRIM(${PhoneNumber})
+),
+authorized AS (
+  -- إذا كان Admin: كل فروع شركته
+  SELECT DISTINCT RE.id
+  FROM u
+  JOIN companySub RE
+    ON RE.NumberCompany = u.IDCompany
+  WHERE u.job = 'Admin'
+
+  UNION
+
+  -- إذا لم يكن Admin: الفروع المصرّح بها فقط (ومقيدة بنفس الشركة)
+  SELECT DISTINCT uB2.idBransh
+  FROM u
+  JOIN usersBransh uB2
+    ON uB2.user_id = u.id
+  JOIN companySub RE2
+    ON RE2.id = uB2.idBransh
+   AND RE2.NumberCompany = u.IDCompany
+)
+SELECT
+  RE.*,
+  (
+    SELECT COUNT(*)
+    FROM companySubprojects p
+    WHERE p.IDcompanySub = RE.id
+      AND p.Disabled = 'true'   -- أو TRUE إن كان منطقيًا
+  ) AS CountProject
+FROM companySub RE
+JOIN authorized A
+  ON A.id = RE.id
+ORDER BY RE.id;
+ `,
 
         function (err, result) {
           if (err) {
             reject(err);
             // console.error(err.message);
           } else {
-            console.log(result.length)
             resolve(result);
           }
           // console.log(result, "selecttable");
@@ -222,6 +231,9 @@ const SELECTTablecompanySubuser = (PhoneNumber) => {
     });
   });
 };
+
+
+
 const SELECTTablecompanySub = (
   id,
   type = "*",
@@ -438,6 +450,9 @@ const SELECTTABLEcompanyProjectall = (id) => {
 //               AND uP.ProjectID = cS.id )
 //         )
 //         WHERE trim(uC.PhoneNumber) =trim(${PhoneNumber})  AND (cS.id) ${plase} ${IDfinlty}   AND (cS.Disabled) =${Disabled}  ORDER BY cS.id ASC  ${Limit}
+
+
+
 const selecttablecompanySubProjectall = (
   id,
   IDfinlty,
@@ -453,59 +468,79 @@ const selecttablecompanySubProjectall = (
       db.all(
         kind === "all"
           ? `
-        SELECT 
-    CASE  
-        WHEN uC.job = 'Admin' THEN uC.job
-        WHEN cS.Nameproject IS NULL THEN NULL
-        ELSE uB.job
-    END AS job,
-    cS.id,
-    cS.IDcompanySub,
-    cS.Nameproject,
-    cS.Note,
-    cS.TypeOFContract,
-    cS.GuardNumber,
-    cS.LocationProject,
-    cS.ProjectStartdate,
-    cS.numberBuilding,
-    cS.Contractsigningdate,
-    cS.Disabled,
-    cS.Referencenumber, 
-    cS.rate,
-    cS.cost,
-    (SELECT COUNT(ValidityProject) FROM usersProject ut WHERE ut.ProjectID = cS.id) AS countuser,
-    EX.Cost AS ConstCompany,
-    EX.DisabledFinance,
-    Li.urlLink AS Linkevaluation,
-    CASE
-        WHEN uB.ValidityBransh IS NOT NULL THEN json_extract(uB.ValidityBransh, '$') 
-        ELSE NULL 
-    END AS ValidityBransh
-FROM usersCompany uC
-LEFT JOIN usersBransh uB 
-    ON uC.id = uB.user_id 
-    AND uC.job NOT IN ('Admin') 
-LEFT JOIN usersProject uP 
-    ON uB.idBransh = uP.idBransh 
-    AND uB.user_id = uP.user_id 
-LEFT JOIN companySubprojects cS 
-    ON (
-        (uC.job = 'Admin' AND cS.IDcompanySub = ${id})
-        OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${id})
-        OR (uC.job NOT IN ('Admin','مدير الفرع') 
-            AND uP.ProjectID = cS.id 
-            AND uB.idBransh = ${id})
+SELECT
+  CASE
+    WHEN uC.job = 'Admin' THEN 'Admin'
+    WHEN EXISTS (
+      SELECT 1
+      FROM usersBransh bX
+      WHERE bX.user_id = uC.id
+        AND bX.idBransh = cS.IDcompanySub
+        AND bX.job = 'مدير الفرع'
+    ) THEN 'مدير الفرع'
+    ELSE (
+      SELECT MAX(bY.job)
+      FROM usersBransh bY
+      WHERE bY.user_id = uC.id
+        AND bY.idBransh = cS.IDcompanySub
     )
-LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
-LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
-LEFT JOIN company EX ON EX.id = RE.NumberCompany
-WHERE 
-    TRIM(uC.PhoneNumber) = TRIM(${PhoneNumber})  
-    AND cS.id > ${IDfinlty}  
-    AND cS.Disabled = '${Disabled}'  
-ORDER BY cS.id ASC
-${Limit}
+  END AS job,
+  cS.id,
+  cS.IDcompanySub,
+  cS.Nameproject,
+  cS.Note,
+  cS.TypeOFContract,
+  cS.GuardNumber,
+  cS.LocationProject,
+  cS.ProjectStartdate,
+  cS.numberBuilding,
+  cS.Contractsigningdate,
+  cS.Disabled,
+  cS.Referencenumber,
+  cS.rate,
+  cS.cost,
+  (SELECT COUNT(*) FROM usersProject ut WHERE ut.ProjectID = cS.id) AS countuser,
+  EX.Cost AS ConstCompany,
+  EX.DisabledFinance,
+  (SELECT MAX(Li2.urlLink) FROM Linkevaluation Li2 WHERE Li2.IDcompanySub = cS.IDcompanySub) AS Linkevaluation,
+  JSON_EXTRACT((
+    SELECT MAX(bZ.ValidityBransh)
+    FROM usersBransh bZ
+    WHERE bZ.user_id = uC.id
+      AND bZ.idBransh = cS.IDcompanySub
+  ), '$') AS ValidityBransh
+FROM usersCompany uC
+JOIN company EX
+  ON EX.id = uC.IDCompany
+JOIN companySub RE
+  ON RE.NumberCompany = EX.id
+JOIN companySubprojects cS
+  ON cS.IDcompanySub = RE.id
+WHERE
+  REPLACE(TRIM(uC.PhoneNumber), ' ', '') = TRIM(${PhoneNumber})
+  AND cS.id ${plase} ${IDfinlty}
+  AND cS.Disabled = 'true'     -- إن كان منطقيًا استخدم TRUE
+  AND (
+       uC.job = 'Admin' AND cS.IDcompanySub = ${id}
+       OR EXISTS (  -- مدير فرع يرى جميع مشاريع الفرع/الفروع التي يديرها
+            SELECT 1
+            FROM usersBransh b1
+            WHERE b1.user_id  = uC.id
+              AND b1.idBransh = ${id}
+              AND b1.job      = 'مدير الفرع'
+       )
+       OR EXISTS (  -- المستخدم العادي يرى المشاريع المكلَّف بها
+            SELECT 1
+            FROM usersProject up1
+            WHERE up1.user_id  = uC.id 
+			 AND up1.idBransh = ${id}
+              AND up1.ProjectID = cS.id
+       )
+  )
+ORDER BY cS.id DESC
+${Limit};
 
+;
         `
           : `SELECT 
         cS.id AS ProjectID,cS.Nameproject
@@ -2222,8 +2257,7 @@ const SELECTallDatafromTableRequestsV2 = async (
               ${parseInt(lastID)} 
             ORDER BY re.RequestsID DESC,datetime(re.Date) DESC LIMIT 10`
           : `SELECT 
-    re.*, 
-    ${add},
+    re.*,     ${add},
     CASE
         WHEN re.Image IS NOT NULL THEN json_extract(re.Image, '$') 
         ELSE NULL
@@ -2385,10 +2419,11 @@ const SELECTTablePostPublicSearch = (
   branch,
   PostID,
   userJob = "موظف",
-  user
+  user,
+  PhoneNumber
 ) => {
   return new Promise((resolve, reject) => {
-    const isAdminOrBranchManager = userJob !== "موظف";
+    const isAdminOrBranchManager = userJob === "موظف";
 
     let SearchSub =
       type === "بحسب المشروع والتاريخ"
@@ -2417,7 +2452,7 @@ const SELECTTablePostPublicSearch = (
         EX.NameCompany, RE.NameSub, PR.Nameproject,
         (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
         (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
-        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ${user}) AS UserLiked
+        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = '${user}') AS UserLiked
 
         FROM Post ca
         LEFT JOIN company EX ON EX.id = ca.CommpanyID
@@ -2427,7 +2462,7 @@ const SELECTTablePostPublicSearch = (
 
     if (!isAdminOrBranchManager) {
       query += `
-    LEFT JOIN usersCompany us ON us.PhoneNumber = ?
+    LEFT JOIN usersCompany us ON us.PhoneNumber = ${PhoneNumber}
     INNER JOIN usersProject up ON up.ProjectID = ca.ProjectID  AND us.id = up.user_id
   `;
     }
@@ -2436,6 +2471,7 @@ const SELECTTablePostPublicSearch = (
         WHERE ca.CommpanyID = ?
         AND Date(Date) BETWEEN ? AND ?  ${SqlStringOne} 
         ORDER BY ca.PostID ASC) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`;
+        console.log(query, data);
     db.serialize(function () {
       db.all(query, data, function (err, result) {
         if (err) {
@@ -2641,7 +2677,7 @@ const SELECTTablepostAll = (
     let plus = parseInt(PostID) === 0 ? ">" : "<";
 
     // التحقق إذا كان مدير فرع أو admin
-    const isAdminOrBranchManager = userJob !== "موظف";
+    const isAdminOrBranchManager = userJob === "موظف";
 
     // إعداد الاستعلام حسب نوع المستخدم
     let query = `
@@ -2691,7 +2727,6 @@ const SELECTTablepostAll = (
     let values = [user];
     if (!isAdminOrBranchManager) values.push(PhoneNumber); // نضيف user_id فقط إذا كان شرط مفعّل
     values.push(id, formattedDate, PostID);
-
     db.serialize(function () {
       db.all(query, values, function (err, result) {
         if (err) {

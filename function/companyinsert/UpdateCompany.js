@@ -257,7 +257,6 @@ const sendNotificationRegistration = async (name) => {
 const DeleteCompanyRegistration = () => {
   return async (req, res) => {
     try {
-      console.log('hello world')
       const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");

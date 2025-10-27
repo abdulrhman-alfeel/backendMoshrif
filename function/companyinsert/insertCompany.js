@@ -179,10 +179,9 @@ const inseertCompanybrinsh = () => {
               NameSub,
               NumberCompany
             );
-            // console.log(check,checkGloble)
             if (check > 0) {
               await CheckAdmin(check, IDcompanySub.id);
-            }
+            };
             const Globaluser =
               checkGloble !== undefined ? Object.entries(checkGloble) : [];
             if (Globaluser.length > 0) {

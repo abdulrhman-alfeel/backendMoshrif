@@ -193,10 +193,9 @@ const SELECTTableusersCompanyVerification = (PhoneNumber) => {
 };
 const SELECTTablevalidityuserinBransh = (PhoneNumber, idBransh, number) => {
   return new Promise((resolve, reject) => {
-    console.log(PhoneNumber, idBransh, parseInt(number),'hhh');
     db.serialize(async () => {
       db.all(
-        `SELECT CASE WHEN  (SELECT pr.ProjectID FROM usersProject pr  LEFT JOIN usersCompany us ON us.id = pr.user_id WHERE ProjectID=ps.id AND trim(us.PhoneNumber)=trim(?) ) THEN 'true' ELSE 'false' END  AS cheack,ps.id  ,ps.Nameproject FROM companySubprojects  ps  WHERE  ps.IDcompanySub=? AND ps.id > ? ORDER BY ps.id ASC LIMIT 10`,
+        `SELECT CASE WHEN  (SELECT pr.ProjectID FROM usersProject pr  LEFT JOIN usersCompany us ON us.id = pr.user_id WHERE ProjectID=ps.id AND trim(us.PhoneNumber)=trim(?) ) THEN 'true' ELSE 'false' END  AS cheack,ps.id  ,ps.Nameproject FROM companySubprojects  ps  WHERE ps.Disabled="true" AND ps.IDcompanySub=? AND ps.id > ? ORDER BY ps.id ASC LIMIT 20`,
         [PhoneNumber, idBransh, parseInt(number)],
         function (err, result) {
           if (err) {
@@ -296,8 +295,50 @@ const SELECTTableusersCompanySub = (
   kind = "sub"
 ) => {
   return new Promise((resolve, reject) => {
-    let query = `
-SELECT 
+  // افترض أن هذه القيم موجودة لديك
+// const IDCompany, IDcompanySub, type, kind, ProjectID;
+
+let params = [IDCompany];
+const filters = [
+  "uC.job = 'Admin'"
+];
+
+// مدير الفرع
+if (IDcompanySub == null || IDcompanySub === 0) {
+  // بدون تقييد على الفرع
+  filters.push("uC.job = 'مدير الفرع'");
+} else {
+  filters.push("(uC.job = 'مدير الفرع' AND uB.idBransh = ?)");
+  params.push(IDcompanySub);
+}
+
+// الموظفين
+if (type === "PublicationsBransh") {
+  filters.push("(ca.jobdiscrption = 'موظف')");
+} else if (ProjectID != null) {
+  filters.push("(uC.job NOT IN ('Admin','مدير الفرع') AND ca.jobdiscrption = 'موظف' AND uP.ProjectID = ?)");
+  params.push(ProjectID);
+}
+
+// العهد
+if (kind === "CovenantBrinsh") {
+  filters.push("(ca.job IN ('Admin','مالية') OR uB.Acceptingcovenant = 'true')");
+}
+
+// المالية
+if (type === "Finance") {
+  filters.push("(uP.ValidityProject LIKE ?)");
+  params.push('%إشعارات المالية%');
+}
+
+// العملاء المرتبطون بمشروع
+if (ProjectID != null) {
+  filters.push("(ca.jobdiscrption = 'مستخدم' AND uP.ProjectID = ?)");
+  params.push(ProjectID);
+}
+
+const query = `
+SELECT DISTINCT
     ca.token,
     ca.userName,
     ca.Validity,
@@ -311,93 +352,27 @@ SELECT
     uC.id AS UserCompanyID,
     uC.job AS UserJob,
     uP.ProjectID
-FROM 
-    LoginActivaty ca
-LEFT JOIN company RE 
-    ON RE.id = ca.IDCompany
-LEFT JOIN companySub Su 
-    ON Su.NumberCompany = RE.id
-LEFT JOIN usersCompany uC 
-    ON uC.PhoneNumber = ca.PhoneNumber
-LEFT JOIN usersBransh uB 
-    ON uB.user_id = uC.id
-LEFT JOIN usersProject uP 
-    ON uP.idBransh = Su.id 
-   AND uP.user_id = uC.id
-LEFT JOIN companySubprojects cS 
-    ON cS.id = uP.ProjectID
-WHERE 
-    ca.IDCompany = ?
-    AND (
-        -- إذا كان أدمن
-        uC.job = 'Admin'
+FROM LoginActivaty ca
+LEFT JOIN company RE       ON RE.id = ca.IDCompany
+LEFT JOIN companySub Su    ON Su.NumberCompany = RE.id
+LEFT JOIN usersCompany uC  ON uC.PhoneNumber = ca.PhoneNumber
+LEFT JOIN usersBransh uB   ON uB.user_id = uC.id
+LEFT JOIN usersProject uP  ON uP.idBransh = Su.id AND uP.user_id = uC.id
+LEFT JOIN companySubprojects cS ON cS.id = uP.ProjectID
+WHERE ca.IDCompany = ?
+  AND (${filters.join(' OR ')})
 `;
 
-    if (IDcompanySub === 0) {
-      query += `
-        OR (uC.job = 'مدير الفرع')
-  `;
-    } else {
-      query += `
-        -- إذا كان مدير فرع ويطابق رقم الفرع
-        OR (uC.job = 'مدير الفرع' AND uB.idBransh = ${IDcompanySub})
-  `;
+db.serialize(() => {
+  db.all(query, params, (err, result) => {
+    if (err) {
+      console.error(err);
+      return reject(err);
     }
-
-    if (type === "PublicationsBransh") {
-      query += `
-        -- إذا موظف عادي (مع التحقق أن الوصف "موظف")
-        OR (
-            ca.jobdiscrption = 'موظف'
-        )
-  `;
-    } else {
-      query += `
-        -- إذا موظف عادي (مع التحقق أن الوصف "موظف") مرتبط بمشروع
-        OR (
-            uC.job NOT IN ('Admin','مدير الفرع')
-            AND ca.jobdiscrption = 'موظف'
-            AND uP.ProjectID = ${ProjectID}
-        )
-  `;
-    }
-
-    if (kind === "CovenantBrinsh") {
-      query += `
-        OR (
-            ca.job IN ("Admin","مالية") 
-            OR uB.Acceptingcovenant = "true"
-        )
-  `;
-    }
-
-    if (type === "Finance") {
-      query += `
-        OR (
-            uP.ValidityProject LIKE '%إشعارات المالية%'
-        )
-  `;
-    }
-
-    query += `
-        -- إذا كان عميل مرتبط بمشروع معين
-        OR (
-            ca.jobdiscrption = 'مستخدم'
-            AND uP.ProjectID = ${ProjectID}
-        )
-    );
-`;
-
-    db.serialize(async () => {
-      db.all(query, [IDCompany], function (err, result) {
-        if (err) {
-          reject(err);
-          console.error(err.message);
-        } else {
-          resolve(result);
-        }
-      });
-    });
+    resolve(result);
+  });
+});
+;
   });
 };
 // WHERE value LIKE '%مرحلة%'
@@ -479,9 +454,10 @@ const SELECTTABLEHR = async (
 ) => {
   return new Promise((resolve, reject) => {
     const plase = parseInt(LastID) === 0 ? ">" : "<";
+
     db.serialize(function () {
       db.all(
-        `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",Dateday)=? AND pr.id ${plase} ? AND CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
+        `SELECT pr.*, us.userName FROM Prepare pr LEFT JOIN usersCompany us ON us.id = pr.idUser  WHERE pr.IDCompany=? AND strftime("%Y-%m",pr.Dateday)=? AND pr.id ${plase} ? AND pr.CheckIntime IS NOT NULL ${search} ORDER BY pr.id DESC ${LIMIT}`,
         [IDCompany, Dateday, LastID],
         function (err, result) {
           if (err) {
@@ -607,7 +583,6 @@ const SelectTableUserPrepareObjectcheck = async (IDCompany, PhoneNumber) => {
             console.log(err.message);
             reject(err);
           } else {
-            console.log("result", result);
             resolve(result?.idUser || null);
           }
         }

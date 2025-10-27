@@ -54,6 +54,7 @@ const xlsx = require("xlsx");
 const {
   insertDataprojectsubScripation,
 } = require("../subscripation/opreationSubscripation");
+const { sendNote } = require("../chate/ChatJobsClass");
 const OpreationProjectInsertv2 = async (
   IDcompanySub,
   Nameproject,
@@ -1301,8 +1302,10 @@ const InsertDatainTableRequests = (uploadQueue) => {
       const Data = req.body.Data;
       const user = req.body.user;
       let arrayImage = [];
+
       if (Type !== "تصنيف الإضافة" && Boolean(Type) && Boolean(Data)) {
         if (req.files && req.files.length > 0) {
+          
           for (let index = 0; index < req.files.length; index++) {
             const element = req.files[index];
             await uploaddata(element);
@@ -1310,7 +1313,8 @@ const InsertDatainTableRequests = (uploadQueue) => {
           }
         } else {
           arrayImage = null;
-        }
+        };
+
         await insertTablecompanySubProjectRequestsForcreatOrder([
           ProjectID,
           Type,
@@ -1319,13 +1323,27 @@ const InsertDatainTableRequests = (uploadQueue) => {
           arrayImage !== null ? JSON.stringify(arrayImage) : null,
           `${new Date()}`,
         ]);
+         let Filemassge ={};
+        if(arrayImage &&  arrayImage?.length > 0){
+         Filemassge = {
+          uri:arrayImage[0],
+          name:arrayImage[0],
+          type:req.files[0].mimetype,
+          size:req.files[0].size,
+          location:{}
+        };
+      }
+        let masseges = `${Type}: ${Data}`;
+        sendNote(ProjectID,masseges,Filemassge,userSession)
         res.send({ success: "تمت العملية بنجاح" }).status(200);
-        await Financeinsertnotification(
-          ProjectID,
-          "طلب",
-          "إضافة",
-          userSession.userName
-        );
+        
+        // await Financeinsertnotification(
+        //   ProjectID,
+        //   "طلب",
+        //   "إضافة",
+        //   userSession.userName
+        // );
+
       } else {
         res.send({ success: "يجب ادخال التصنيف" }).status(401);
       }

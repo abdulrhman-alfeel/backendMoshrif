@@ -57,7 +57,6 @@ function calculateHoursBetween(startTime, endTime) {
 
   // Calculate the difference in milliseconds
   const diffMs = end - start;
-  console.log(diffMs);
   // Convert milliseconds to hours
   const diffHours = diffMs / (1000 * 60 * 60);
 
@@ -75,6 +74,16 @@ function calculateDaysDifference(date1, date2) {
 
 };
 
+
+
+
+const esc = (v) =>
+  String(v ?? "-")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 
 
@@ -145,7 +154,6 @@ const Stage = async (teble, StartDate, types = "new") => {
     // console.log(newData,'helllow');
 
     const newData = await ChangeDate(teble, StartDate);
-    console.log(newData[0].StartDate,newData[0].EndDate)
     for (let index = 0; index < newData.length; index++) {
       const item = teble[index];
       let number = types === "new" ? `(${index + 1})` : "";
@@ -262,7 +270,6 @@ const insertStageinDatabase = () => {
             ]);
           }
         }
-        console.log("ok");
         resolve(true);
       } else {
         reject(new Error("No data found in the Excel file."));
@@ -435,5 +442,6 @@ module.exports = {
   switchWeek,
   converttimetotext,
   convertTimeToMonth,
-  StageTempletXsl2
+  StageTempletXsl2,
+  esc
 };

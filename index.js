@@ -59,7 +59,6 @@ const Templet = require("./routes/Templet.js");
 const simpleCompanies = require("./DashbordMoshrif/simple-companies");
 const simpleAuth = require("./DashbordMoshrif/simple-auth");
 const simpleDashboard = require("./DashbordMoshrif/simple-dashboard");
-const stageTemplates = require("./DashbordMoshrif/stageTemplates");
 const loginActivity = require("./DashbordMoshrif/loginActivity");
 const cron = require("node-cron");
 const moment = require("moment-timezone");
@@ -152,7 +151,6 @@ app.use("/Maintenance", require("./systemUpdate.js"));
 app.use("/api/dashbord/auth", simpleAuth);
 app.use("/api/companies", simpleCompanies);
 app.use("/api/dashboard", simpleDashboard);
-app.use("/api/stage-templates", stageTemplates);
 app.use("/api/login-activity", loginActivity);
 
 // لاستقبال الملفات والصور
@@ -347,7 +345,6 @@ const insertDataproject = async () => {
   'false' AS Done,           -- عمود ثابت بقيمة string 'false'
   189 AS ProjectID    FROM StagesSubTemplet WHERE StageID='${element.StageID}' `
       );
-      console.log(result);
       arrayStageSub.push(...result);
     }
 

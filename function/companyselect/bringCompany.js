@@ -78,7 +78,7 @@ const biringDatabrinshCompany = () => {
         const cachedData = JSON.parse(cached);
         // console.log("Data fetched from cache");
         return res.send({ masseg: "succfuly", ...cachedData }).status(200);
-      }
+      };
 
       const result = await getCompanyBranchesForUser(IDCompany, userSession);
       res
@@ -106,13 +106,14 @@ async function getCompanyBranchesForUser(IDCompany, userSession) {
     "count",
     "COUNT(idOrder) AS count"
   );
+  const company = await SELECTTablecompany(IDCompany,'NameCompany,CommercialRegistrationNumber,Country');
 
   return {
     data: arrayBrinsh,
-    nameCompany: arrayBrinsh[0].NameCompany,
-    CommercialRegistrationNumber: arrayBrinsh[0].CommercialRegistrationNumber,
-    Country: arrayBrinsh[0].Country,
-    Covenantnumber: Covenantnumber.count,
+    nameCompany: company?.NameCompany ,
+    CommercialRegistrationNumber: company?.CommercialRegistrationNumber ,
+    Country: company?.Country ,
+    Covenantnumber: Covenantnumber?.count ,
   };
 }
 

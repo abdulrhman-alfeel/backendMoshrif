@@ -212,7 +212,7 @@ const UpdatUserCompanyinBrinshV2 = () => {
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
-      }
+      };
 
       Addusertraffic(
         userSession.userName,
@@ -302,7 +302,6 @@ const Updatchackglobluserinbrinsh = async (
   checkGlobleold,
   userName
 ) => {
-  // console.log(checkGloblenew, checkGlobleold, "mmmmmmmm");
 
   const deletedkeys = Object.keys(checkGlobleold);
   //   المحذوف من الاوبجكت القديم
@@ -357,7 +356,6 @@ const UpdatchackAdmininbrinshv2 = async (
   //  ثم حذف صلاحيت الفرع من ضمن صلاحيات
   //  ثم يتم الاستعلام إذا كان لديه صلاحية مدير فرع في فروع اخرى
   // إذا لايوجد يتم تغيير وظيفته إلى عضو وإلا يبقى كما هيا
-  console.log(checkGlobleold, checkGloblenew);
   //  عملية حذف صلاحية من شخص ما
   await DeleteuserBransh(checkGlobleold, idBrinsh);
 
@@ -400,7 +398,6 @@ const Updatchackglobluserinbrinshv2 = async (
   checkGlobleold,
   userName
 ) => {
-  // console.log(checkGloblenew, checkGlobleold, "mmmmmmmm");
 
   const deletedkeys = Object.keys(checkGlobleold);
   //   المحذوف من الاوبجكت القديم
@@ -437,6 +434,13 @@ const Updatchackglobluserinbrinshv2 = async (
           "idBransh",
           "usersBransh",
           "job != 'مدير الفرع' AND"
+        );
+            await DeleteuserBransh(
+          element,
+          idBrinsh,
+          "user_id",
+          "idBransh",
+          "usersProject"
         );
       }
     }
@@ -516,7 +520,7 @@ const opreationAddvalidityuserBrinshorCovenant = async (
           idBrinsh,
           type,
           element.id,
-          element.Validity,
+          JSON.stringify(element.Validity),
         ]);
       }
       // If the type is a number, call AddUserInProject

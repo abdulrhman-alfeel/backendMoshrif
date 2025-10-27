@@ -1160,7 +1160,6 @@ const BringreportRequessts = () => {
 
     const resulttotal = await SelectOrdertabletotalreport(where);
     const result = await SelectdetailsOrders(where);
-    console.log(job, jobdiscrption, where, result.length);
 
     if (result.length === 0) {
       return res
@@ -1180,7 +1179,7 @@ const BringreportRequessts = () => {
       type: type,
     })
       .then((info) => {
-        console.log("تم إنشاء التقرير:", info);
+        // console.log("تم إنشاء التقرير:", info);
       })
       .catch(console.error);
     if (fs.existsSync(filePath)) {

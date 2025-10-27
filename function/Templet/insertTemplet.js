@@ -142,23 +142,90 @@ for (let item of b) {
   const stageID = Object.values(item)[stageIDColumnIndex]; 
 
   if (stageID === stageIDToSearch) {
-    console.log(Object.values(item)[2]); // سيتم طباعة الكائن الذي يحتوي على StageID 3
     break; // التوقف بعد العثور على العنصر
   }
 }
 // console.log(b)
 
+// const insertStageTempletinDatabase = async (path) => {
+//     try {
+    
+//       const data = await StageTempletXsl2(path, 0);
+      
+//       if (data && data.length > 0) {
+//         console.log(data);
+//         const dataSub = await StageTempletXsl2(path, 1);
+//         const result = await SELECTFROMTableStageTempletmax(
+//           "عام",
+//           1
+//         );
+        
+//         let StageIDnew = Number(result.StageID || 0);
+//         for (const item of data) {
+//           const elements = Object.values(item);
+//           const validationMessage =
+//           checkIfNumber(elements, 0) || checkIfNumber(elements, 3);
+//           StageIDnew += 1;
+          
+          
+//           console.log(path,elements);
+//           if (elements[3] && Number(elements[3])) {
+//             const finRatio = data
+//               .filter((items) => Object.values(items)[0] === elements[0]) // التصفية فقط للأرقام
+//               .reduce((acc, curr) => acc + Number(curr.Ratio), 0);
+//             if (finRatio > 100) {
+//               return res.status(200).send({
+//                 success: "يجب ان تكون النسبة التقديرية اقل من 100",
+//               });
+//             }
+//           }
+//          const ListID = await insertTableStagestype(elements[1]);
+
+
+
+//           if (dataSub && dataSub.length > 0) {
+//             //  console.log( StageIDnew,
+//             // elements[0],
+//             // elements[1],
+//             // elements[2],
+//             // Number(elements[3] || 0),
+//             // null,
+//             // 1,
+//             // ListID,'hhh',dataSub)
+//             for (const itemsub of dataSub) {
+//               let sub = Object.values(itemsub);
+//               if (sub[0] === elements[0]) {
+//                 console.log(  StageIDnew,
+//                     sub[1],
+//                     1,
+//                     ListID,sub[0] === elements[0],'hhhhh')
+             
+//               }
+//             }
+//           }
+//         }
+
+       
+//       } else {
+//         new Error("No data found in the Excel file.");
+//       }
+//     } catch (error) {
+      
+//     }
+// };
+
+
+// insertStageTempletinDatabase('D:\\ppp\\aldy\\Purebred_horses\\38\\backend\\StagesTempletEXcel2.xlsx')
 const insertStageTempletinDatabase = (uploadQueue) => {
   return async (req, res) => {
     try {
       const userSession = req.session.user;
       if (!userSession) {
         res.status(401).send("Invalid session");
-      }
+      };
 
       const data = await StageTempletXsl2(req.file.path, 0);
       if (data && data.length > 0) {
-        const ListID = await insertTableStagestype(data.Type);
         const dataSub = await StageTempletXsl2(req.file.path, 1);
         const result = await SELECTFROMTableStageTempletmax(
           "عام",
@@ -172,8 +239,6 @@ const insertStageTempletinDatabase = (uploadQueue) => {
           const validationMessage =
             checkIfNumber(elements, 0) || checkIfNumber(elements, 3);
           StageIDnew += 1;
-          console.log(validationMessage, "hhhhh");
-          console.log(elements[3], "hhhhh");
 
           if (validationMessage) {
             return res.status(200).send({
@@ -181,9 +246,9 @@ const insertStageTempletinDatabase = (uploadQueue) => {
             });
           }
 
-          if (elements[4] && Number(elements[4])) {
+          if (elements[3] && Number(elements[3])) {
             const finRatio = data
-              .filter((items) => Object.values(items)[1] === elements[1]) // التصفية فقط للأرقام
+              .filter((items) => Object.values(items)[0] === elements[0]) // التصفية فقط للأرقام
               .reduce((acc, curr) => acc + Number(curr.Ratio), 0);
             if (finRatio > 100) {
               return res.status(200).send({
@@ -191,13 +256,14 @@ const insertStageTempletinDatabase = (uploadQueue) => {
               });
             }
           }
-          console.log(elements[3], "hhhh");
+          const ListID = await insertTableStagestype( elements[1]);
+
           await insertTablecompanySubProjectStagetemplet([
             StageIDnew,
+            elements[0],
             elements[1],
             elements[2],
-            elements[3],
-            Number(elements[4] || 0),
+            Number(elements[3] || 0),
             null,
             userSession?.IDCompany,
             ListID,

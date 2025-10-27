@@ -118,10 +118,7 @@ const insertTableusersBranshAcceptingcovenant = (data) => {
 };
 const insertTableusersBransh = (data) => {
   try {
-    console.log(
-      `INSERT INTO usersBransh (idBransh,user_id,job) VALUES (?,?,?)`,
-      data
-    );
+
     db.serialize(function () {
       db.run(
         `INSERT INTO usersBransh (idBransh,user_id,job) VALUES (?,?,?)`,
@@ -266,7 +263,6 @@ const insertTableallStagestype = () => {
               }
 
               const newTypeId = this.lastID;
-              console.log("Inserted Type:", element.Type, " => ID:", newTypeId);
 
               // تحديث StagesTemplet
               db.run(
@@ -279,7 +275,6 @@ const insertTableallStagestype = () => {
                     console.error("Update StagesTemplet error:", err);
                     return;
                   }
-                  console.log("Updated StagesTemplet rows:", this.changes);
 
                   // جلب StageID
                   db.all(

@@ -171,7 +171,6 @@ const BringUsersjustforHR = () => {
         userSession?.IDCompany,
         `AND userName LIKE '%${userName}%' AND jobdiscrption='موظف' `,
         "",
-        "id,IDCompany,userName,IDNumber,PhoneNumber,job,jobdiscrption"
       );
       let userarray = [];
       for (let index = 0; index < result.length; index++) {
@@ -280,7 +279,6 @@ const openViliteduser = (uploadQueue) => {
         console.log("Invalid session");
       }
       const user = await SelectTableUserPrepareObjectcheck(userSession.IDCompany,userSession.PhoneNumber);
-      console.log("user", !user ? false:true);
       return res.status(200).send({ success:!user ? false:true,error: "User not found" });
 
     } catch (error) {
