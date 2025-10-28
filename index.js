@@ -1,20 +1,3 @@
-// selectuser.js
-// HR.js
-// bringHR.js
-// opreationPreparation.js
-// systemUpdet.js
-// companySub.js
-
-// INsertteble.js
-// createteble.js
-// selected.js
-// update.js
-// Aid.js
-// jwt.js
-// writHtml.js
-// insertProject.js
-// UpdateProject.js
-// opreationSubscripation.js
 
 // redis-server.exe
 // PS D:\ppp\aldy\Purebred_horses\38\backend> Set-ExecutionPolicy -ExecutionPolicy
@@ -80,7 +63,6 @@ const db = require("./sql/sqlite.js");
 
 // Set up middlewares
 app.use(cors());
-// app.use(helmet());
 app.use(express.json());
 app.use(
   helmet.contentSecurityPolicy({
@@ -171,6 +153,8 @@ app.post("/companies/delete", async (req, res) => {
     res.send({ ok: true, message: "نرجو اكمال البيانات " }).status(200);
   }
 });
+
+
 app.get("/UploadDatabase", async (req, res) => {
   try {
     await bucket.upload("./mydatabase.db");
@@ -363,42 +347,7 @@ const insertDataproject = async () => {
   }
 };
 // insertDataproject();
-// const insertDataproject = async () => {
-//   let arrayStageCUST = [];
-//   let arrayStageSub = [];
 
-//   try {
-//     const dbAll = promisify(db.all).bind(db);
-
-//     // جلب بيانات StagesCUST
-//     arrayStageCUST = await dbAll(
-//       `SELECT * FROM StagesCUST WHERE ProjectID=206`
-//     );
-
-//     // جلب بيانات StagesSub
-//     for (const element of arrayStageCUST) {
-//       const result = await dbAll(
-//         `SELECT * FROM StagesSub WHERE StagHOMID='${element.StageID}' AND ProjectID=${element.ProjectID}`
-//       );
-//       arrayStageSub.push(...result);
-//     }
-
-//     console.log("عدد StagesCUST:", arrayStageCUST.length);
-//     console.log("عدد StagesSub:", arrayStageSub.length);
-
-//     // إرسال البيانات في دفعات
-//     await sendInChunks(arrayStageCUST, arrayStageSub);
-
-//     return {
-//       StageCUST: arrayStageCUST,
-//       StageSub: arrayStageSub,
-//     };
-//   } catch (error) {
-//     console.error("حدث خطأ:", error);
-//   }
-// };
-
-// insertDataproject();
 
 app.post(
   "/api/file",

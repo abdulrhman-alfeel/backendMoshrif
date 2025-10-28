@@ -31,6 +31,193 @@ const convertArabicToEnglish = (arabicNumber) => {
     .join("");
 };
 
+
+
+function isDigits(str) {
+  return /^\d+$/.test(str);
+}
+
+function isExactDigits(str, n) {
+  return new RegExp(`^\\d{${n}}$`).test(str);
+}
+
+function isNonEmpty(str) {
+  return String(str || "").trim().length > 0;
+}
+
+function lenBetween(str, min, max) {
+  const l = String(str || "").trim().length;
+  return l >= min && l <= max;
+}
+
+function isEmail(v) {
+  // بسيط ومعتدل
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v));
+}
+
+function isValidLocalPhone9(v){ return /^\d{9}$/.test(String(v || "")); }
+
+function isValidUrl(v) {
+  try {
+    const u = new URL(String(v));
+    return /^https?:$/.test(u.protocol) && !!u.hostname;
+  } catch { return false; }
+}
+function isHttpUrl(s){
+  const str = String(s ?? "").trim();
+  return /^https?:\/\/[^\s]+$/i.test(str);
+}
+
+function parseAmount(input) {
+  if (input == null) return NaN;
+  let s = convertArabicToEnglish(input);
+  s = s.replace(/[^\d.,]/g, "");     // إزالة أي رموز
+  s = s.replace(/،/g, ",");          // فاصلة عربية
+  s = s.replace(/٫/g, ".");          // نقطة عربية
+  s = s.replace(/,/g, "");           // إزالة الفواصل
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? +n.toFixed(2) : NaN;
+}
+
+
+function parseRatio(v) {
+  const s = convertArabicToEnglish(v).replace(/،/g, ",").replace(/٫/g, ".").replace(/,/g, "");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+function onlyDateISO(d) {
+  const z = new Date(d);
+  if (isNaN(+z)) return null;
+  return new Date(Date.UTC(z.getFullYear(), z.getMonth(), z.getDate()))
+    .toISOString().split("T")[0];
+}
+
+function parseNonNegativeInt(v){
+  const s = convertArabicToEnglish(v).replace(/\D/g,"");
+  if (s === "") return NaN;
+  const n = Number(s);
+  return Number.isInteger(n) && n >= 0 ? n : NaN;
+}
+
+function parsePositiveInt(v) {
+  const s = convertArabicToEnglish(v);
+  if (!isDigits(s)) return NaN;
+  const n = Number(s);
+  return Number.isInteger(n) && n > 0 ? n : NaN;
+}
+function parseNonNegativeFloat(v) {
+  if (v == null || v === "") return NaN;
+  let s = convertArabicToEnglish(v);
+  s = s.replace(/،/g, ",").replace(/٫/g, "."); // دعم الفواصل العربية
+  s = s.replace(/,/g, "");
+  const n = parseFloat(s);
+  return Number.isFinite(n) && n >= 0 ? +n : NaN;
+}
+
+function parseRatio0to100(v) {
+  if (v === undefined || v === null || String(v).trim() === "") return NaN;
+  let s = convertArabicToEnglish(v).replace(/،/g,",").replace(/٫/g,".").replace(/,/g,"");
+  const n = Number(s);
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : NaN;
+}
+function sanitizeFilename(name) {
+  return String(name || "")
+    .replace(/[\0<>:"/\\|?*\u0000-\u001F]+/g, "") // محارف غير صالحة
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function sanitizeFolderName(name) {
+  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، شرطة/شرطة سفلية، أقواس، نقطة، & 
+  return String(name || "")
+    .replace(/[^A-Za-z0-9\u0600-\u06FF\s\-_().&]/g, "") // إزالة المحارف غير المسموح بها
+    .replace(/\s+/g, " ")                                // مسافات متتالية -> مسافة واحدة
+    .trim()
+    .replace(/^[.\-_\s]+|[.\-_\s]+$/g, "");             // إزالة محارف غير مرغوبة من البداية/النهاية
+}
+
+function sanitizeName(name) {
+  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، - _ . ( ) & 
+  return String(name || "")
+    .replace(/[^A-Za-z0-9\u0600-\u06FF\s\-_().&]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[.\-_\s]+|[.\-_\s]+$/g, "");
+}
+function collectSingleFile(req) {
+  if (req.file) return req.file;
+  if (Array.isArray(req.files) && req.files.length) return req.files[0];
+  if (req.files && typeof req.files === "object") {
+    const values = Object.values(req.files).flat();
+    return values[0];
+  }
+  return null;
+}
+function collectFiles(req){
+  if (Array.isArray(req.files)) return req.files;
+  if (req.files && typeof req.files === "object") return Object.values(req.files).flat();
+  return [];
+}
+
+function normalizePhone(raw) {
+  // يدعم 05XXXXXXXX أو 9665XXXXXXXX → 5XXXXXXXX
+  let d = convertArabicToEnglish(raw).replace(/\D/g, "");
+  if (d.startsWith("966")) d = d.slice(3);
+  if (d.startsWith("0")) d = d.slice(1);
+  return d; // نتوقع 9 أرقام محلية
+}
+
+function isMeaningfulNote(v) {
+  const s = String(v ?? "").trim().toLowerCase();
+  return s.length > 0 && s !== "null" && s !== "undefined";
+}
+
+function ensureIdArray(val) {
+  // يقبل: Array | "1,2,3" | رقم واحد | undefined
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    const s = val.trim();
+    if (!s) return [];
+    return s.split(",").map(x => x.trim());
+  }
+  if (typeof val === "number") return [val];
+  return [];
+}
+function normalizeIds(arr) {
+  const out = [];
+  const seen = new Set();
+  for (const v of ensureIdArray(arr)) {
+    const n = parsePositiveInt(v);
+    if (Number.isFinite(n) && !seen.has(n)) { seen.add(n); out.push(n); }
+  }
+  return out;
+}
+
+
+function tryParseDateISO(v) {
+  // يحاول تحويل المدخل إلى YYYY-MM-DD (اختياري)
+  if (!isNonEmpty(v)) return null;
+  const s = convertArabicToEnglish(v).trim();
+  // يدعم: YYYY-MM-DD أو DD/MM/YYYY
+  let d;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    d = new Date(s + "T00:00:00");
+  } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+    const [dd, mm, yyyy] = s.split("/");
+    d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+  } else {
+    d = new Date(s); // محاولة أخيرة
+  }
+  if (isNaN(+d)) return null;
+  return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+    .toISOString().split("T")[0];
+}
+
+
+
+
+
+
+
 const verificationfromdata = async (array) => {
   try {
     let count = 0;
@@ -388,7 +575,10 @@ const convertTimeToMonth = (time) => {
   const month = switchMonth(currentDate.toFormat("MMMM")); // Extracting the full month name
   return month;
 };
-
+function toISO(d=new Date()){
+  // UTC ISO (اليوم فقط)
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString();
+}
 
 const moveviltayeuseer =()=>{
   return new Promise(async(resolve,reject)=>{
@@ -443,5 +633,31 @@ module.exports = {
   converttimetotext,
   convertTimeToMonth,
   StageTempletXsl2,
-  esc
+  esc,
+  isDigits,
+  isExactDigits,
+  isNonEmpty,
+  lenBetween,
+  isEmail,
+  isValidUrl,
+  parseAmount,
+  parsePositiveInt,
+  parseNonNegativeFloat,
+  parseRatio,
+  onlyDateISO,
+  sanitizeFilename,
+  sanitizeFolderName,
+  isMeaningfulNote,
+  normalizeIds,
+  collectFiles,
+  tryParseDateISO,
+  sanitizeName,
+  collectSingleFile,
+  normalizePhone,
+  isHttpUrl,
+  parseNonNegativeInt,
+  isValidLocalPhone9,
+  toISO,
+  parseRatio0to100
+
 };

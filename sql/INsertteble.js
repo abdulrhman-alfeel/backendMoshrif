@@ -46,7 +46,7 @@ const insertTablecompanySub = async (data) => {
           if (err) {
             resolve(false);
           } else {
-            resolve(true);
+            resolve(this.lastID);
           }
           // console.log(`Row with the ID has been inserted.`);
         }

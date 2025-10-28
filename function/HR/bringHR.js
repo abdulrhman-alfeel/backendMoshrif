@@ -223,8 +223,7 @@ const createstatementPdf = () => {
         let day = `${years}-${dates(month)}-${number}`;
         arrayday.push(day);
       }
-      const userName = String(hrData.userName).replace("/", " ");
-      namefile = `${userName}_${new Date().getMinutes()}.pdf`;
+      namefile = `${PhoneNumber}_${new Date().getMinutes()}.pdf`;
       const filePath = path.join(__dirname, "../../upload", namefile);
 
       const htmlContent = await HtmlStatmentHR(arrayday, hrData, company);

@@ -1133,7 +1133,7 @@ const selectStagestypeforProject = (IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} OR IDCompany = 1`,
+        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} OR IDCompany = 1 AND trim(Type) != trim('عام')`,
         function (err, result) {
           if (err) {
             reject(err);

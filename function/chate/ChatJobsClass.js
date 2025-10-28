@@ -49,68 +49,98 @@ const ClassChatOpration = async (Socket, io) => {
   }
 };
 
+// === Helpers خفيفة ===
+function safeJsonParse(value, fallback = null) {
+  try {
+    if (value == null) return fallback;
+    if (typeof value === "object") return value; // already parsed
+    const s = String(value).trim();
+    if (!s) return fallback;
+    return JSON.parse(s);
+  } catch {
+    return fallback;
+  }
+}
+function isVideoFile(fileObj) {
+  if (!fileObj || typeof fileObj !== "object") return false;
+  const t = String(fileObj.type || "").toLowerCase();
+  return t.startsWith("video");
+}
+function shouldCreatePostForStage(stageId) {
+  // استثناءات كما في منطقك
+  const s = String(stageId ?? "").trim();
+  return !["قرارات", "استشارات", "اعتمادات", "تحضير"].includes(s);
+}
+
 const OpreactionSend_message = async (data) => {
-  let result;
-  if (data?.kind === "delete") {
-    const chackdata = await bringdatachate(data, "delete");
-    if(chackdata){
+  let result = null;
+
+  try {
+    if (data?.kind === "delete") {
+      // ===== مسار الحذف =====
+      const chackdata = await bringdatachate(data, "delete");
+      if (!chackdata) return null;
+
+      // حذف من جداول الشات/المستخدمين
       result = await DeleteChatfromdatabaseanddatabaseuser(chackdata);
-      if (Object.entries(chackdata?.File).length > 0 && String(JSON.parse(chackdata?.File).type).startsWith("video")) {
-        await Deleteposts(JSON.parse(chackdata.File).name);
+
+      // إن كان مرفق فيديو: احذف البوست المرتبط
+      const fileObj = safeJsonParse(chackdata?.File, null);
+      if (isVideoFile(fileObj) && fileObj?.name) {
+        try { await Deleteposts(fileObj.name); } catch (e) { /* لا تُسقط العملية */ }
       }
+
+      return result;
     }
-  } else {
+
+    // ===== مسار الإدراج =====
+    // منع التكرار إن توفر bringdatachate كتحقّق
     const chackdata = await bringdatachate(data);
     if (!chackdata) {
+      // توزيع البيانات حسب بنية قواعدك
       const newData = Datadistribution(data);
-      if (Number(data?.StageID)) {
 
+      // إدراج في جدول المرحلة أو العام
+      if (Number(data?.StageID)) {
         await insertTableChateStage(newData);
         result = await SELECTTableChateStageOtherroad(data.idSendr);
-        //  ادخال البيانات جدول البوستات
       } else {
         await insertTableChate(newData);
         result = await SELECTTableChateotherroad(data.idSendr);
       }
 
-      // "./upload"
-
       if (result) {
-        if (
-          data?.StageID !== "قرارات" &&
-          data?.StageID !== "استشارات" &&
-          data?.StageID !== "اعتمادات" &&
-          data?.StageID !== "تحضير"
-        ) {
-          await insertPostURL(data);
+        // نشر بوست للفيديو فقط، وللمراحل المسموح بها
+        if (shouldCreatePostForStage(data?.StageID)) {
+          // insertPostURL نفسها تتحقق من نوع "video" داخليًا، لكن هذا تقليل للنداء غير الضروري
+          const fileObj = safeJsonParse(data?.File, null);
+          if (isVideoFile(fileObj)) {
+            try { await insertPostURL(data); } catch (_) {}
+          }
         }
-        result.File = JSON.parse(result.File);
-        result.Reply = JSON.parse(result.Reply);
+
+        result.File = safeJsonParse(result.File, {});
+        result.Reply = safeJsonParse(result.Reply, {});
         result.arrived = true;
         result.kind = "new";
-        // if (data?.StageID !== "تحضير") {
-        //   await ChateNotfication(
-        //     data.ProjectID,
-        //     data?.StageID,
-        //     data.message,
-        //     data.Sender,
-        //     data.Reply,
-        //     data.File
-        //   );
-        // }
       }
+
+      return result;
     } else {
-      result = {
+      // رسالة وصلت سابقًا (تكرار)
+      return {
         ...chackdata,
-        File: JSON.parse(chackdata.File),
-        Reply: JSON.parse(chackdata.Reply),
+        File: safeJsonParse(chackdata.File, {}),
+        Reply: safeJsonParse(chackdata.Reply, {}),
         arrived: true,
+        // الإبقاء على التسمية كما هي في مشروعك لتجنب كسر الواجهة
         kind: "mssageEnd",
       };
     }
+  } catch (e) {
+    console.log("OpreactionSend_message error:", e?.message || e);
+    return null;
   }
-
-  return result;
 };
 
 
@@ -229,9 +259,9 @@ const Datadistribution = (data) => {
     let newData = [
       data.idSendr,
       data?.StageID,
-      data.ProjectID,
-      data.Sender,
-      data.message,
+      parsePositiveInt(data.ProjectID),
+      esc(data.Sender),
+      esc(data.message),
       `${new Date().toUTCString()}`,
       JSON.stringify(data.File),
       JSON.stringify(data.Reply),
@@ -402,41 +432,79 @@ const ClassViewChat = () => {
   };
 };
 
+
+function sanitizeType(t){
+  const s = String(t ?? "").trim();
+  // نسمح بحروف عربية/إنجليزية/أرقام/فراغ/وصلات/شرطات سفلية
+  const ok = /^[A-Za-z0-9\u0600-\u06FF _-]{1,50}$/.test(s);
+  return ok ? s : "عام";
+}
 //  لاستقبال مشاهدات الرسائل
 const ClassreceiveMessageViews = () => {
   return async (req, res) => {
     try {
-      const { userName, ProjectID, type } = req.body;
+      // ✅ التحقق من الجلسة (اختياري لكنه أنسب للتتبّع)
+      const userSession = req.session?.user;
+      if (!userSession) {
+        return res.status(401).json({ error: "Invalid session" });
+      }
 
-      const result = await SELECTLastTableChateID(ProjectID, type, userName);
+      // ✅ التقاط/تحقق المدخلات
+      const rawUserName = req.body?.userName ?? userSession.userName;
+      const userName = String(rawUserName ?? "").trim();
+      const ProjectID = parsePositiveInt(req.body?.ProjectID);
+      const type = sanitizeType(req.body?.type);
 
-      for (let index = 0; index < result.length; index++) {
-        const element = result[index];
-        const data = await SELECTTableViewChateUser(
-          element.chatID,
-          userName,
-          type
-        );
+      const errors = {};
+      if (!isNonEmpty(userName) || !lenBetween(userName, 2, 100)) errors.userName = "اسم المستخدم غير صالح";
+      if (!Number.isFinite(ProjectID)) errors.ProjectID = "رقم المشروع غير صالح";
+      if (!isNonEmpty(type)) errors.type = "نوع القناة/المرحلة غير صالح";
+      if (Object.keys(errors).length) {
+        return res.status(400).json({ error: "أخطاء في التحقق من المدخلات", details: errors });
+      }
 
-        if (data?.length === 0) {
-          const viewSend = {
-            ProjectID: ProjectID,
-            chatID: element.chatID,
-            userName: userName,
-            Date: new Date(),
-            type: type,
-          };
+      // ✅ جلب رسائل آخر ID بحسب المشروع والنوع والمستخدم
+      const list = await SELECTLastTableChateID(ProjectID, type, userName);
+      const items = Array.isArray(list) ? list : [];
 
-          await ClassChatOprationView(viewSend);
+      if (items.length === 0) {
+        // لا يوجد شيء للتحديث
+        return res.status(200).json({ success: true, updated: 0 });
+      }
+
+      // ✅ إزالة التكرار حسب chatID
+      const chatIDs = Array.from(new Set(items.map(e => e?.chatID).filter(Boolean)));
+
+      // ✅ فحص ووسم "تمت مشاهدته" لكل رسالة لم تُوسم
+      let updated = 0;
+      for (const chatID of chatIDs) {
+        try {
+          const exists = await SELECTTableViewChateUser(chatID, userName, type);
+          if (!exists || exists.length === 0) {
+            const viewSend = {
+              ProjectID,
+              chatID,
+              userName,
+              Date: toISO(),   // وقت UTC ISO
+              type
+            };
+            await ClassChatOprationView(viewSend);
+            updated++;
+          }
+        } catch (e) {
+          // لا تُسقط العملية كلها بسبب عنصر واحد
+          console.warn("mark-view failed for chatID:", chatID, e);
         }
       }
-      res.status(200).send("Message views updated successfully");
+
+      return res.status(200).json({ success: true, updated });
     } catch (error) {
       console.error("Error updating message views:", error);
-      res.status(500).send("Failed to update message views");
+      return res.status(500).json({ error: "Failed to update message views" });
     }
   };
 };
+
 
 const verification = async (data) => {
   let result;
@@ -455,8 +523,8 @@ const verification = async (data) => {
 
 const { GoogleAuth } = require("google-auth-library");
 const { Deleteposts } = require("../postpublic/updatPost");
-const { lstat } = require("fs");
 const moment = require("moment");
+const { parsePositiveInt,esc, isNonEmpty, lenBetween } = require("../../middleware/Aid");
 const initializeUpload = () => {
   return async (req, res) => {
     // قراءة بيانات الاعتماد من ملف JSON

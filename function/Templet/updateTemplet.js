@@ -1,4 +1,5 @@
 const { uploaddata } = require("../../bucketClooud");
+const { parseRatio0to100, parsePositiveInt, sanitizeFilename, isNonEmpty, sanitizeName, lenBetween } = require("../../middleware/Aid");
 const { implmentOpreationSingle } = require("../../middleware/Fsfile");
 const {
   SELECTFROMTableStageTempletaObject,
@@ -11,116 +12,174 @@ const {
   UPDATETableStagetype,
 } = require("../../sql/update");
 
+const ALLOWED_MIMES = ["image/png","image/jpeg","image/jpg","image/webp","application/pdf"];
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+// ===== UpdateStageHome =====
 const UpdateStageHome = (uploadQueue) => {
   return async (req, res) => {
     try {
-      const userSession = req.session.user;
-      if (!userSession) {
-        return res.status(401).send("Invalid session");
-      }
-      const { StageIDtemplet, Type, StageName, Days, Ratio, attached } =
-        req.body;
+      const userSession = req.session?.user;
+      if (!userSession) return res.status(401).send("Invalid session");
 
-      if (!StageIDtemplet || !Type || !StageName) {
-        return res.status(400).send({ error: "جميع الحقول مطلوبة" });
-      }
+      let { StageIDtemplet, Type, StageName, Days, Ratio, attached } = req.body || {};
 
+      // تحقق/تنظيف
+      const stageIdTpl = parsePositiveInt(StageIDtemplet);
+      const cleanType  = String(Type ?? "").trim();
+      const cleanName  = sanitizeName(StageName);
+      const daysInt    = parseNonNegativeInt(Days);
+      const ratioNum   = parseRatio0to100(Ratio);
+      const fileFromReq = req.file ? sanitizeFilename(req.file.filename) : null;
+      const attachedName = fileFromReq || (isNonEmpty(attached) ? sanitizeFilename(attached) : null);
+
+      const errors = {};
+      if (!Number.isFinite(stageIdTpl)) errors.StageIDtemplet = "معرّف القالب غير صالح";
+      if (!isNonEmpty(cleanType)) errors.Type = "النوع مطلوب";
+      if (!isNonEmpty(cleanName) || !lenBetween(cleanName, 2, 150)) errors.StageName = "اسم المرحلة مطلوب (2–150)";
+      if (!Number.isFinite(daysInt)) errors.Days = "الأيام يجب أن تكون عددًا صحيحًا ≥ 0";
+      if (!Number.isFinite(ratioNum)) errors.Ratio = "النسبة (0–100)";
+      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+
+      // جلب المرحلة مع مجموع نسب النوع
       const stage = await SELECTFROMTableStageTempletaObject(
-        StageIDtemplet,
+        stageIdTpl,
         userSession?.IDCompany,
-        `,(SELECT SUM(Ratio) FROM StagesTemplet WHERE Type ='${Type}' AND IDCompany=${userSession?.IDCompany}) AS TotalRatio `
+        `,(SELECT SUM(Ratio) FROM StagesTemplet WHERE Type='${cleanType}' AND IDCompany=${userSession?.IDCompany}) AS TotalRatio`
       );
+      if (!stage) return res.status(404).json({ error: "المرحلة غير موجودة" });
 
-      // حساب مجموع النسب التقديرية الحالية مع النسبة الجديدة
-      const currentRatio = stage?.TotalRatio || 0; // إذا كانت النسبة غير موجودة، تعتبر 0
-      const totalRatio = currentRatio + Number(Ratio);
+      // فحص ملف مرفق اختياري
+      if (req.file) {
+        const mime = String(req.file.mimetype || "");
+        const size = Number(req.file.size || 0);
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ error: "نوع المرفق غير مدعوم" });
+        if (size > MAX_FILE_SIZE)        return res.status(400).json({ error: "حجم المرفق يتجاوز 15MB" });
+        await uploaddata(req.file);
+        await implmentOpreationSingle("upload", attachedName);
+      }
 
-      // التحقق إذا كانت النسبة الإجمالية أكبر من 100
-      if (totalRatio > 100) {
-        return res
-          .status(400)
-          .send({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
+      // إصلاح جمع النِّسب: (المجموع الحالي - نسبة القديمة + الجديدة) لأن SUM يشمل الحالية
+      const oldRatio  = Number(stage?.Ratio || 0);
+      const totalNow  = Number(stage?.TotalRatio || 0);
+      const newTotal  = cleanType !== "عام" ? (totalNow - oldRatio + ratioNum) : ratioNum;
+      if (newTotal > 100) {
+        return res.status(400).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
       }
-      await UPDATETablecompanySubProjectStagetemplet(
-        req.body,
-        userSession?.IDCompany,
-        res
-      );
-      if (stage) {
-        let split = stage?.StageName?.split("(");
-        let b = split[1].trim();
-        await UPDATEStopeProjectStageCUSTv2([
-          Type,
-          `${StageName} (${b}`,
-          Days,
-          parseInt(Ratio),
-          attached,
-          StageIDtemplet,
-        ]);
-        return res.send({ success: "تمت العملية بنجاح" }).status(200);
-      }
+
+      // بناء اسم نهائي يحافظ على رقم الترتيب الموجود بين قوسين (إن وُجد)
+      const originalName = String(stage?.StageName || "");
+      const matchIdx = originalName.match(/\((\d{1,4})\)\s*$/);
+      const idx = matchIdx ? matchIdx[1] : null;
+      const finalStageName = idx ? `${cleanName} (${idx})` : cleanName;
+
+      // تحديث جدول القوالب (نمرر payload منقّح بدل req.body الخام)
+      const payload = {
+        StageIDtemplet: stageIdTpl,
+        Type: cleanType,
+        StageName: finalStageName,
+        Days: daysInt,
+        Ratio: ratioNum,
+        attached: attachedName
+      };
+      await UPDATETablecompanySubProjectStagetemplet(payload, userSession?.IDCompany, res);
+
+      // تحديث المراحل المفتوحة المنسوخة من القالب
+      await UPDATEStopeProjectStageCUSTv2([
+        cleanType,
+        finalStageName,
+        daysInt,
+        Math.round(ratioNum),
+        attachedName,
+        stageIdTpl,
+      ]);
+
+      return res.status(200).json({ success: "تمت العملية بنجاح" });
     } catch (error) {
-      console.error("Error inserting stage home:", error);
-      res.status(500).send({ error: "حدث خطأ أثناء إدخال البيانات" });
+      console.error("UpdateStageHome error:", error);
+      return res.status(500).json({ error: "حدث خطأ أثناء التحديث" });
     }
   };
 };
 
+// ===== UpdateStageSub =====
 const UpdateStageSub = (uploadQueue) => {
   return async (req, res) => {
     try {
-      const userSession = req.session.user;
+      const userSession = req.session?.user;
+      if (!userSession) return res.status(401).send("Invalid session");
 
-      if (!userSession) {
-        return res.status(401).send("Invalid session");
-      }
-      const { StageSubID, StageSubName } = req.body;
-      const attached = req.file ? req.file.filename : null;
+      const { StageSubID, StageSubName } = req.body || {};
+      const subId   = parsePositiveInt(StageSubID);
+      const subName = sanitizeName(StageSubName);
+      const fileFromReq = req.file ? sanitizeFilename(req.file.filename) : null;
 
-      if (!StageSubID || !StageSubName) {
-        return res.status(400).send({ error: "جميع الحقول مطلوبة" });
-      }
-      if (!attached) {
-        await UPDATETablecompanySubProjectStageSubtemplet([
-          StageSubName,
-          StageSubID,
-          userSession.IDCompany,
-        ]);
-      } else {
-        await UPDATETablecompanySubProjectStageSubtemplet(
-          [StageSubName, attached, StageSubID, userSession.IDCompany],
-          "StageSubName=?, attached=?"
-        );
+      const errors = {};
+      if (!Number.isFinite(subId)) errors.StageSubID = "معرّف الخطوة غير صالح";
+      if (!isNonEmpty(subName) || !lenBetween(subName, 2, 150)) errors.StageSubName = "اسم الخطوة مطلوب (2–150)";
+      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+
+      let attached = null;
+      if (fileFromReq) {
+        const mime = String(req.file.mimetype || "");
+        const size = Number(req.file.size || 0);
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ error: "نوع المرفق غير مدعوم" });
+        if (size > MAX_FILE_SIZE)        return res.status(400).json({ error: "حجم المرفق يتجاوز 15MB" });
+        attached = fileFromReq;
         await uploaddata(req.file);
         implmentOpreationSingle("upload", attached);
       }
 
-      res.send({ success: "تمت العملية بنجاح" }).status(200);
+      if (!attached) {
+        await UPDATETablecompanySubProjectStageSubtemplet([
+          subName,
+          subId,
+          userSession.IDCompany,
+        ]);
+      } else {
+        await UPDATETablecompanySubProjectStageSubtemplet(
+          [subName, attached, subId, userSession.IDCompany],
+          "StageSubName=?, attached=?"
+        );
+      }
+
+      // مزامنة اسم/مرفق الخطوة في النسخ المُنشأة من هذا القالب
       await UPDATETablecompanySubProjectStagesSubv2([
-        StageSubName,
+        subName,
         attached,
-        StageSubID,
+        subId,
       ]);
+
+      return res.status(200).json({ success: "تمت العملية بنجاح" });
     } catch (error) {
-      console.error("Error inserting stage sub:", error);
-      res.status(500).send({ error: "حدث خطأ أثناء إدخال البيانات" });
+      console.error("UpdateStageSub error:", error);
+      return res.status(500).json({ error: "حدث خطأ أثناء التحديث" });
     }
   };
 };
 
+// ===== UpdateTypeTemplet =====
 const UpdateTypeTemplet = () => {
   return async (req, res) => {
-    const {Type,id} = req.body;
-    const userSession = req.session.user;
-    if (!userSession) {
-      return res.status(401).send("Invalid session");
-    };
-    console.log(Type,id);
-    await UPDATETableStagetype(Type,id, userSession.IDCompany)
-        return res.send({ success: "تمت العملية بنجاح" }).status(200);
+    try {
+      const { Type, id } = req.body || {};
+      const userSession = req.session?.user;
+      if (!userSession) return res.status(401).send("Invalid session");
 
+      const cleanType = sanitizeName(Type);
+      const typeId    = parsePositiveInt(id);
 
+      const errors = {};
+      if (!Number.isFinite(typeId)) errors.id = "معرّف النوع غير صالح";
+      if (!isNonEmpty(cleanType) || !lenBetween(cleanType, 1, 100)) errors.Type = "اسم النوع مطلوب (1–100)";
+      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
 
+      await UPDATETableStagetype(cleanType, typeId, userSession.IDCompany);
+      return res.status(200).json({ success: "تمت العملية بنجاح" });
+    } catch (error) {
+      console.error("UpdateTypeTemplet error:", error);
+      return res.status(500).json({ error: "حدث خطأ أثناء التحديث" });
+    }
   };
 };
 
