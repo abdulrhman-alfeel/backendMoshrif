@@ -2,11 +2,11 @@
 
 
 # node.js
-# git rm --cached mydatabase23.db
+# git rm --cached 
 
 node_modules/
 backendMoshrif.json
 serviceAccountKeys.json
 .env
 mydatabase.db
-mydatabase23.db
+mydatabase23.dbmydatabase*.db
