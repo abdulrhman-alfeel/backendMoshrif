@@ -1,5 +1,5 @@
 const { uploaddata } = require("../../bucketClooud");
-const { parseRatio0to100, parsePositiveInt, sanitizeFilename, isNonEmpty, sanitizeName, lenBetween } = require("../../middleware/Aid");
+const { parseRatio0to100, parsePositiveInt, sanitizeFilename, isNonEmpty, sanitizeName, lenBetween, parseNonNegativeInt } = require("../../middleware/Aid");
 const { implmentOpreationSingle } = require("../../middleware/Fsfile");
 const {
   SELECTFROMTableStageTempletaObject,
@@ -26,7 +26,7 @@ const UpdateStageHome = (uploadQueue) => {
 
       // تحقق/تنظيف
       const stageIdTpl = parsePositiveInt(StageIDtemplet);
-      const cleanType  = String(Type ?? "").trim();
+      const cleanType  = Type;
       const cleanName  = sanitizeName(StageName);
       const daysInt    = parseNonNegativeInt(Days);
       const ratioNum   = parseRatio0to100(Ratio);
@@ -45,8 +45,10 @@ const UpdateStageHome = (uploadQueue) => {
       const stage = await SELECTFROMTableStageTempletaObject(
         stageIdTpl,
         userSession?.IDCompany,
-        `,(SELECT SUM(Ratio) FROM StagesTemplet WHERE Type='${cleanType}' AND IDCompany=${userSession?.IDCompany}) AS TotalRatio`
+        `,(SELECT SUM(Ratio) FROM StagesTemplet WHERE trim(Type)=trim('${cleanType}') AND IDCompany=${userSession?.IDCompany}) AS TotalRatio`
       );
+            console.log(errors,stage);
+
       if (!stage) return res.status(404).json({ error: "المرحلة غير موجودة" });
 
       // فحص ملف مرفق اختياري
@@ -77,7 +79,7 @@ const UpdateStageHome = (uploadQueue) => {
       const payload = {
         StageIDtemplet: stageIdTpl,
         Type: cleanType,
-        StageName: finalStageName,
+        StageName: cleanName,
         Days: daysInt,
         Ratio: ratioNum,
         attached: attachedName

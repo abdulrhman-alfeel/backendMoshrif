@@ -2,7 +2,6 @@ const { createTokens } = require("../../middleware/jwt");
 const { DELETETableLoginActivaty } = require("../../sql/delete");
 const { insertTableLoginActivaty } = require("../../sql/INsertteble");
 const {
-  SELECTTableUsernameBrinsh,
   SELECTTablecompany,
 } = require("../../sql/selected/selected");
 
@@ -54,40 +53,95 @@ const Loginuser = () => {
           masseg:
             "الرقم غير موجوود تأكد من الرقم المدخل او تواصل بالمسؤول لاضافتك كمستخدم جديد",
         })
-        .status(201);
+        .status(200);
     }
   };
 };
 
 const axios = require("axios");
 
-const verificationSend = (number, chack = null, title = null) => {
-  try {
-    let title1 = Boolean(chack)
+
+
+
+
+
+
+
+
+
+const verificationSend = async (number, chack = null, title = null) => {
+    const url = "https://api.mottasl.ai/v1/message/send?create=true";
+let title1 = Boolean(chack)
       ? `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`
       : title;
-    const url = "https://el.cloud.unifonic.com/rest/Messages/SendBulk";
-    const params = {
-      AppSid: "ll3noHmCZwsFLD7B6ysdm2Vmhh3U0p",
-      SenderID: "Mushrf.com",
-      Body: title1,
-      // Recipient: `966567256943`,
-      Recipient: switchNumber(number),
-    };
-    const headers = {
-      accept: "application/json",
-    };
 
-    axios
-      .post(url, null, { params, headers })
-      .then((response) => {})
-      .catch((error) => {
-        console.error(error);
-      });
-  } catch (err) {
-    console.log(err);
+
+  const data = {
+    recipient_type: "individual",
+    to:`${String(switchNumber(number)).trim()}`,
+    type: "template",
+    source: "agent",
+    preview_url: false,
+    agent_id: 1,
+    template: {
+      template_id: "sendtest",
+      language: "ar",
+      argument: {
+        HEADER: [],
+        BODY: [title1], // محتوى الرسالة
+        FOOTER: [],
+        BUTTONS: []
+      }
+    }
+  };
+
+  try {
+    const response = await axios.post(url, data, {
+      headers: {
+        Authorization: `Bearer ${process.env.TOKEN_WHATSAPP}`,
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    });
+
+    console.log("Response Status:", response.status);
+    // console.log("Response Body:", response.data);
+  } catch (error) {
+    if (error.response) {
+      console.error("Error Status:", error.response.status);
+      console.error("Error Body:", error.response.data);
+    } else {
+      console.error("Error:", error.message);
+    }
   }
 };
+// const verificationSend = (number, chack = null, title = null) => {
+//   try {
+//     let title1 = Boolean(chack)
+//       ? `للدخول لمنصة مشرف استخدم رمز التحقق : ${chack}`
+//       : title;
+//     const url = "https://el.cloud.unifonic.com/rest/Messages/SendBulk";
+//     const params = {
+//       AppSid: "ll3noHmCZwsFLD7B6ysdm2Vmhh3U0p",
+//       SenderID: "Mushrf.com",
+//       Body: title1,
+//       // Recipient: `966567256943`,
+//       Recipient: switchNumber(number),
+//     };
+//     const headers = {
+//       accept: "application/json",
+//     };
+
+//     axios
+//       .post(url, null, { params, headers })
+//       .then((response) => {})
+//       .catch((error) => {
+//         console.error(error);
+//       });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
 
 const switchNumber = (number) => {
   if (number.startsWith("+")) {
@@ -142,13 +196,13 @@ const LoginVerification = () => {
       } else {
         res
           .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
-          .status(201);
+          .status(200);
       }
     } catch (error) {
       console.log(error);
       res
         .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
-        .status(201);
+        .status(200);
     }
   };
 };
@@ -193,13 +247,13 @@ const LoginVerificationv2 = () => {
       } else {
         res
           .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
-          .status(201);
+          .status(200);
       }
     } catch (error) {
       console.log(error);
       res
         .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
-        .status(201);
+        .status(200);
     }
   };
 };

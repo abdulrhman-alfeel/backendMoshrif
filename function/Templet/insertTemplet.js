@@ -9,6 +9,7 @@ const {
   isNonEmpty,
   sanitizeFilename,
   parseRatio0to100,
+  esc,
 } = require("../../middleware/Aid");
 const { implmentOpreationSingle } = require("../../middleware/Fsfile");
 const {

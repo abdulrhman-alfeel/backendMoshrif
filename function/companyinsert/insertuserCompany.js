@@ -102,7 +102,7 @@ const userCompany = () => {
         JSON.stringify(validityPayload ?? Validity ?? {}), // نضمن JSON صحيح
       ]);
 
-      return res.status(201).json({
+      return res.status(200).json({
         success: true,
         message: "تمت العملية بنجاح",
         data: {

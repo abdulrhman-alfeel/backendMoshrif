@@ -123,7 +123,7 @@ const insertDataCompany = () => {
       // إرجاع أخطاء التحقق إن وجدت
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({
-          success: false,
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
         });
@@ -150,7 +150,7 @@ const insertDataCompany = () => {
 
       if (!isDataValid) {
         return res.status(400).json({
-          success: false,
+          success: "يجب إكمال جميع البيانات المطلوبة",
           message: "يجب إكمال جميع البيانات المطلوبة",
         });
       }
@@ -162,7 +162,7 @@ const insertDataCompany = () => {
       );
       if (existingCompany) {
         return res.status(409).json({
-          success: false,
+          success: "الشركة موجودة بالفعل",
           message: "الشركة موجودة بالفعل",
         });
       }
@@ -171,7 +171,7 @@ const insertDataCompany = () => {
       const phoneUsed = await SELECTTableusersCompanyVerification(phoneNo);
       if (Array.isArray(phoneUsed) && phoneUsed.length > 0) {
         return res.status(409).json({
-          success: false,
+          success: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
           message: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
         });
       }
@@ -196,8 +196,8 @@ const insertDataCompany = () => {
       await sendNotificationCompany(normalized.NameCompany);
 
       // --- 9) رد النجاح
-      return res.status(201).json({
-        success: true,
+      return res.status(200).json({
+        success: "نرحب بك في منصة مشرف، سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحتها.",
         message:
           "نرحب بك في منصة مشرف، سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحتها.",
       });
@@ -295,7 +295,7 @@ const inseertCompanybrinsh = () => {
 
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({
-          success: false,
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
         });
@@ -305,7 +305,7 @@ const inseertCompanybrinsh = () => {
       const companyRow = await SELECTTablecompanyName(normalized.NumberCompany);
       if (!companyRow) {
         return res.status(404).json({
-          success: false,
+          success:  "يرجى إنشاء حساب شركة قبل البدء بالفروع",
           message: "يرجى إنشاء حساب شركة قبل البدء بالفروع",
         });
       }
@@ -317,7 +317,7 @@ const inseertCompanybrinsh = () => {
       );
       if (existingBranch) {
         return res.status(409).json({
-          success: false,
+          success:  "الفرع موجود مسبقاً",
           message: "الفرع موجود مسبقاً",
         });
       }
@@ -334,20 +334,20 @@ const inseertCompanybrinsh = () => {
       if (!listID || !listID) {
         // حالة نادرة: لم نستطع جلب المعرّف
         return res.status(500).json({
-          success: false,
+          success:  "تم إنشاء الفرع لكن حدثت مشكلة في استرجاع المعرّف",
           message: "تم إنشاء الفرع لكن حدثت مشكلة في استرجاع المعرّف",
         });
       }
 
       // 7) تعيينات إضافية (مشرف/عمومي) حسب منطقك
       if (normalized.check > 0) {
-        await CheckAdmin(normalized.check, inserted.id);
+        await CheckAdmin(normalized.check, listID);
       }
 
       const globalEntries =
         normalized.checkGloble !== undefined ? Object.entries(normalized.checkGloble) : [];
       if (globalEntries.length > 0) {
-        await CheckGlobal(normalized.checkGloble, inserted.id);
+        await CheckGlobal(normalized.checkGloble, listID);
       }
 
       // 8) تحديث عداد الفروع للشركة
@@ -358,16 +358,15 @@ const inseertCompanybrinsh = () => {
       await UpdateTableinnuberOfcurrentBranchescompany([total, normalized.NumberCompany]);
 
       // 9) رد النجاح
-      return res.status(201).json({
-        success: true,
+      return res.status(200).json({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
-        IDcompanySub: inserted.id,
       });
 
     } catch (error) {
       console.error("insertCompanyBranch error:", error);
       return res.status(500).json({
-        success: false,
+        success:  "يوجد خطأ في العملية التي قمت بها",
         message: "يوجد خطأ في العملية التي قمت بها",
       });
     }
@@ -402,7 +401,7 @@ const InsertLinkevaluation = () => {
 
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({
-          success: false,
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
         });
@@ -413,20 +412,20 @@ const InsertLinkevaluation = () => {
       if (existing) {
         await UpdateTableLinkevaluation([esc(link), convertArabicToEnglish(esc(idStr))]);
         return res.status(200).json({
-          success: true,
+          success:  "تم تحديث رابط التقييم بنجاح",
           message: "تم تحديث رابط التقييم بنجاح",
         });
       } else {
         await insertTableLinkevaluation([convertArabicToEnglish(esc(idStr)), esc(link)]);
-        return res.status(201).json({
-          success: true,
+        return res.status(200).json({
+          success: "تم إنشاء رابط التقييم بنجاح",
           message: "تم إنشاء رابط التقييم بنجاح",
         });
       }
     } catch (error) {
       console.error("insertLinkEvaluation error:", error);
       return res.status(500).json({
-        success: false,
+        success: "فشل تنفيذ العملية",
         message: "فشل تنفيذ العملية",
       });
     }
@@ -509,7 +508,7 @@ const insertRequestFinancialCustody = () => {
 
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({
-          success: false,
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
         });
@@ -538,8 +537,8 @@ const insertRequestFinancialCustody = () => {
       }
 
       // 7) رد النجاح
-      return res.status(201).json({
-        success: true,
+      return res.status(200).json({
+        success: "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         idOrder,
       });
@@ -547,7 +546,7 @@ const insertRequestFinancialCustody = () => {
     } catch (error) {
       console.error("insertRequestFinancialCustody error:", error);
       return res.status(500).json({
-        success: false,
+        success: "فشل تنفيذ العملية",
         message: "فشل تنفيذ العملية",
       });
     }

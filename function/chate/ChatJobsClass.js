@@ -37,8 +37,7 @@ const { v4: uuidv4 } = require("uuid");
 const ClassChatOpration = async (Socket, io) => {
   try {
     Socket.on("send_message", async (data) => {
-      // console.log("user connected", data);
-      const result = await OpreactionSend_message(data);
+    const result = await OpreactionSend_message(data);
 
       io.to(`${data.ProjectID}:${data?.StageID}`)
         .timeout(50)
@@ -488,6 +487,7 @@ const ClassreceiveMessageViews = () => {
               Date: toISO(),   // وقت UTC ISO
               type
             };
+
             await ClassChatOprationView(viewSend);
             updated++;
           }
@@ -524,7 +524,7 @@ const verification = async (data) => {
 const { GoogleAuth } = require("google-auth-library");
 const { Deleteposts } = require("../postpublic/updatPost");
 const moment = require("moment");
-const { parsePositiveInt,esc, isNonEmpty, lenBetween } = require("../../middleware/Aid");
+const { parsePositiveInt,esc, isNonEmpty, lenBetween, toISO } = require("../../middleware/Aid");
 const initializeUpload = () => {
   return async (req, res) => {
     // قراءة بيانات الاعتماد من ملف JSON

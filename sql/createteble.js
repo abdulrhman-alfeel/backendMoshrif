@@ -227,12 +227,12 @@ END;
   //   ALTER TABLE StagesSubTemplet
   //   ADD COLUMN Stagestype_id INTEGER  NULL ;`)
 
-  // db.run(`
-  //   ALTER TABLE company
-  //   ADD COLUMN State TEXT NULL DEFAULT 'true';`)
-  // db.run(`
-  //   ALTER TABLE company
-  //   ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
+//   db.run(`
+//     ALTER TABLE company
+//     ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+//   db.run(`
+//     ALTER TABLE company
+//     ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
 
 //  db.run( `ALTER TABLE company ADD COLUMN usertype TEXT NULL DEFAULT 'شركات'`);
 //  db.run(`
@@ -242,24 +242,24 @@ END;
 //   ALTER TABLE subscripation
 //   ADD COLUMN price DECIMAL;`)
 
-  // db.run(`
-  //   ALTER TABLE StagesCUST
-  //   ADD COLUMN Referencenumber INTEGER NULL;`)
-  // db.run(`
-  //   ALTER TABLE Expense
-  //   ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
-  // db.run(`
-  //   ALTER TABLE Expense
-  //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-  // db.run(`
-  //   ALTER TABLE Revenue
-  //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-  // db.run(`
-  //   ALTER TABLE Revenue
-  //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-  // db.run(`
-  //   ALTER TABLE Returns
-  //   ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE StagesCUST
+//     ADD COLUMN Referencenumber INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Expense
+//     ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
+//   db.run(`
+//     ALTER TABLE Expense
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Revenue
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Revenue
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Returns
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
   //
   // db.run(`

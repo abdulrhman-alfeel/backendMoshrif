@@ -45,7 +45,7 @@ const BringDataprojectAndStages = () => {
       // ادخال المراحل في مصفوفة داخل المشروع
     } catch (error) {
       console.log(error);
-      res.send({ success: "فشل تنفيذ العملية" }).status(201);
+      res.send({ success: "فشل تنفيذ العملية" }).status(200);
     }
   };
 };

@@ -67,7 +67,7 @@ const insertPostURL = async (items) => {
       sender,
       fileName || "video",           // اسم ظاهر
       fileType,
-      message || null,               // قد يكون null
+      message || '',               // قد يكون null
       toISO(),                       // وقت UTC ISO
       stageId,
       projectId,

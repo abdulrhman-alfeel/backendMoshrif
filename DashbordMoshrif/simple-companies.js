@@ -193,7 +193,7 @@ router.post("/", async (req, res, next) => {
 
     const newCompany = { id: result.id, ...companyData };
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "تم إنشاء الشركة بنجاح",
       data: await transformCompanyData(newCompany),
@@ -486,7 +486,7 @@ router.post("/:id/subs", async (req, res, next) => {
       [id, name, address || "", email || "", phone || ""]
     );
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "تم إنشاء الفرع بنجاح",
       data: {

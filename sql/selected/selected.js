@@ -1023,7 +1023,7 @@ const SELECTFROMTableStageTempletaObject = (number, IDCompany, add = "") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-        `SELECT te.StageIDtemplet,us.StageName,te.attached ${add} FROM StagesTemplet te LEFT JOIN StagesCUST us ON us.StageID = te.StageID WHERE us.Referencenumber='${number}' AND te.IDCompany=${IDCompany}`,
+        `SELECT te.StageIDtemplet,us.StageName,te.attached ${add} FROM StagesTemplet te LEFT JOIN StagesCUST us ON us.StageID = te.StageID WHERE te.StageIDtemplet='${number}' AND te.IDCompany=${IDCompany}`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -1133,7 +1133,7 @@ const selectStagestypeforProject = (IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} OR IDCompany = 1 AND trim(Type) != trim('عام')`,
+        `SELECT * FROM Stagestype WHERE IDCompany = ${IDCompany} AND trim(Type) != trim('عام') OR IDCompany = 1 AND trim(Type) != trim('عام')`,
         function (err, result) {
           if (err) {
             reject(err);

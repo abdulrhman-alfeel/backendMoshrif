@@ -40,6 +40,7 @@ const verifyJWT = (req, res, next) => {
 
 const StopeData = async (id) => {
   const data = await SELECTTablecompany(id, "State,Suptype");
+  console.log(data);
   if (data.State === "false" && data.Suptype !== "مجاني") return false;
 
   return true;

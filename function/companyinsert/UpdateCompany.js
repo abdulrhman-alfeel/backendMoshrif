@@ -42,6 +42,7 @@ const {
   isDigits,
   esc,
   normalizePhone,
+  isEmail,
 } = require("../../middleware/Aid");
 
 
@@ -159,11 +160,11 @@ const UpdateDataCompany = () => {
       }
 
       // 6) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success:  "تمت العملية بنجاح" , message: "تمت العملية بنجاح" });
 
     } catch (err) {
       console.error("UpdateDataCompany error:", err);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success: "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 };
@@ -228,7 +229,7 @@ const UpdateApiCompany = () => {
 
     } catch (err) {
       console.error("UpdateApiCompany error:", err);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success: "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 };
@@ -272,13 +273,13 @@ const AgreedRegistrationCompany = () => {
       const phoneLocal = normalizePhone(dataCompany?.PhoneNumber);
       const nameStr = String(dataCompany?.NameCompany ?? "").trim();
       if (!isDigits(crnDigits) || crnDigits.length < 5) {
-        return res.status(400).json({ success: false, message: "السجل التجاري غير صالح في طلب التسجيل" });
+        return res.status(400).json({ success: "السجل التجاري غير صالح في طلب التسجيل", message: "السجل التجاري غير صالح في طلب التسجيل" });
       }
       if (!/^\d{9}$/.test(phoneLocal)) {
-        return res.status(400).json({ success: false, message: "رقم الجوال غير صالح في طلب التسجيل" });
+        return res.status(400).json({ success:  "رقم الجوال غير صالح في طلب التسجيل", message: "رقم الجوال غير صالح في طلب التسجيل" });
       }
       if (!isNonEmpty(nameStr)) {
-        return res.status(400).json({ success: false, message: "اسم الشركة غير صالح في طلب التسجيل" });
+        return res.status(400).json({ success:  "اسم الشركة غير صالح في طلب التسجيل", message: "اسم الشركة غير صالح في طلب التسجيل" });
       }
 
       // 6) التحقق من عدم وجود الشركة مسبقاً
@@ -290,7 +291,7 @@ const AgreedRegistrationCompany = () => {
         // في حال كانت الشركة موجودة بالفعل، نحذف طلب التسجيل ونكتفي
         await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
         return res.status(409).json({
-          success: false,
+          success: "الشركة مسجّلة بالفعل",
           message: "الشركة مسجّلة بالفعل",
         });
       }
@@ -315,7 +316,7 @@ const AgreedRegistrationCompany = () => {
       // 9) الحصول على الشركة المُدرجة (id)
       const checkCompany = await SelectVerifycompanyexistence(crnDigits);
       if (!checkCompany || !checkCompany.id) {
-        return res.status(500).json({ success: false, message: "تعذّر تأكيد إنشاء الشركة" });
+        return res.status(500).json({ success: "تعذّر تأكيد إنشاء الشركة", message: "تعذّر تأكيد إنشاء الشركة" });
       }
 
       // 10) التحقق من المستخدم (الجوال) قبل إنشاء المستخدم الإداري
@@ -324,7 +325,7 @@ const AgreedRegistrationCompany = () => {
         // في حال الرقم مستخدم، نحذف الشركة التي أنشأناها للتو؟ (حسب منطقك)
         // أو فقط نُرجع خطأ. هنا نرجع 409 ونبقي الشركة (يمكنك تعديل المنطق).
         return res.status(409).json({
-          success: false,
+          success:  "رقم الجوال مستخدم بالفعل في حساب شركة",
           message: "رقم الجوال مستخدم بالفعل في حساب شركة",
         });
       }
@@ -354,8 +355,8 @@ const AgreedRegistrationCompany = () => {
       } catch (e) { /* اختياري: console.warn */ }
 
       // 14) ردّ النجاح
-      return res.status(201).json({
-        success: true,
+      return res.status(200).json({
+        success: "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: { api: hash, companyId: checkCompany.id }
       });
@@ -503,7 +504,7 @@ const UpdatedataRegistration = () => {
         errors.Api = "قيمة Api طويلة جداً (الحد الأقصى 255)";
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(400).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) فحوصات تضارب (توافقاً مع منطقك الأصلي)
@@ -511,7 +512,7 @@ const UpdatedataRegistration = () => {
       const verificationFinduser = await SELECTTableusersCompanyVerification(phoneLocal);
       if (Array.isArray(verificationFinduser) && verificationFinduser.length > 0) {
         return res.status(409).json({
-          success: false,
+          success: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
           message: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
         });
       }
@@ -520,7 +521,7 @@ const UpdatedataRegistration = () => {
       const checkVerifctioncomany = await SelectVerifycompanyexistence(crnStr);
       if (checkVerifctioncomany) {
         return res.status(409).json({
-          success: false,
+          success:  "السجل التجاري متواجد لشركة أخرى",
           message: "السجل التجاري متواجد لشركة أخرى",
         });
       }
@@ -573,11 +574,11 @@ const UpdatedataRegistration = () => {
         convertArabicToEnglish(esc(idNum)),
       ]);
 
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdatedataRegistration error:", error);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success:  "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 };
@@ -612,7 +613,7 @@ const UpdateCompanybrinsh = () => {
       if (!Number.isFinite(branchId))  errors.id = "رقم الفرع مطلوب ويجب أن يكون رقماً صحيحاً موجباً";
       if (!isNonEmpty(nameStr) || !lenBetween(nameStr, 2, 120)) errors.NameSub = "اسم الفرع مطلوب (2 إلى 120 حرف)";
       if (!isNonEmpty(addrStr) || !lenBetween(addrStr, 2, 200)) errors.BranchAddress = "عنوان الفرع مطلوب (2 إلى 200 حرف)";
-      if (isNonEmpty(emailStr) && !isValidEmail(emailStr)) errors.Email = "صيغة البريد الإلكتروني غير صحيحة";
+      if (isNonEmpty(emailStr) && !isEmail(emailStr)) errors.Email = "صيغة البريد الإلكتروني غير صحيحة";
       if (isNonEmpty(PhoneNumber) && !/^\d{9}$/.test(phoneLoc)) errors.PhoneNumber = "رقم الجوال غير صالح؛ يجب أن يكون 9 أرقام محلية بعد التطبيع";
       if (Object.keys(errors).length > 0) {
         return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
@@ -621,14 +622,14 @@ const UpdateCompanybrinsh = () => {
       // 5) التأكد من وجود الشركة
       const company = await SELECTTablecompanyName(companyId);
       if (!company) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على الشركة" });
+        return res.status(404).json({ success:  "لم يتم العثور على الشركة", message: "لم يتم العثور على الشركة" });
       }
 
       // 6) منع تكرار اسم الفرع داخل نفس الشركة (إن وجد فرع آخر بنفس الاسم وبـ id مختلف)
       try {
         const existing = await SELECTTablecompanySubID(nameStr, companyId);
         if (existing && Number(existing.id) !== branchId) {
-          return res.status(409).json({ success: false, message: "اسم الفرع موجود مسبقاً لهذه الشركة" });
+          return res.status(409).json({ success:  "اسم الفرع موجود مسبقاً لهذه الشركة", message: "اسم الفرع موجود مسبقاً لهذه الشركة" });
         }
       } catch (_) { /* في حال كانت الدالة تُعيد undefined عند عدم الوجود لا مشكلة */ }
 
@@ -643,14 +644,14 @@ const UpdateCompanybrinsh = () => {
       ]);
 
       if (!ok) {
-        return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+        return res.status(500).json({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
       }
 
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (err) {
       console.error("UpdateCompanybrinsh error:", err);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success:  "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 }
@@ -748,11 +749,11 @@ const Updatecovenantrequests = () => {
       }
 
       // 6) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("Updatecovenantrequests error:", error);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
     }
   };
 };

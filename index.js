@@ -303,7 +303,6 @@ const sendInChunks = async (stageCUSTData, stageSubData, chunkSize = 50) => {
           },
         }
       );
-      console.log("الاستجابة من الخادم:", response.status, response.data);
     } catch (error) {
       console.error("خطأ في إرسال القطعة:", error);
     }
@@ -447,7 +446,9 @@ app.use(handleUploadErrors);
 // }
 
 // جدولة المهمة لتعمل مرة باليوم (الساعة 12 صباحاً)
-cron.schedule("0 0 * * *", () => {
+cron.schedule("0 0 * * *",async () => {
+  await bucket.upload("./mydatabase23.db");
+
   console.log("⏰ تشغيل التحقق اليومي من الاشتراكات...");
   verificationSend(
     "502464530",

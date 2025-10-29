@@ -81,6 +81,7 @@ const {
   sanitizeFilename,
   sanitizeName,
   collectFiles,
+  parseRatio,
 } = require("../../middleware/Aid");
 
 const UpdaterateCost = async (
@@ -650,10 +651,10 @@ const UpdateDataStage = (uploadQueue) => {
       let { attached } = req.body || {};
 
       const projectIdNum = parsePositiveInt(ProjectID);
-      const stageIdNum   = parsePositiveInt(StageID);
+      const stageIdNum   = StageID;
       const stageNameStr = String(StageName ?? "").trim();
       const daysNum      = parseNonNegativeInt(Days);
-      const ratioNum     = parseRatio(Ratio);
+      const ratioNum     = parseRatio(Ratio) ;
 
       // ملف اختياري: نسمح برفعه عبر req.file أيضاً
       if (req.file) {
@@ -687,7 +688,7 @@ const UpdateDataStage = (uploadQueue) => {
       // 4) تحقق يدوي
       const errors = {};
       if (!Number.isFinite(projectIdNum)) errors.ProjectID = "رقم المشروع غير صالح";
-      if (!Number.isFinite(stageIdNum))   errors.StageID   = "رقم المرحلة غير صالح";
+      if (!isNonEmpty(stageIdNum))   errors.StageID   = "معرف المرحله غير موجود ";
       if (!isNonEmpty(stageNameStr) || !lenBetween(stageNameStr, 2, 150))
         errors.StageName = "اسم المرحلة مطلوب (2–150 حرف)";
       if (!Number.isFinite(daysNum)) errors.Days = "عدد الأيام يجب أن يكون عدداً صحيحاً صفرياً أو موجباً";
