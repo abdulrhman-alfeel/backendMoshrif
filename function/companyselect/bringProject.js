@@ -1239,7 +1239,7 @@ const BringreportStage = () => {
         await file.delete();
       } catch (err) {
         // لا نُفشل العملية بسبب فشل الحذف؛ نُسجل فقط
-        console.log("Delete previous file error:", err?.message || err);
+        // console.log("Delete previous file error:", err?.message || err);
       };
       
   const html = HtmlStatmentStage(stage_image, result, company,StageSub);

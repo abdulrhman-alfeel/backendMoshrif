@@ -245,7 +245,7 @@ const BringreportFinancialCustody = () => {
       type: type,
     })
       .then((info) => {
-        console.log("تم إنشاء التقرير:", info);
+        // console.log("تم إنشاء التقرير:", info);
       })
       .catch(console.error);
     if (fs.existsSync(filePath)) {

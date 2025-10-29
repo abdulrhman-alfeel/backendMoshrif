@@ -3,7 +3,6 @@ const { verificationfromdata, convertArabicToEnglish, esc,  isDigits,
   isNonEmpty,
   lenBetween,isEmail,isValidUrl,parseAmount } = require("../../middleware/Aid");
 const {
-  insertTablecompany,
   insertTablecompanySub,
   insertTableLinkevaluation,
   insertTableFinancialCustody,
@@ -56,20 +55,19 @@ const insertDataCompany = () => {
         PhoneNumber: body.PhoneNumber,
         userName: body.userName,
       };
-
       // تطبيع الأرقام العربية للحقول الرقمية
       const normalized = {
-        CommercialRegistrationNumber: convertArabicToEnglisH(raw.CommercialRegistrationNumber),
+        CommercialRegistrationNumber: convertArabicToEnglish(raw.CommercialRegistrationNumber),
         NameCompany: String(raw.NameCompany || "").trim(),
-        BuildingNumber: convertArabicToEnglisH(raw.BuildingNumber),
+        BuildingNumber: convertArabicToEnglish(raw.BuildingNumber),
         StreetName: String(raw.StreetName || "").trim(),
         NeighborhoodName: String(raw.NeighborhoodName || "").trim(),
-        PostalCode: convertArabicToEnglisH(raw.PostalCode),
+        PostalCode: convertArabicToEnglish(raw.PostalCode),
         City: String(raw.City || "").trim(),
         Country: String(raw.Country || "").trim(),
-        TaxNumber: convertArabicToEnglisH(raw.TaxNumber),
+        TaxNumber: convertArabicToEnglish(raw.TaxNumber),
         Api: String(raw.Api || "").trim(),
-        PhoneNumber: convertArabicToEnglisH(raw.PhoneNumber),
+        PhoneNumber: convertArabicToEnglish(raw.PhoneNumber),
         userName: String(raw.userName || "").trim(),
       };
 
@@ -122,7 +120,7 @@ const insertDataCompany = () => {
 
       // إرجاع أخطاء التحقق إن وجدت
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({
+        return res.status(200).send({
           success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
@@ -149,7 +147,7 @@ const insertDataCompany = () => {
       ]);
 
       if (!isDataValid) {
-        return res.status(400).json({
+        return res.status(200).send({
           success: "يجب إكمال جميع البيانات المطلوبة",
           message: "يجب إكمال جميع البيانات المطلوبة",
         });
@@ -161,7 +159,7 @@ const insertDataCompany = () => {
         "companyRegistration"
       );
       if (existingCompany) {
-        return res.status(409).json({
+        return res.status(200).send({
           success: "الشركة موجودة بالفعل",
           message: "الشركة موجودة بالفعل",
         });
@@ -170,7 +168,7 @@ const insertDataCompany = () => {
       // --- 6) تحقق من أن رقم الجوال غير مستخدم
       const phoneUsed = await SELECTTableusersCompanyVerification(phoneNo);
       if (Array.isArray(phoneUsed) && phoneUsed.length > 0) {
-        return res.status(409).json({
+        return res.status(200).send({
           success: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
           message: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
         });
@@ -196,7 +194,7 @@ const insertDataCompany = () => {
       await sendNotificationCompany(normalized.NameCompany);
 
       // --- 9) رد النجاح
-      return res.status(200).json({
+      return res.status(200).send({
         success: "نرحب بك في منصة مشرف، سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحتها.",
         message:
           "نرحب بك في منصة مشرف، سيتم مراجعة بياناتك وفتح الحساب فور التحقق من صحتها.",

@@ -610,7 +610,7 @@ const moveviltayeuseer =()=>{
 }
 // moveviltayeuseer()
 // تحويل صيغة التاريخ
-// UPDATECONVERTDATE();
+// UPDATECONVERTDATE("StartDate");
 // اضافة المعرفات والانواع لجدول الانواع 
 // insertTableallStagestype();
 

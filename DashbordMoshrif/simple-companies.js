@@ -775,7 +775,7 @@ try {
     }))
     .sort((a, b) => b.count - a.count);
 
-  console.log(`✅ تم حساب إحصائيات ${stats.total} موظف`);
+  // console.log(`✅ تم حساب إحصائيات ${stats.total} موظف`);
 
   res.json({
     success: true,

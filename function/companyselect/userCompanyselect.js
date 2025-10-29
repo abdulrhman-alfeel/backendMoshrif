@@ -104,7 +104,7 @@ let title1 = Boolean(chack)
       }
     });
 
-    console.log("Response Status:", response.status);
+    // console.log("Response Status:", response.status);
     // console.log("Response Body:", response.data);
   } catch (error) {
     if (error.response) {

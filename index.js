@@ -331,8 +331,6 @@ const insertDataproject = async () => {
       arrayStageSub.push(...result);
     }
 
-    console.log("عدد StagesCUST:", arrayStageCUST.length);
-    console.log("عدد StagesSub:", arrayStageSub.length);
 
     // إرسال البيانات في دفعات
     await sendInChunks([], arrayStageSub);
@@ -449,7 +447,7 @@ app.use(handleUploadErrors);
 cron.schedule("0 0 * * *",async () => {
   await bucket.upload("./mydatabase23.db");
 
-  console.log("⏰ تشغيل التحقق اليومي من الاشتراكات...");
+  // console.log("⏰ تشغيل التحقق اليومي من الاشتراكات...");
   verificationSend(
     "502464530",
     null,

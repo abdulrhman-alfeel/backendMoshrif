@@ -297,7 +297,6 @@ const UpdateTableuserComppany = (data, type = "job=?") => {
 const UpdateTableuserComppanyValidity = (data, type = "Validity") => {
   return new Promise((resolve, reject) => {
     try {
-      console.log(`UPDATE usersCompany SET ${type}=? WHERE id=?`, data);
       db.serialize(function () {
         db.run(
           `UPDATE usersCompany SET ${type}=? WHERE id=?`,

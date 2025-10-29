@@ -227,12 +227,12 @@ END;
   //   ALTER TABLE StagesSubTemplet
   //   ADD COLUMN Stagestype_id INTEGER  NULL ;`)
 
-//   db.run(`
-//     ALTER TABLE company
-//     ADD COLUMN State TEXT NULL DEFAULT 'true';`)
-//   db.run(`
-//     ALTER TABLE company
-//     ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
+  // db.run(`
+  //   ALTER TABLE company
+  //   ADD COLUMN State TEXT NULL DEFAULT 'true';`)
+  // db.run(`
+  //   ALTER TABLE company
+  //   ADD COLUMN Suptype TEXT NULL DEFAULT 'مجاني';`)
 
 //  db.run( `ALTER TABLE company ADD COLUMN usertype TEXT NULL DEFAULT 'شركات'`);
 //  db.run(`
@@ -242,24 +242,10 @@ END;
 //   ALTER TABLE subscripation
 //   ADD COLUMN price DECIMAL;`)
 
-//   db.run(`
-//     ALTER TABLE StagesCUST
-//     ADD COLUMN Referencenumber INTEGER NULL;`)
-//   db.run(`
-//     ALTER TABLE Expense
-//     ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
-//   db.run(`
-//     ALTER TABLE Expense
-//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-//   db.run(`
-//     ALTER TABLE Revenue
-//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-//   db.run(`
-//     ALTER TABLE Revenue
-//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
-//   db.run(`
-//     ALTER TABLE Returns
-//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+  // db.run(`
+  //   ALTER TABLE StagesCUST
+  //   ADD COLUMN Referencenumber INTEGER NULL;`)
+
 
   //
   // db.run(`
@@ -275,6 +261,35 @@ END;
   //   ALTER TABLE companySubprojectsAudite
   //   ADD COLUMN Cost_per_Square_Meter DECIMAL NULL DEFAULT 0`);
 
+
+};
+
+// const createtabletTemplet =()=>{
+//   dbd.run(
+//     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL
+//   )`
+//   );
+
+//   dbd.run(
+//     `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`
+//   );
+// }
+
+//   db.run(`
+//     ALTER TABLE Expense
+//     ADD COLUMN Amount2 DECIMAL(18,2) NULL;`)
+//   db.run(`
+//     ALTER TABLE Expense
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Revenue
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Revenue
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
+//   db.run(`
+//     ALTER TABLE Returns
+//     ADD COLUMN Referencenumberfinanc INTEGER NULL;`)
 
 
   // db.run(`
@@ -293,18 +308,6 @@ END;
   // db.run(`
   //   ALTER TABLE Requests
   //   ADD COLUMN DateTime DATE NULL ;`  )
-};
-
-// const createtabletTemplet =()=>{
-//   dbd.run(
-//     `CREATE TABLE IF NOT EXISTS StagesTemplet(StageID INTEGER PRIMARY KEY AUTOINCREMENT,Type nvarchar[50] NULL,StageName nvarchar[max] NOT NULL , Days INTEGER NULL,StartDate TEXT  NULL, EndDate TEXT NULL ,CloseDate TEXT NULL , OrderBy INTEGER NULL
-//   )`
-//   );
-
-//   dbd.run(
-//     `CREATE TABLE IF NOT EXISTS StagesSubTemplet(StageSubID INTEGER PRIMARY KEY AUTOINCREMENT,StageID INTEGER NULL,ProjectID INTEGER NULL ,StageSubName nvarchar[max] NULL,ImageAttachment TEXT NULL , CloseDate TEXT NULL)`
-//   );
-// }
 
 module.exports = { CreateTable };
 

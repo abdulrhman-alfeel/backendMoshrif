@@ -33,7 +33,6 @@ const { opreationDeletProject } = require("./UpdateProject");
 const { verificationSend } = require("../companyselect/userCompanyselect");
 const {
   convertArabicToEnglish,
-  verificationfromdata,
   Addusertraffic,
   parseNonNegativeFloat,
   parsePositiveInt,
@@ -52,7 +51,7 @@ const UpdateDataCompany = () => {
       // 1) التحقق من الجلسة
       const userSession = req.session?.user;
       if (!userSession) {
-        return res.status(401).json({ success: false, message: "Invalid session" });
+        return res.status(200).send({ success: false, message: "Invalid session" });
       }
 
       // 2) تسجيل حركة المستخدم (كما في كودك)
@@ -120,7 +119,7 @@ const UpdateDataCompany = () => {
         errors.CommercialRegistrationNumber = "رقم السجل التجاري يجب أن يحتوي على أرقام فقط";
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) تحضير بيانات التحديث وفق وجود السجل التجاري
@@ -160,11 +159,11 @@ const UpdateDataCompany = () => {
       }
 
       // 6) نجاح
-      return res.status(200).json({ success:  "تمت العملية بنجاح" , message: "تمت العملية بنجاح" });
+      return res.status(200).send({ success:  "تمت العملية بنجاح" , message: "تمت العملية بنجاح" });
 
     } catch (err) {
       console.error("UpdateDataCompany error:", err);
-      return res.status(500).json({ success: "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
+      return res.status(500).send({ success: "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 };
@@ -176,7 +175,7 @@ const UpdateApiCompany = () => {
       // 1) التحقق من الجلسة
       const userSession = req.session?.user;
       if (!userSession) {
-        return res.status(401).json({ success: false, message: "Invalid session" });
+        return res.status(200).send({ success: false, message: "Invalid session" });
       }
 
       // 2) تسجيل الحركة (لا تُسقط العملية عند الفشل)
@@ -189,7 +188,7 @@ const UpdateApiCompany = () => {
       // 3) التقاط/تطبيع id
       const idNum = parsePositiveInt(req.query?.id);
       if (!Number.isFinite(idNum)) {
-        return res.status(400).json({
+        return res.status(200).send({
           success: false,
           message: "معرّف الشركة غير صالح (يجب أن يكون رقماً صحيحاً موجباً)",
         });
@@ -198,15 +197,15 @@ const UpdateApiCompany = () => {
       // 4) التحقق من وجود الشركة
       const company = await SELECTTablecompanyName(idNum);
       if (!company) {
-        return res.status(404).json({ success: false, message: "لا توجد الشركة المطلوبة" });
+        return res.status(200).send({ success: false, message: "لا توجد الشركة المطلوبة" });
       }
 
       // 5) تجهيز السجل التجاري واستخراج الأرقام فقط
       const crnRaw = String(company?.CommercialRegistrationNumber ?? "").trim();
       const crnDigits = convertArabicToEnglish(crnRaw).replace(/\D/g, "");
       if (!crnDigits) {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success:  "لا يوجد سجل تجاري صالح للشركة لتوليد API",
           message: "لا يوجد سجل تجاري صالح للشركة لتوليد API",
         });
       }
@@ -221,8 +220,8 @@ const UpdateApiCompany = () => {
       );
 
       // 8) ردّ النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success: "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: hash, // ملاحظة أمنية: إرجاع الـ hash اختياري؛ إن أردت إخفاءه احذفه من الرد.
       });
@@ -244,7 +243,7 @@ const AgreedRegistrationCompany = () => {
       // 1) التحقق من الجلسة
       const userSession = req.session?.user;
       if (!userSession) {
-        return res.status(401).json({ success: false, message: "Invalid session" });
+        return res.status(200).send({ success: false, message: "Invalid session" });
       }
 
       // 2) تسجيل الحركة (لا تُسقط العملية عند الفشل)
@@ -259,13 +258,13 @@ const AgreedRegistrationCompany = () => {
       // 3) قراءة/تحقق المعرّف
       const idNum = parsePositiveInt(req.query?.id);
       if (!Number.isFinite(idNum)) {
-        return res.status(400).json({ success: false, message: "المعرّف غير صالح" });
+        return res.status(200).send({ success: "المعرّف غير صالح" , message: "المعرّف غير صالح" });
       }
 
       // 4) جلب طلب التسجيل
       const dataCompany = await SELECTTablecompanyRegistration(idNum);
       if (!dataCompany) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على طلب التسجيل" });
+        return res.status(200).json({ success:  "لم يتم العثور على طلب التسجيل", message: "لم يتم العثور على طلب التسجيل" });
       }
 
       // 5) تحقق من البيانات الأساسية في الطلب
@@ -273,13 +272,13 @@ const AgreedRegistrationCompany = () => {
       const phoneLocal = normalizePhone(dataCompany?.PhoneNumber);
       const nameStr = String(dataCompany?.NameCompany ?? "").trim();
       if (!isDigits(crnDigits) || crnDigits.length < 5) {
-        return res.status(400).json({ success: "السجل التجاري غير صالح في طلب التسجيل", message: "السجل التجاري غير صالح في طلب التسجيل" });
+        return res.status(200).send({ success: "السجل التجاري غير صالح في طلب التسجيل", message: "السجل التجاري غير صالح في طلب التسجيل" });
       }
       if (!/^\d{9}$/.test(phoneLocal)) {
-        return res.status(400).json({ success:  "رقم الجوال غير صالح في طلب التسجيل", message: "رقم الجوال غير صالح في طلب التسجيل" });
+        return res.status(200).send({ success:  "رقم الجوال غير صالح في طلب التسجيل", message: "رقم الجوال غير صالح في طلب التسجيل" });
       }
       if (!isNonEmpty(nameStr)) {
-        return res.status(400).json({ success:  "اسم الشركة غير صالح في طلب التسجيل", message: "اسم الشركة غير صالح في طلب التسجيل" });
+        return res.status(200).send({ success:  "اسم الشركة غير صالح في طلب التسجيل", message: "اسم الشركة غير صالح في طلب التسجيل" });
       }
 
       // 6) التحقق من عدم وجود الشركة مسبقاً
@@ -290,7 +289,7 @@ const AgreedRegistrationCompany = () => {
       if (existingCompany) {
         // في حال كانت الشركة موجودة بالفعل، نحذف طلب التسجيل ونكتفي
         await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
-        return res.status(409).json({
+        return res.status(200).send({
           success: "الشركة مسجّلة بالفعل",
           message: "الشركة مسجّلة بالفعل",
         });
@@ -316,7 +315,7 @@ const AgreedRegistrationCompany = () => {
       // 9) الحصول على الشركة المُدرجة (id)
       const checkCompany = await SelectVerifycompanyexistence(crnDigits);
       if (!checkCompany || !checkCompany.id) {
-        return res.status(500).json({ success: "تعذّر تأكيد إنشاء الشركة", message: "تعذّر تأكيد إنشاء الشركة" });
+        return res.status(200).send({ success: "تعذّر تأكيد إنشاء الشركة", message: "تعذّر تأكيد إنشاء الشركة" });
       }
 
       // 10) التحقق من المستخدم (الجوال) قبل إنشاء المستخدم الإداري
@@ -324,7 +323,7 @@ const AgreedRegistrationCompany = () => {
       if (Array.isArray(existUser) && existUser.length > 0) {
         // في حال الرقم مستخدم، نحذف الشركة التي أنشأناها للتو؟ (حسب منطقك)
         // أو فقط نُرجع خطأ. هنا نرجع 409 ونبقي الشركة (يمكنك تعديل المنطق).
-        return res.status(409).json({
+        return res.status(200).send({
           success:  "رقم الجوال مستخدم بالفعل في حساب شركة",
           message: "رقم الجوال مستخدم بالفعل في حساب شركة",
         });
@@ -504,14 +503,14 @@ const UpdatedataRegistration = () => {
         errors.Api = "قيمة Api طويلة جداً (الحد الأقصى 255)";
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) فحوصات تضارب (توافقاً مع منطقك الأصلي)
       // أ) الهاتف مستخدم في حساب مستخدمين لشركة؟
       const verificationFinduser = await SELECTTableusersCompanyVerification(phoneLocal);
       if (Array.isArray(verificationFinduser) && verificationFinduser.length > 0) {
-        return res.status(409).json({
+        return res.status(200).send({
           success: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
           message: "الرقم مستخدم بالفعل في حساب بإحدى الشركات",
         });
@@ -520,7 +519,7 @@ const UpdatedataRegistration = () => {
       // ب) السجل التجاري موجود في جدول الشركات الفعلي؟
       const checkVerifctioncomany = await SelectVerifycompanyexistence(crnStr);
       if (checkVerifctioncomany) {
-        return res.status(409).json({
+        return res.status(200).send({
           success:  "السجل التجاري متواجد لشركة أخرى",
           message: "السجل التجاري متواجد لشركة أخرى",
         });
@@ -543,16 +542,16 @@ const UpdatedataRegistration = () => {
         if (!(sameCRN || sameId)) conflictPhone = true;
       }
       if (conflictPhone) {
-        return res.status(409).json({
-          success: false,
+        return res.status(200).send({
+          success:  "الرقم مستخدم لإضافة حساب شركة أخرى",
           message: "الرقم مستخدم لإضافة حساب شركة أخرى",
         });
       }
 
       // كذلك لو هناك تسجيل آخر بنفس السجل التجاري ولكن بمعرف مختلف نمنع
       if (checkVerifction && Number(checkVerifction.id) !== idNum) {
-        return res.status(409).json({
-          success: false,
+        return res.status(200).send({
+          success: "السجل التجاري مستخدم في طلب تسجيل آخر",
           message: "السجل التجاري مستخدم في طلب تسجيل آخر",
         });
       }
@@ -574,7 +573,7 @@ const UpdatedataRegistration = () => {
         convertArabicToEnglish(esc(idNum)),
       ]);
 
-      return res.status(200).json({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
+      return res.status(200).send({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdatedataRegistration error:", error);
@@ -616,20 +615,20 @@ const UpdateCompanybrinsh = () => {
       if (isNonEmpty(emailStr) && !isEmail(emailStr)) errors.Email = "صيغة البريد الإلكتروني غير صحيحة";
       if (isNonEmpty(PhoneNumber) && !/^\d{9}$/.test(phoneLoc)) errors.PhoneNumber = "رقم الجوال غير صالح؛ يجب أن يكون 9 أرقام محلية بعد التطبيع";
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) التأكد من وجود الشركة
       const company = await SELECTTablecompanyName(companyId);
       if (!company) {
-        return res.status(404).json({ success:  "لم يتم العثور على الشركة", message: "لم يتم العثور على الشركة" });
+        return res.status(200).send({ success:  "لم يتم العثور على الشركة", message: "لم يتم العثور على الشركة" });
       }
 
       // 6) منع تكرار اسم الفرع داخل نفس الشركة (إن وجد فرع آخر بنفس الاسم وبـ id مختلف)
       try {
         const existing = await SELECTTablecompanySubID(nameStr, companyId);
         if (existing && Number(existing.id) !== branchId) {
-          return res.status(409).json({ success:  "اسم الفرع موجود مسبقاً لهذه الشركة", message: "اسم الفرع موجود مسبقاً لهذه الشركة" });
+          return res.status(200).send({ success:  "اسم الفرع موجود مسبقاً لهذه الشركة", message: "اسم الفرع موجود مسبقاً لهذه الشركة" });
         }
       } catch (_) { /* في حال كانت الدالة تُعيد undefined عند عدم الوجود لا مشكلة */ }
 
@@ -644,10 +643,10 @@ const UpdateCompanybrinsh = () => {
       ]);
 
       if (!ok) {
-        return res.status(500).json({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
+        return res.status(200).send({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
       }
 
-      return res.status(200).json({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
+      return res.status(200).send({ success:  "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (err) {
       console.error("UpdateCompanybrinsh error:", err);
@@ -733,7 +732,7 @@ const Updatecovenantrequests = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) التحديث في قاعدة البيانات
@@ -749,11 +748,11 @@ const Updatecovenantrequests = () => {
       }
 
       // 6) نجاح
-      return res.status(200).json({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
+      return res.status(200).send({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("Updatecovenantrequests error:", error);
-      return res.status(500).json({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
+      return res.status(500).send({ success:  "فشل في تنفيذ العملية" , message: "فشل في تنفيذ العملية" });
     }
   };
 };
