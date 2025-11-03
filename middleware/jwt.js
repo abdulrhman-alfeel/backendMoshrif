@@ -25,6 +25,7 @@ const verifyJWT = (req, res, next) => {
         req.session.user = decoded;
         next();
       }else{
+        
         const chack = await StopeData(decoded.IDCompany);
         if (chack) {
           req.session.user = decoded;

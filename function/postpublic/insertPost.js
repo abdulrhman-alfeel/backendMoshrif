@@ -48,12 +48,12 @@ const insertPostURL = async (items) => {
     // تحقق من الحقول الضرورية
     const sender    = String(items.Sender ?? "").trim();
     const message   = String(items.message ?? "").trim();
-    const stageId   = parsePositiveInt(items.StageID);
+    const stageId   = items.StageID;
     const projectId = parsePositiveInt(items.ProjectID);
 
     if (!isNonEmpty(sender))            throw new Error("Sender is required");
     if (!Number.isFinite(projectId))    throw new Error("ProjectID invalid");
-    if (!Number.isFinite(stageId))      throw new Error("StageID invalid");
+    if (!isNonEmpty(stageId))           throw new Error("StageID invalid");
     if (!ALLOWED_VIDEO_MIMES.some(m => fileType.includes(m.split("/")[1]) || m === fileType)) {
       // نسمح بأي video/* لكن نفضّل من القائمة
       console.warn("insertPostURL: non-preferred video mime", fileType);
@@ -157,9 +157,9 @@ const insertCommentinchat = async (PostID, commentText, userName) => {
   const result = await SELECTDataPrivatPostonObject(postIdNum);
   if (!result) throw new Error("Post not found");
 
-  const stageId   = parsePositiveInt(result.StageID);
+  const stageId   = result.StageID;
   const projectId = parsePositiveInt(result.ProjectID);
-  if (!Number.isFinite(stageId) || !Number.isFinite(projectId)) {
+  if (!isNonEmpty(stageId) || !Number.isFinite(projectId)) {
     throw new Error("Stage/Project IDs missing");
   }
 

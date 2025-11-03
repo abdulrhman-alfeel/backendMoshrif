@@ -253,12 +253,12 @@ const BringreportFinancialCustody = () => {
       deleteFileSingle(namefile, "upload");
     } else {
       return res
-        .status(400)
-        .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+        .status(200)
+        .send({ success:false,  message:"فشل في تنفيذ العملية - الملف غير موجود" });
     }
     res
       .status(200)
-      .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({ success:true ,message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
   };
 };
 

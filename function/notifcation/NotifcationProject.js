@@ -807,10 +807,12 @@ const Postsnotification = async (
     // جلب توكن المستخدم والمستخدمين المرتبطين
     const { token, arraynameuser, jobUser } = await Bringtokenuser(
       result.CommpanyID,
+      0,
       result.ProjectID,
       result.userName,
       "PublicationsBransh"
     );
+    console.log(jobUser);
 
     // تحديد النص الظاهر في الإشعار
     const actionText =
@@ -888,6 +890,7 @@ const PostsnotificationCansle = async (
     // جلب توكن المستخدم والمستخدمين المرتبطين
     const { token, arraynameuser, jobUser } = await Bringtokenuser(
       result.CommpanyID,
+      0,
       result.ProjectID,
       userName,
       "PublicationsBransh"
@@ -992,6 +995,7 @@ const ChateNotfication = async (
       const company = await SelectVerifycompanyexistence(idProject);
       const { token, arraynameuser, jobUser } = await Bringtokenuser(
         company.id,
+        0,
         idProject,
         userName,
         StageID,

@@ -84,6 +84,7 @@ const {
   parseRatio,
 } = require("../../middleware/Aid");
 
+const moment = require('moment-timezone');
 const UpdaterateCost = async (
   id,
   type = "rate",
@@ -223,12 +224,17 @@ const UpdataDataProject = (uploadQueue) => {
       if (req.body.hasOwnProperty("Project_Space") && !Number.isFinite(spaceNum)) errors.Project_Space = "مساحة المشروع يجب أن تكون رقماً صفرياً أو موجباً";
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) جلب بيانات البداية للمقارنة (قد تُعيد null)
       const startRow = await SELECTProjectStartdate(projectIdNum);
+      if(startRow.TypeOFContract !== contractStr)
+        {
+          errors.TypeOFContract = 'لايمكن تعديل نوع العقد';
+        return res.status(200).json({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
 
+      }
       // 6) تنفيذ التحديث
       const ok = await UpdateTablecompanySubProject([
         convertArabicToEnglish(esc(companySubId)),
@@ -244,9 +250,6 @@ const UpdataDataProject = (uploadQueue) => {
         convertArabicToEnglish(esc(projectIdNum)),
       ]);
 
-      if (!ok) {
-        return res.status(500).json({ success: false, message: "فشل تحديث بيانات المشروع" });
-      }
 
       // 7) إعادة ترتيب المراحل عند تغيير عدد المباني (لا تُسقط العملية عند الفشل)
       try {
@@ -262,9 +265,8 @@ const UpdataDataProject = (uploadQueue) => {
       } catch (e) {
         console.warn("RearrangeStageID failed:", e);
       }
-
       // 8) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success:  true, message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdataDataProject error:", error);
@@ -408,14 +410,14 @@ const UpdateStartdate = (uploadQueue) => {
       // 2) التقاط/تطبيع المدخلات
       const bodyData = req.body?.data || {};
       const projectIdNum = parsePositiveInt(bodyData?.ProjectID);
-      const startISO     = tryParseDateISO(bodyData?.ProjectStartdate);
+      const startISO     = moment.parseZone(bodyData?.ProjectStartdate);
 
       // 3) تحقق يدوي
       const errors = {};
       if (!Number.isFinite(projectIdNum)) errors.ProjectID = "رقم المشروع مطلوب ويجب أن يكون رقماً صحيحاً موجباً";
       if (!startISO) errors.ProjectStartdate = "تاريخ البداية غير صالح (ادعم YYYY-MM-DD أو DD/MM/YYYY)";
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) سجل حركة المستخدم (لا تُسقط العملية عند الفشل)
@@ -426,7 +428,7 @@ const UpdateStartdate = (uploadQueue) => {
       // 5) جلب بيانات المراحل الحالية قبل أي حذف (للاستخدام في إعادة التوليد)
       const dataItem = await SELECTTablecompanySubProjectStageCUST(projectIdNum);
       if (!dataItem || (Array.isArray(dataItem) && dataItem.length === 0)) {
-        return res.status(404).json({ success: false, message: "لا توجد مراحل حالية للمشروع لإعادة جدولتها" });
+        return res.status(200).json({ success: "لا توجد مراحل حالية للمشروع لإعادة جدولتها", message: "لا توجد مراحل حالية للمشروع لإعادة جدولتها" });
       }
 
       // 6) تحديث تاريخ بدء المشروع
@@ -442,7 +444,7 @@ const UpdateStartdate = (uploadQueue) => {
       await Stage(dataItem, startISO, "update");
 
       // 8) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdateStartdate error:", error);
@@ -475,19 +477,19 @@ const RearrangeStage = (uploadQueue) => {
 
       // تحقق أساسي
       if (!Array.isArray(DataStage) || DataStage.length === 0) {
-        return res.status(400).json({ success: false, message: "قائمة المراحل (DataStage) مطلوبة وغير فارغة" });
+        return res.status(200).json({ success: "قائمة المراحل (DataStage) مطلوبة وغير فارغة", message: "قائمة المراحل (DataStage) مطلوبة وغير فارغة" });
       }
 
       // جميع العناصر يجب أن تحتوي ProjectID نفسه وصحيح موجب
       const firstProjectId = parsePositiveInt(DataStage[0]?.ProjectID);
       if (!Number.isFinite(firstProjectId)) {
-        return res.status(400).json({ success: false, message: "ProjectID غير صالح في عناصر DataStage" });
+        return res.status(200).json({ success: "ProjectID غير صالح في عناصر DataStage", message: "ProjectID غير صالح في عناصر DataStage" });
       }
       for (let i = 0; i < DataStage.length; i++) {
         const pid = parsePositiveInt(DataStage[i]?.ProjectID);
         if (!Number.isFinite(pid) || pid !== firstProjectId) {
-          return res.status(400).json({
-            success: false,
+          return res.status(200).json({
+            success:  `ProjectID غير متسق/صالح في العنصر رقم ${i + 1}`,
             message: `ProjectID غير متسق/صالح في العنصر رقم ${i + 1}`
           });
         }
@@ -496,14 +498,14 @@ const RearrangeStage = (uploadQueue) => {
       // 4) جلب تاريخ البداية/التعاقد للمشروع
       const startRow = await SELECTProjectStartdate(firstProjectId);
       if (!startRow) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على المشروع" });
+        return res.status(404).json({ success: "لم يتم العثور على المشروع", message: "لم يتم العثور على المشروع" });
       }
 
       // نختار ProjectStartdate إن وُجد، وإلا Contractsigningdate
       let baseDate = startRow?.ProjectStartdate ?? startRow?.Contractsigningdate ?? null;
       const baseISO = tryParseDateISO(baseDate);
       if (!baseISO) {
-        return res.status(400).json({ success: false, message: "تاريخ بداية/تعاقد المشروع غير صالح" });
+        return res.status(200).json({ success: "تاريخ بداية/تعاقد المشروع غير صالح", message: "تاريخ بداية/تعاقد المشروع غير صالح" });
       }
 
       // 5) حذف المراحل الحالية ثم إعادة توليدها
@@ -517,11 +519,11 @@ const RearrangeStage = (uploadQueue) => {
       catch (e) { console.warn("RearrangeStageProject failed:", e); }
 
       // 7) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success: "تمت العملية بنجاح",  message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("RearrangeStage error:", error);
-      return res.status(500).json({ success: false, message: "خطاء في تنفيذ العملية" });
+      return res.status(500).json({ success: "خطاء في تنفيذ العملية",  message: "خطاء في تنفيذ العملية" });
     }
   };
 };
@@ -587,7 +589,7 @@ const UpdateNotesStage = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 6) رفع الملف (إن وُجد) قبل التحديث
@@ -596,13 +598,13 @@ const UpdateNotesStage = (uploadQueue) => {
           await uploaddata(req.file); // نقل إلى التخزين الدائم
         } catch (upErr) {
           console.error("uploaddata failed:", upErr);
-          return res.status(500).json({ success: false, message: "فشل رفع الملف" });
+          return res.status(500).json({ success: "فشل رفع الملف", message: "فشل رفع الملف" });
         } finally {
           try { deleteFileSingle(req.file.filename, "upload"); } catch {}
         }
         imageAttachmentFinal = sanitizeFilename(req.file.filename || req.file.originalname);
         if (!isNonEmpty(imageAttachmentFinal)) {
-          return res.status(400).json({ success: false, message: "اسم الملف غير صالح بعد التنظيف" });
+          return res.status(200).json({ success: "اسم الملف غير صالح بعد التنظيف", message: "اسم الملف غير صالح بعد التنظيف" });
         }
       }
 
@@ -617,14 +619,14 @@ const UpdateNotesStage = (uploadQueue) => {
       ]);
 
       // 8) رد النجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
       // (اختياري) إشعارات لاحقة
       // try { await Delayinsert(ProjectID, StagHOMID, userSession.userName); } catch {}
 
     } catch (err) {
       console.error("UpdateNotesStage error:", err);
-      return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
+      return res.status(500).json({ success: "فشل في تنفيذ العملية", message: "فشل في تنفيذ العملية" });
     }
   };
 };
@@ -663,16 +665,16 @@ const UpdateDataStage = (uploadQueue) => {
         const mime = String(req.file.mimetype || "");
         const size = Number(req.file.size || 0);
         if (!allowed.includes(mime)) {
-          return res.status(400).json({ success:false, message:"نوع المرفق غير مدعوم (صور/PDF)" });
+          return res.status(200).json({ success:"نوع المرفق غير مدعوم (صور/PDF)" , message:"نوع المرفق غير مدعوم (صور/PDF)" });
         }
         if (size > maxSize) {
-          return res.status(400).json({ success:false, message:"حجم المرفق يتجاوز 15MB" });
+          return res.status(200).json({ success:"حجم المرفق يتجاوز 15MB", message:"حجم المرفق يتجاوز 15MB" });
         }
         try {
           await uploaddata(req.file);
         } catch (upErr) {
           console.error("uploaddata failed:", upErr);
-          return res.status(500).json({ success:false, message:"فشل رفع الملف" });
+          return res.status(500).json({ success:"فشل رفع الملف", message:"فشل رفع الملف" });
         } finally {
           try { deleteFileSingle(req.file.filename, "upload"); } catch {}
         }
@@ -695,13 +697,13 @@ const UpdateDataStage = (uploadQueue) => {
       if (!Number.isFinite(ratioNum) || ratioNum < 0 || ratioNum > 100)
         errors.Ratio = "النسبة يجب أن تكون بين 0 و 100";
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) جلب بيانات المرحلة الحالية (للتحقق من حالة الإغلاق/الأيام الحالية)
       const verify = await SELECTTablecompanySubProjectStageCUSTONe(projectIdNum, stageIdNum);
       if (!verify) {
-        return res.status(404).json({ success:false, message:"لم يتم العثور على المرحلة" });
+        return res.status(404).json({ success:"لم يتم العثور على المرحلة", message:"لم يتم العثور على المرحلة" });
       }
 
       // 6) حساب النسبة الإجمالية الصحيحة (طرح نسبة المرحلة الحالية ثم إضافة الجديدة)
@@ -716,10 +718,10 @@ const UpdateDataStage = (uploadQueue) => {
       const newTotal     = currentTotal - currentSelf + ratioNum;
 
       if (newTotal > 100) {
-        return res.status(400).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
+        return res.status(200).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
       }
       if (newTotal < 0) {
-        return res.status(400).json({ error: "مجموع النسب لا يجب أن يكون سالباً" });
+        return res.status(200).json({ error: "مجموع النسب لا يجب أن يكون سالباً" });
       }
 
       // 7) عدم السماح بتغيير الأيام إذا كانت المرحلة مُغلَقة (أو مُنجَزة)
@@ -758,7 +760,7 @@ const UpdateDataStage = (uploadQueue) => {
       try { await Stageinsert(projectIdNum, stageIdNum, userSession.userName, "تعديل"); } catch {}
 
       // 11) الاستجابة
-      return res.status(200).json({ success: true, message });
+      return res.status(200).json({ success: message, message });
 
     } catch (error) {
       console.error("UpdateDataStage error:", error);
@@ -844,13 +846,13 @@ const UpdateDataStageSub = (uploadQueue) => {
       if (!isNonEmpty(cleanedName) || !lenBetween(cleanedName, 2, 150))
         errors.StageSubName = "اسم الخطوة مطلوب (2 إلى 150 حرف) وبمحارف مسموح بها فقط";
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) جلب بيانات الخطوة الحالية لمعرفة (ProjectID, StagHOMID, الاسم الحالي)
       const current = await SELECTTablecompanySubProjectStagesSubSingl(stageSubIdNum);
       if (!current) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على الخطوة المطلوبة" });
+        return res.status(404).json({ success:  "لم يتم العثور على الخطوة المطلوبة", message: "لم يتم العثور على الخطوة المطلوبة" });
       }
 
       // 6) منع التكرار داخل نفس المرحلة (نفس ProjectID + StagHOMID)
@@ -862,7 +864,7 @@ const UpdateDataStageSub = (uploadQueue) => {
         );
         // إن وُجدت خطوة بنفس الاسم ولكن بمعرّف مختلف → تعارض
         if (Array.isArray(dup) && dup.length > 0 && Number(dup[0]?.StageSubID) !== Number(stageSubIdNum)) {
-          return res.status(409).json({ success: false, message: "اسم الخطوة موجود بالفعل في هذه المرحلة" });
+          return res.status(409).json({ success:"اسم الخطوة موجود بالفعل في هذه المرحلة", message: "اسم الخطوة موجود بالفعل في هذه المرحلة" });
         }
       } catch (_) { /* إذا كانت الدالة تعيد undefined عند عدم الوجود فلا مشكلة */ }
 
@@ -881,11 +883,11 @@ const UpdateDataStageSub = (uploadQueue) => {
       try { await StageSubinsert(current.ProjectID, current.StagHOMID, userSession.userName); } catch {}
 
       // 10) نجاح
-      return res.status(200).json({ success: true, message: "تم تنفيذ العملية بنجاح" });
+      return res.status(200).json({ success:  "تم تنفيذ العملية بنجاح", message: "تم تنفيذ العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdateDataStageSub error:", error);
-      return res.status(500).json({ success: false, message: "فشل تنفيذ العملية" });
+      return res.status(500).json({ success: "فشل تنفيذ العملية", message: "فشل تنفيذ العملية" });
     }
   };
 };
@@ -930,7 +932,7 @@ const UpdateDataStageSubv2 = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) جلب بيانات الخطوة الحالية (للحصول على ProjectID و StagHOMID)
@@ -978,7 +980,7 @@ const UpdateDataStageSubv2 = (uploadQueue) => {
       // try { await StageSubinsert(current.ProjectID, current.StagHOMID, userSession.userName); } catch {}
 
       // 9) نجاح
-      return res.status(200).json({ success: true, message: "تم تنفيذ العملية بنجاح" });
+      return res.status(200).json({ success: "تم تنفيذ العملية بنجاح", message: "تم تنفيذ العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdateDataStageSubv2 error:", error);
@@ -1217,13 +1219,13 @@ const UpdateNameFolderOrfileinArchive = (uploadQueue) => {
         errors.nameOld = "الاسم القديم للملف مطلوب عند التحديث";
       }
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) جلب شجرة الأرشيف للتأكد من عدم تعارض الاسم ضمن نفس الأب
       const row = await SELECTTablecompanySubProjectarchivesotherroad(archivesIdNum);
       if (!row) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على سجل الأرشيف" });
+        return res.status(404).json({ success: "لم يتم العثور على سجل الأرشيف", message: "لم يتم العثور على سجل الأرشيف" });
       }
       const tree = safeParseChildren(row.children);
       const node = findNodeById(tree, nodeIdNum);
@@ -1249,7 +1251,7 @@ const UpdateNameFolderOrfileinArchive = (uploadQueue) => {
 
       // 7) منع التعارض: اسم مطابق لنفس النوع عند نفس الأب
       if (opStr === "update" && hasSiblingNameConflict(siblings, nodeIdNum, typeStr, finalName)) {
-        return res.status(409).json({ success: false, message: "هناك عنصر آخر بنفس الاسم في نفس المجلد" });
+        return res.status(409).json({ success: "هناك عنصر آخر بنفس الاسم في نفس المجلد", message: "هناك عنصر آخر بنفس الاسم في نفس المجلد" });
       }
 
       // 8) تنفيذ العملية
@@ -1268,11 +1270,11 @@ const UpdateNameFolderOrfileinArchive = (uploadQueue) => {
       }
 
       // 9) نجاح
-      return res.status(200).json({ success: true, message: "تمت العملية بنجاح" });
+      return res.status(200).json({ success: "تمت العملية بنجاح", message: "تمت العملية بنجاح" });
 
     } catch (error) {
       console.error("UpdateNameFolderOrfileinArchive error:", error);
-      return res.status(500).json({ success: false, message: "خطاء في تنفيذ العملية" });
+      return res.status(500).json({ success: "خطاء في تنفيذ العملية", message: "خطاء في تنفيذ العملية" });
     }
   };
 };
@@ -1345,11 +1347,11 @@ const ExpenseUpdate = (uploadQueue) => {
       if (!Number.isFinite(amountNum))    errors.Amount    = "المبلغ يجب أن يكون رقماً صفرياً أو موجباً";
       if (!isNonEmpty(dataStr) || !lenBetween(dataStr,1,2000)) errors.Data = "الوصف مطلوب (1–2000)";
       if (isNonEmpty(classStr) && !lenBetween(classStr,1,100)) errors.ClassificationName = "التصنيف حتى 100 حرف";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
 
       // جلب السجل
       const elementUpdate = await SELECTTablecompanySubProjectexpenseObjectOne(expenseIdNum);
-      if (!elementUpdate) return res.status(404).json({ success:false, message:"لم يتم العثور على المصروف المطلوب" });
+      if (!elementUpdate) return res.status(404).json({ success:"لم يتم العثور على المصروف المطلوب", message:"لم يتم العثور على المصروف المطلوب" });
 
       // صور قديمة
       const oldImages = elementUpdate.Image ? (JSON.parse(elementUpdate.Image || "[]") || []) : [];
@@ -1368,8 +1370,8 @@ const ExpenseUpdate = (uploadQueue) => {
       const files = collectFiles(req);
       for (const f of files) {
         const mime = String(f.mimetype || ""); const size = Number(f.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ success:false, message:`نوع ملف غير مدعوم: ${mime}` });
-        if (size > MAX_SIZE)               return res.status(400).json({ success:false, message:`حجم ملف يتجاوز 15MB` });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ success:`نوع ملف غير مدعوم: ${mime}`, message:`نوع ملف غير مدعوم: ${mime}` });
+        if (size > MAX_SIZE)               return res.status(200).json({ success:`حجم ملف يتجاوز 15MB`, message:`حجم ملف يتجاوز 15MB` });
       }
       for (const f of files) {
         try {
@@ -1392,7 +1394,7 @@ const ExpenseUpdate = (uploadQueue) => {
       ]);
 
       // نجاح + تحديث التكلفة
-      res.status(200).json({ success:true, message:"تمت العملية بنجاح" });
+      res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح" });
       try { await UpdaterateCost(elementUpdate?.projectID, "cost"); } catch {}
     } catch (error) {
       console.error(error);
@@ -1415,7 +1417,7 @@ const RevenuesUpdate = (uploadQueue) => {
       // فحص صلاحية المالية (مطابق لمنطقك)
       const companyRow = await SELECTTablecompany(userSession?.IDCompany);
       if (companyRow?.DisabledFinance !== "true") {
-        return res.status(200).json({ success:false, message:"تم ايقاف الحذف اليدوي من قبل الادمن" });
+        return res.status(200).json({ success:"تم ايقاف الحذف اليدوي من قبل الادمن", message:"تم ايقاف الحذف اليدوي من قبل الادمن" });
       }
 
       const { RevenueId, Amount, Data, Bank, Imageolddelete } = req.body || {};
@@ -1429,10 +1431,10 @@ const RevenuesUpdate = (uploadQueue) => {
       if (!Number.isFinite(amountNum))    errors.Amount    = "المبلغ يجب أن يكون رقماً صفرياً أو موجباً";
       if (!isNonEmpty(dataStr) || !lenBetween(dataStr,1,2000)) errors.Data = "الوصف مطلوب (1–2000)";
       if (isNonEmpty(bankStr) && !lenBetween(bankStr,1,100)) errors.Bank = "اسم البنك حتى 100 حرف";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
 
       const elementUpdate = await SELECTTablecompanySubProjectREVENUEObjectOne(revenueIdNum);
-      if (!elementUpdate) return res.status(404).json({ success:false, message:"لم يتم العثور على السجل المطلوب" });
+      if (!elementUpdate) return res.status(404).json({ success:"لم يتم العثور على السجل المطلوب", message:"لم يتم العثور على السجل المطلوب" });
 
       const oldImages = elementUpdate.Image ? (JSON.parse(elementUpdate.Image || "[]") || []) : [];
       let arrayImage = Array.isArray(oldImages) ? [...oldImages] : [];
@@ -1448,8 +1450,8 @@ const RevenuesUpdate = (uploadQueue) => {
       const files = collectFiles(req);
       for (const f of files) {
         const mime = String(f.mimetype || ""); const size = Number(f.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ success:false, message:`نوع ملف غير مدعوم: ${mime}` });
-        if (size > MAX_SIZE)               return res.status(400).json({ success:false, message:`حجم ملف يتجاوز 15MB` });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ success:`نوع ملف غير مدعوم: ${mime}`, message:`نوع ملف غير مدعوم: ${mime}` });
+        if (size > MAX_SIZE)               return res.status(200).json({ success:`حجم ملف يتجاوز 15MB`, message:`حجم ملف يتجاوز 15MB` });
       }
       for (const f of files) {
         try {
@@ -1469,7 +1471,7 @@ const RevenuesUpdate = (uploadQueue) => {
         convertArabicToEnglish(esc(revenueIdNum)),
       ]);
 
-      res.status(200).json({ success:true, message:"تمت العملية بنجاح" });
+      res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح" });
       try { await UpdaterateCost(elementUpdate?.projectID, "cost"); } catch {}
     } catch (error) {
       console.error(error);
@@ -1498,10 +1500,10 @@ const ReturnsUpdate = (uploadQueue) => {
       if (!Number.isFinite(returnsIdNum)) errors.ReturnsId = "رقم المرتجع غير صالح";
       if (!Number.isFinite(amountNum))    errors.Amount    = "المبلغ يجب أن يكون رقماً صفرياً أو موجباً";
       if (!isNonEmpty(dataStr) || !lenBetween(dataStr,1,2000)) errors.Data = "الوصف مطلوب (1–2000)";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
 
       const elementUpdate = await SELECTTablecompanySubProjectReturnedObjectOne(returnsIdNum);
-      if (!elementUpdate) return res.status(404).json({ success:false, message:"لم يتم العثور على السجل المطلوب" });
+      if (!elementUpdate) return res.status(404).json({ success:"لم يتم العثور على السجل المطلوب", message:"لم يتم العثور على السجل المطلوب" });
 
       const oldImages = elementUpdate.Image ? (JSON.parse(elementUpdate.Image || "[]") || []) : [];
       let arrayImage = Array.isArray(oldImages) ? [...oldImages] : [];
@@ -1517,8 +1519,8 @@ const ReturnsUpdate = (uploadQueue) => {
       const files = collectFiles(req);
       for (const f of files) {
         const mime = String(f.mimetype || ""); const size = Number(f.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ success:false, message:`نوع ملف غير مدعوم: ${mime}` });
-        if (size > MAX_SIZE)               return res.status(400).json({ success:false, message:`حجم ملف يتجاوز 15MB` });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ success:`نوع ملف غير مدعوم: ${mime}`, message:`نوع ملف غير مدعوم: ${mime}` });
+        if (size > MAX_SIZE)               return res.status(200).json({ success:`حجم ملف يتجاوز 15MB`, message:`حجم ملف يتجاوز 15MB` });
       }
       for (const f of files) {
         try {
@@ -1537,7 +1539,7 @@ const ReturnsUpdate = (uploadQueue) => {
         convertArabicToEnglish(esc(returnsIdNum)),
       ]);
 
-      res.status(200).json({ success:true, message:"تمت العملية بنجاح" });
+      res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح" });
       try { await UpdaterateCost(elementUpdate?.projectID, "cost"); } catch {}
     } catch (error) {
       console.error(error);
@@ -1625,13 +1627,13 @@ const UPDATEdataRequests = (uploadQueue) => {
       if (!isNonEmpty(dataStr) || !lenBetween(dataStr, 1, 2000)) errors.Data = "نص الطلب مطلوب (1–2000)";
       if (!isNonEmpty(userStr) || !lenBetween(userStr, 2, 100)) errors.user = "اسم المستخدم (user) غير صالح";
       if (Object.keys(errors).length) {
-        return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
       }
 
       // 3) جلب السجل الحالي
       const elementUpdate = await SELECTDataAndTaketDonefromTableRequests(requestIdNum);
       if (!elementUpdate) {
-        return res.status(404).json({ success:false, message:"لم يتم العثور على الطلب" });
+        return res.status(404).json({ success:"لم يتم العثور على الطلب", message:"لم يتم العثور على الطلب" });
       }
 
       // 4) إدارة الصور القديمة/الجديدة
@@ -1649,8 +1651,8 @@ const UPDATEdataRequests = (uploadQueue) => {
       const files = collectFiles(req);
       for (const f of files) {
         const mime = String(f.mimetype || ""); const size = Number(f.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ success:false, message:`نوع ملف غير مدعوم: ${mime}` });
-        if (size > MAX_SIZE)               return res.status(400).json({ success:false, message:`حجم ملف يتجاوز 15MB` });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ success:`نوع ملف غير مدعوم: ${mime}`, message:`نوع ملف غير مدعوم: ${mime}` });
+        if (size > MAX_SIZE)               return res.status(200).json({ success:`حجم ملف يتجاوز 15MB`, message:`حجم ملف يتجاوز 15MB` });
       }
       for (const f of files) {
         try {
@@ -1672,13 +1674,13 @@ const UPDATEdataRequests = (uploadQueue) => {
       ]);
 
       // 6) الرد + إشعار
-      res.status(200).json({ success:true, message:"تمت العملية بنجاح" });
+      res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح" });
       try {
         await Financeinsertnotification(0, "طلب", "تعديل", userSession.userName, requestIdNum);
       } catch {}
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ success:false, message:"فشل في تنفيذ العملية" });
+      return res.status(500).json({ success:"فشل في تنفيذ العملية", message:"فشل في تنفيذ العملية" });
     }
   };
 };
@@ -1704,12 +1706,12 @@ const UPDATEImplementRquestsORCansle = (uploadQueue) => {
       if (!Number.isFinite(requestIdNum)) errors.RequestsID = "رقم الطلب غير صالح";
       if (!isNonEmpty(userStr) || !lenBetween(userStr, 2, 100)) errors.user = "اسم المستخدم غير صالح";
       if (Object.keys(errors).length) {
-        return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
       }
 
       // 3) جلب السجل
       const row = await SELECTDataAndTaketDonefromTableRequests(requestIdNum);
-      if (!row) return res.status(404).json({ success:false, message:"لم يتم العثور على الطلب" });
+      if (!row) return res.status(404).json({ success:"لم يتم العثور على الطلب", message:"لم يتم العثور على الطلب" });
 
       // 4) تبديل الحالة Done
       const currentDone = String(row.Done || "").toLowerCase() === "true";
@@ -1722,10 +1724,10 @@ const UPDATEImplementRquestsORCansle = (uploadQueue) => {
         convertArabicToEnglish(esc(requestIdNum))
       ]);
 
-      return res.status(200).json({ success:true, message:"تمت العملية بنجاح", data: { Done: toggled } });
+      return res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح", data: { Done: toggled } });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ success:false, message:"فشل في تنفيذ العملية" });
+      return res.status(500).json({ success:"فشل في تنفيذ العملية", message:"فشل في تنفيذ العملية" });
     }
   };
 };
@@ -1745,12 +1747,12 @@ const Confirmarrivdrequest = (uploadQueue) => {
       // 2) المدخلات (من query)
       const requestIdNum = parsePositiveInt(req.query?.RequestsID);
       if (!Number.isFinite(requestIdNum)) {
-        return res.status(400).json({ success:false, message:"رقم الطلب غير صالح" });
+        return res.status(200).json({ success:"رقم الطلب غير صالح", message:"رقم الطلب غير صالح" });
       }
 
       // 3) جلب السجل
       const row = await SELECTDataAndTaketDonefromTableRequests(requestIdNum);
-      if (!row) return res.status(404).json({ success:false, message:"لم يتم العثور على الطلب" });
+      if (!row) return res.status(404).json({ success:"لم يتم العثور على الطلب", message:"لم يتم العثور على الطلب" });
 
       // 4) تبديل checkorderout
       const current = String(row.checkorderout || "").toLowerCase() === "true";
@@ -1762,7 +1764,7 @@ const Confirmarrivdrequest = (uploadQueue) => {
         "checkorderout=?"
       );
 
-      return res.status(200).json({ success:true, message:"تمت العملية بنجاح", data: { checkorderout: toggled } });
+      return res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح", data: { checkorderout: toggled } });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ success:false, message:"فشل في تنفيذ العملية" });

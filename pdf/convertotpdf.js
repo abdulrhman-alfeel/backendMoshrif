@@ -6,8 +6,8 @@ const {
   SELECTTablecompanySubProjectReturned,
   SELECTSUMAmountandBring,
 } = require("../sql/selected/selected");
-const { HtmlContent, HtmlStatmentall, HtmlStatmentallRequests, HTMLStatmentFinancialCustody, HtmlStatmentStage } = require("./writHtml");
-
+const { HtmlContent, HtmlStatmentall, HtmlStatmentallRequests, HTMLStatmentFinancialCustody, HtmlStatmentStage, Html_report_prepare } = require("./writHtml");
+const path = require('path');
 //  كشف حساب كامل للمصروفات
 const StatmentExpensePdf = async (idproject, namefile) => {
   const dataHome = await SELECTdataprojectandbrinshandcompany(idproject);
@@ -99,6 +99,8 @@ await browser.close();
 // report-batched.js  (CommonJS)
 const fs = require('node:fs/promises');
 const { PDFDocument } = require('pdf-lib');
+const { Select_report_prepare } = require("../sql/selected/selectuser");
+const { sanitizeFilename } = require("../middleware/Aid");
 
 /* أدوات مساعدة */
 const htmlEscape = (v) =>
@@ -270,5 +272,20 @@ async function generateRequestsReportPDF({ result, count, company, outputPath = 
     await browser.close();
   };
 };
+
+
+
+
+const convert_report_prepare =async () =>{
+  const result = await Select_report_prepare();
+  console.log(result);
+  const html = await Html_report_prepare(result);
+  let namefile = `${sanitizeFilename(result[0].Sender)}__report_prepare.pdf`;
+
+  const filePath = path.join(__dirname, "../upload", namefile);
+  
+  convertHtmlToPdf(html,filePath)
+};
+// convert_report_prepare()
 
 module.exports = { convertHtmlToPdf, StatmentExpensePdf, StatmentAllpdf,generateRequestsReportPDF };

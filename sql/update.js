@@ -397,7 +397,9 @@ const UpdateTablecompanySubProject = (data, type = "id") => {
       if (err) {
         console.log(err.message);
       }
+      
       console.log(`Row with the ID ${this.lastID} has been inserted.`);
+      return true;
     }
   );
 };

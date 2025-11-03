@@ -39,7 +39,7 @@ const UpdateStageHome = (uploadQueue) => {
       if (!isNonEmpty(cleanName) || !lenBetween(cleanName, 2, 150)) errors.StageName = "اسم المرحلة مطلوب (2–150)";
       if (!Number.isFinite(daysInt)) errors.Days = "الأيام يجب أن تكون عددًا صحيحًا ≥ 0";
       if (!Number.isFinite(ratioNum)) errors.Ratio = "النسبة (0–100)";
-      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+      if (Object.keys(errors).length) return res.status(200).json({ error: errors });
 
       // جلب المرحلة مع مجموع نسب النوع
       const stage = await SELECTFROMTableStageTempletaObject(
@@ -55,8 +55,8 @@ const UpdateStageHome = (uploadQueue) => {
       if (req.file) {
         const mime = String(req.file.mimetype || "");
         const size = Number(req.file.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ error: "نوع المرفق غير مدعوم" });
-        if (size > MAX_FILE_SIZE)        return res.status(400).json({ error: "حجم المرفق يتجاوز 15MB" });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ error: "نوع المرفق غير مدعوم" });
+        if (size > MAX_FILE_SIZE)        return res.status(200).json({ error: "حجم المرفق يتجاوز 15MB" });
         await uploaddata(req.file);
         await implmentOpreationSingle("upload", attachedName);
       }
@@ -66,7 +66,7 @@ const UpdateStageHome = (uploadQueue) => {
       const totalNow  = Number(stage?.TotalRatio || 0);
       const newTotal  = cleanType !== "عام" ? (totalNow - oldRatio + ratioNum) : ratioNum;
       if (newTotal > 100) {
-        return res.status(400).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
+        return res.status(200).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
       }
 
       // بناء اسم نهائي يحافظ على رقم الترتيب الموجود بين قوسين (إن وُجد)
@@ -119,14 +119,14 @@ const UpdateStageSub = (uploadQueue) => {
       const errors = {};
       if (!Number.isFinite(subId)) errors.StageSubID = "معرّف الخطوة غير صالح";
       if (!isNonEmpty(subName) || !lenBetween(subName, 2, 150)) errors.StageSubName = "اسم الخطوة مطلوب (2–150)";
-      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+      if (Object.keys(errors).length) return res.status(200).json({ error: errors });
 
       let attached = null;
       if (fileFromReq) {
         const mime = String(req.file.mimetype || "");
         const size = Number(req.file.size || 0);
-        if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ error: "نوع المرفق غير مدعوم" });
-        if (size > MAX_FILE_SIZE)        return res.status(400).json({ error: "حجم المرفق يتجاوز 15MB" });
+        if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ error: "نوع المرفق غير مدعوم" });
+        if (size > MAX_FILE_SIZE)        return res.status(200).json({ error: "حجم المرفق يتجاوز 15MB" });
         attached = fileFromReq;
         await uploaddata(req.file);
         implmentOpreationSingle("upload", attached);
@@ -174,7 +174,7 @@ const UpdateTypeTemplet = () => {
       const errors = {};
       if (!Number.isFinite(typeId)) errors.id = "معرّف النوع غير صالح";
       if (!isNonEmpty(cleanType) || !lenBetween(cleanType, 1, 100)) errors.Type = "اسم النوع مطلوب (1–100)";
-      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+      if (Object.keys(errors).length) return res.status(200).json({ error: errors });
 
       await UPDATETableStagetype(cleanType, typeId, userSession.IDCompany);
       return res.status(200).json({ success: "تمت العملية بنجاح" });

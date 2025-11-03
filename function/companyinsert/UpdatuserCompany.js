@@ -53,13 +53,13 @@ const userCompanyUpdatdashbord = () => {
       if (!isValidLocalPhone9(phoneLocal)) errors.PhoneNumber = "رقم الجوال غير صالح (9 أرقام محلية بعد التطبيع)";
       if (isNonEmpty(jobStr) && !lenBetween(jobStr, 2, 50)) errors.job = "المسمى الوظيفي حتى 50";
       if (isNonEmpty(jobDesc) && !lenBetween(jobDesc, 0, 2000)) errors.jobdiscrption = "الوصف حتى 2000";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       const verificationFinduser = await SELECTTableusersCompanyVerificationIDUpdate(phoneLocal, idNum);
       const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(phoneLocal);
 
       if ((Array.isArray(verificationFinduser) && verificationFinduser.length > 0) || findRegistrioncompany) {
-        return res.status(409).json({
+        return res.status(200).json({
           success:false,
           message: findRegistrioncompany
             ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
@@ -114,13 +114,13 @@ const userCompanyUpdat = () => {
       if (!isValidLocalPhone9(phoneLocal)) errors.PhoneNumber = "رقم الجوال غير صالح (9 أرقام)";
       if (isNonEmpty(jobStr) && !lenBetween(jobStr, 2, 50)) errors.job = "المسمى الوظيفي حتى 50";
       if (isNonEmpty(jobDesc) && !lenBetween(jobDesc, 0, 2000)) errors.jobdiscrption = "الوصف حتى 2000";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       const verificationFinduser = await SELECTTableusersCompanyVerificationIDUpdate(phoneLocal, idNum);
       const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(phoneLocal);
 
       if ((Array.isArray(verificationFinduser) && verificationFinduser.length > 0) || findRegistrioncompany) {
-        return res.status(409).json({
+        return res.status(200).json({
           success:false,
           message: findRegistrioncompany
             ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
@@ -168,7 +168,7 @@ const UpdatUserCompanyinBrinsh = () => {
       if (!["Acceptingcovenant", "user", ""].includes(kindStr) && isNaN(Number(type))) {
         // نسمح بأن يكون type رقم (مشروع) أو kind من هذه القيم
       }
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       if (kindStr === "Acceptingcovenant" || kindStr === "user") {
         await Updatchackglobluserinbrinsh(idBrinshNum, kindStr === "user" ? type : kindStr, checkGloblenew, checkGlobleold, userSession.userName);
@@ -204,7 +204,7 @@ const UpdatUserCompanyinBrinshV2 = () => {
       if (!validKinds.includes(kindStr) && isNaN(Number(type))) {
         // نسمح بنوعي التمرير
       }
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       if (validKinds.includes(kindStr)) {
         await Updatchackglobluserinbrinshv2(idBrinshNum, type, checkGloblenew, checkGlobleold, userSession.userName);
@@ -318,7 +318,7 @@ const DeletUser = () => {
 
       const phoneLocal = normalizePhone(req.body?.PhoneNumber);
       if (!isValidLocalPhone9(phoneLocal)) {
-        return res.status(400).json({ success:false, message:"رقم الجوال غير صالح (9 أرقام محلية)" });
+        return res.status(200).json({ success:false, message:"رقم الجوال غير صالح (9 أرقام محلية)" });
       }
 
       const ok1 = await DeletTableuserComppanyCorssUpdateActivationtoFalse([convertArabicToEnglish(esc(phoneLocal))]);
@@ -390,7 +390,7 @@ const UpdateToken = () => {
       const errors = {};
       if (!isNonEmpty(newStr) || !lenBetween(newStr, 8, 2048)) errors.tokenNew = "التوكين الجديد غير صالح";
       if (isNonEmpty(oldStr) && !lenBetween(oldStr, 8, 2048)) errors.tokenOld = "التوكين القديم غير صالح";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       const phoneLocal = normalizePhone(userSession.PhoneNumber);
       await UpdateTableLoginActivatytoken(convertArabicToEnglish(esc(phoneLocal)), esc(newStr), esc(oldStr || null));
@@ -422,7 +422,7 @@ const InsertmultipleProjecsinvalidity = () => {
       if (!Number.isFinite(idBrinshNum)) errors.idBrinsh = "رقم الفرع غير صالح";
       if (!Array.isArray(ProjectesNew) || ProjectesNew.length === 0) errors.ProjectesNew = "قائمة المشاريع مطلوبة";
       if (!isValidLocalPhone9(phoneLocal)) errors.PhoneNumber = "رقم الجوال غير صالح";
-      if (Object.keys(errors).length) return res.status(400).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
 
       const resultusernew = await SELECTTableusersCompanyVerification(phoneLocal);
       if (!Array.isArray(resultusernew) || resultusernew.length === 0) {

@@ -158,12 +158,12 @@ const SELECTusersCompany = (userName, IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT job FROM usersCompany WHERE userName=? AND IDCompany=?`,
+        `SELECT job FROM usersCompany WHERE trim(userName)=trim(?) AND IDCompany=?`,
         [userName, IDCompany],
         function (err, result) {
           if (err) {
-            reject(err);
             console.log(err.message);
+            reject(err);
           } else {
             resolve(result);
           }
@@ -286,7 +286,7 @@ const SELECTTableusersCompanyVerificationID = (id) => {
   });
 };
 
-//  التحقق من صلاحيات المستخدم
+//  التحقق من صلاحيات المستخد
 const SELECTTableusersCompanySub = (
   IDCompany,
   IDcompanySub,
@@ -295,49 +295,42 @@ const SELECTTableusersCompanySub = (
   kind = "sub"
 ) => {
   return new Promise((resolve, reject) => {
-  // افترض أن هذه القيم موجودة لديك
-// const IDCompany, IDcompanySub, type, kind, ProjectID;
+    const params = [IDCompany];
 
-let params = [IDCompany];
-const filters = [
-  "uC.job = 'Admin'"
-];
+    // نجمع الشروط (OR) داخل قوس واحد
+    const filters = ["uC.job = 'Admin'"];
 
-// مدير الفرع
-if (IDcompanySub == null || IDcompanySub === 0) {
-  // بدون تقييد على الفرع
-  filters.push("uC.job = 'مدير الفرع'");
-} else {
-  filters.push("(uC.job = 'مدير الفرع' AND uB.idBransh = ?)");
-  params.push(IDcompanySub);
-}
+    // مدير الفرع
+    if (IDcompanySub == null || IDcompanySub === 0) {
+      // بدون تقييد على فرع معيّن
+      filters.push("uC.job = 'مدير الفرع'");
+    } else {
+      filters.push("(uC.job = 'مدير الفرع' AND uB.idBransh = ?)");
+      params.push(IDcompanySub);
+    }
 
-// الموظفين
-if (type === "PublicationsBransh") {
-  filters.push("(ca.jobdiscrption = 'موظف')");
-} else if (ProjectID != null) {
-  filters.push("(uC.job NOT IN ('Admin','مدير الفرع') AND ca.jobdiscrption = 'موظف' AND uP.ProjectID = ?)");
-  params.push(ProjectID);
-}
+    // المنشورات (الموظفون) – مشروع مطلوب لأي من الوظيفتين
+    if (ProjectID != null && type !== "Finance") {
+      filters.push("((ca.jobdiscrption = 'موظف' OR ca.jobdiscrption = 'مستخدم') AND uP.ProjectID = ?)");
+      params.push(ProjectID);
+    }
 
-// العهد
-if (kind === "CovenantBrinsh") {
-  filters.push("(ca.job IN ('Admin','مالية') OR uB.Acceptingcovenant = 'true')");
-}
+    // العهد
+    if (kind === "CovenantBrinsh") {
+      filters.push("(ca.job IN ('مالية') OR uB.Acceptingcovenant = 'true')");
+    }
 
-// المالية
-if (type === "Finance") {
-  filters.push("(uP.ValidityProject LIKE ?)");
-  params.push('%إشعارات المالية%');
-}
+    // المالية
+    if (type === "Finance" && ProjectID != null) {
+      filters.push("(uP.ValidityProject LIKE ? AND uP.ProjectID = ?)");
+      params.push("%إشعارات المالية%");
+      params.push(ProjectID);
+    }
 
-// العملاء المرتبطون بمشروع
-if (ProjectID != null) {
-  filters.push("(ca.jobdiscrption = 'مستخدم' AND uP.ProjectID = ?)");
-  params.push(ProjectID);
-}
+    // العملاء المرتبطون بمشروع (إن لم تكن حالة المنشورات)
 
-const query = `
+
+    const query = `
 SELECT DISTINCT
     ca.token,
     ca.userName,
@@ -353,28 +346,31 @@ SELECT DISTINCT
     uC.job AS UserJob,
     uP.ProjectID
 FROM LoginActivaty ca
-LEFT JOIN company RE       ON RE.id = ca.IDCompany
-LEFT JOIN companySub Su    ON Su.NumberCompany = RE.id
-LEFT JOIN usersCompany uC  ON uC.PhoneNumber = ca.PhoneNumber
-LEFT JOIN usersBransh uB   ON uB.user_id = uC.id
-LEFT JOIN usersProject uP  ON uP.idBransh = Su.id AND uP.user_id = uC.id
+LEFT JOIN company RE           ON RE.id = ca.IDCompany
+LEFT JOIN usersCompany uC      ON uC.PhoneNumber = ca.PhoneNumber
+LEFT JOIN usersBransh uB       ON uB.user_id = uC.id
+-- ✅ اربط الفرع على فرع المستخدم نفسه
+LEFT JOIN companySub Su        ON Su.id = uB.idBransh
+-- ✅ اربط المشاريع على نفس الفرع والمستخدم
+LEFT JOIN usersProject uP      ON uP.idBransh = Su.id AND uP.user_id = uC.id
 LEFT JOIN companySubprojects cS ON cS.id = uP.ProjectID
 WHERE ca.IDCompany = ?
-  AND (${filters.join(' OR ')})
+  AND (${filters.join(" OR ")})
 `;
 
-db.serialize(() => {
-  db.all(query, params, (err, result) => {
-    if (err) {
-      console.error(err);
-      return reject(err);
-    }
-    resolve(result);
-  });
-});
-;
+
+    db.serialize(() => {
+      db.all(query, params, (err, result) => {
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
+        resolve(result);
+      });
+    });
   });
 };
+
 // WHERE value LIKE '%مرحلة%'
 // SELECT JSON_SEARCH(ValidityProject, 'one', 'إشعارات المالية') AS found_path
 // FROM usersProject ;
@@ -590,6 +586,35 @@ const SelectTableUserPrepareObjectcheck = async (IDCompany, PhoneNumber) => {
     });
   });
 };
+const Select_report_prepare = async () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `  
+        SELECT *,JSON_EXTRACT(File,'$') AS File
+          FROM Chat
+          WHERE Sender = 'م / محمد يحيى القحطاني'
+            AND (
+                  Type = 'تحضير' AND      strftime('%Y-%m', Date) IN (                     
+                      '2024-01','2024-02','2024-06','2024-10','2024-11','2024-12'
+                  )
+                  OR ( Type = 'تحضير' AND                            
+                      strftime('%Y-%m', Date) IN ('2025-01','2025-02')
+                  )
+                )
+          ORDER BY Date, timeminet;`,
+        function (err, result) {
+          if (err) {
+            console.log(err.message);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
 module.exports = {
   SelectTableUserPrepareObjectcheck,
   SelectTableUserPrepareObject,
@@ -615,4 +640,5 @@ module.exports = {
   SELECTTableusersCompanyall,
   SELECTTableusersBranshmanger,
   SELECTTablevalidityuserinBransh,
+  Select_report_prepare
 };

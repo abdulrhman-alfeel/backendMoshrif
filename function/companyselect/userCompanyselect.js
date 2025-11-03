@@ -25,7 +25,7 @@ const Loginuser = () => {
     if (result?.length > 0) {
       const output = Math.floor(1000 + Math.random() * 9000);
       let PhoneNumbers = code ? `${code}${PhoneNumber}` : PhoneNumber;
-      verificationSend(PhoneNumbers, output);
+      // verificationSend(PhoneNumbers, output);
 
       const currentDate = new Date();
       const futureDate = new Date(currentDate);
@@ -57,6 +57,7 @@ const Loginuser = () => {
     }
   };
 };
+
 
 const axios = require("axios");
 

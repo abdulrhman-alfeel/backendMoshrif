@@ -292,7 +292,7 @@ const inseertCompanybrinsh = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
@@ -302,7 +302,7 @@ const inseertCompanybrinsh = () => {
       // 3) التأكد من وجود الشركة الأساسية
       const companyRow = await SELECTTablecompanyName(normalized.NumberCompany);
       if (!companyRow) {
-        return res.status(404).json({
+        return res.status(200).json({
           success:  "يرجى إنشاء حساب شركة قبل البدء بالفروع",
           message: "يرجى إنشاء حساب شركة قبل البدء بالفروع",
         });
@@ -398,7 +398,7 @@ const InsertLinkevaluation = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
@@ -457,7 +457,7 @@ const OpenOrCloseopreationStopfinance = () => {
         .status(200);
     } catch (error) {
       console.log(error);
-      res.send({ success: "فشل تنفيذ العملية" }).status(400);
+      res.send({ success: "فشل تنفيذ العملية" }).status(200);
     }
   };
 };
@@ -505,7 +505,7 @@ const insertRequestFinancialCustody = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,

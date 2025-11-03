@@ -203,7 +203,8 @@ const Sortdatauserfromnotificationv2 = (result, userName) => {
         if (item === userName) {
         const dataNotifction = JSON.parse(pic.data);
         const data = JSON.parse(dataNotifction?.data);
-        const color = await switchColor(JSON.parse(dataNotifction?.data)?.jobUser);
+        console.log(pic.id,data?.jobUser);
+        const color = await switchColor(data?.jobUser);
         arrayNotifcation.push({
           id: pic.id,
           ...data,
@@ -228,6 +229,7 @@ const Sortdatauserfromnotificationv2 = (result, userName) => {
 
 const switchColor = (job) => {
   const arrayRed = ["مالك", "Admin", "مدير عام"];
+  console.log(job);
   if (arrayRed.includes(job)) return "#FF0F0F";
   if (job === "مدير الفرع") return "#10B982";
   return "#f6f8fe";
@@ -239,3 +241,6 @@ module.exports = {
   BringDataNotifcationv2,
   FilterNotifcationv2,
 };
+// {"notification_type":"PublicationsBransh","navigationId":"17201/1/navigation","data":"{\"ProjectID\":198,\"userName\":\"علي المطيري\",\"kind\":\"تعليق\",\"type\":\"Comment\",\"data\":{\"CommpanyID\":1,\"CommentID\":292,\"PostId\":17201,\"commentText\":\"أبد اللي تشوفه مناسب\",\"Date\":\"2025-11-02T14:46:20.336Z\",\"userName\":\"علي المطيري\"},\"PostID\":17201,\"count\":1}"}
+
+// {"notification_type":"Finance","navigationId":"247","data":"{\"ProjectID\":247,\"userName\":\"محمد العبيد\",\"kind\":\"عهد\",\"type\":\"إضافة\",\"data\":{\"NumberCompany\":1,\"RevenueId\":1757,\"projectID\":247,\"Amount\":40000,\"Date\":\"2025-11-02\",\"Data\":\"حوالة على الانماء ( عهدة ) لأعمال المشروع\",\"Bank\":\"حوالة مالية\",\"Image\":null},\"IDcompanySub\":1,\"jobUser\":\"مدير الفرع\"}"}

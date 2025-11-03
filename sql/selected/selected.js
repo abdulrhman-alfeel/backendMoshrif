@@ -385,71 +385,6 @@ const SELECTTABLEcompanyProjectall = (id) => {
   });
 };
 
-// SELECT
-//         CASE
-//         WHEN uC.job = 'Admin' THEN uC.job
-//         WHEN cS.Nameproject IS NULL  THEN NULL
-//         ELSE uB.job
-//         END AS job,
-//         cS.id,
-//         cS.IDcompanySub,
-//         cS.Nameproject,
-//         cS.Note,
-//         cS.TypeOFContract,
-//         cS.GuardNumber,
-//         cS.LocationProject,
-//         cS.ProjectStartdate,
-//         cS.numberBuilding,
-//         cS.Contractsigningdate,
-//         cS.Disabled,
-//         cS.Referencenumber,
-//         cS.rate,
-//         cS.cost,
-//         (SELECT COUNT(ValidityProject) FROM usersProject ut WHERE ut.ProjectID =cS.id ) AS countuser,
-//         EX.Cost AS ConstCompany,
-//         EX.DisabledFinance,
-//         Li.urlLink AS Linkevaluation,
-//         CASE
-//         WHEN uB.ValidityBransh IS NOT NULL THEN json_extract(uB.ValidityBransh, '$')
-//         ELSE NULL END AS ValidityBransh
-//         FROM usersCompany uC
-//         LEFT JOIN usersBransh uB
-//             ON uC.id = uB.user_id
-//             AND uC.job NOT IN ('Admin')
-//         LEFT JOIN usersProject uP
-//             ON uB.idBransh = uP.idBransh
-//             AND uB.user_id = uP.user_id
-//         LEFT JOIN companySubprojects cS
-//         ON (
-//             (uC.job = 'Admin' AND cS.IDcompanySub = ${id})
-//             OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${id})
-//             OR (uC.job NOT IN ('Admin','مدير الفرع')
-//                 AND uP.ProjectID = cS.id
-//                 AND uB.idBransh = ${id})
-//         )
-//         LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
-//         LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
-//         LEFT JOIN company EX ON EX.id = RE.NumberCompany
-//         WHERE trim(uC.PhoneNumber) = trim(${PhoneNumber})  AND cS.id > ${IDfinlty}  AND (cS.Disabled) ='${Disabled}'  ORDER BY cS.id ASC
-//         ${Limit}
-//         `
-//           : `SELECT
-//         cS.id AS ProjectID,cS.Nameproject
-//         FROM usersCompany uC
-//         LEFT JOIN usersBransh uB
-//             ON uC.id = uB.user_id
-//             AND uC.job NOT IN ('Admin')
-//         LEFT JOIN usersProject uP
-//             ON uB.idBransh = uP.idBransh
-//             AND uB.user_id = uP.user_id
-//         LEFT JOIN companySubprojects cS
-//         ON (
-//           (uC.job = 'Admin' )
-//           OR (uB.job = 'مدير الفرع' )
-//           OR (uC.job NOT IN ('Admin','مدير الفرع')
-//               AND uP.ProjectID = cS.id )
-//         )
-//         WHERE trim(uC.PhoneNumber) =trim(${PhoneNumber})  AND (cS.id) ${plase} ${IDfinlty}   AND (cS.Disabled) =${Disabled}  ORDER BY cS.id ASC  ${Limit}
 
 
 
@@ -458,11 +393,13 @@ const selecttablecompanySubProjectall = (
   IDfinlty,
   PhoneNumber,
   Disabled = "true",
-  Limit = "LIMIT 3",
+  Limit = "LIMIT 7",
   kind = "all"
 ) => {
   return new Promise((resolve, reject) => {
     let plase = parseInt(IDfinlty) === 0 ? ">" : "<";
+ 
+
 
     db.serialize(function () {
       db.all(
@@ -520,26 +457,25 @@ WHERE
   REPLACE(TRIM(uC.PhoneNumber), ' ', '') = TRIM(${PhoneNumber})
   AND cS.id ${plase} ${IDfinlty}
   AND cS.Disabled = 'true'     -- إن كان منطقيًا استخدم TRUE
-  AND (
-       uC.job = 'Admin' AND cS.IDcompanySub = ${id}
-       OR EXISTS (  -- مدير فرع يرى جميع مشاريع الفرع/الفروع التي يديرها
+ AND (
+       (uC.job = 'Admin' AND cS.IDcompanySub = ${id})         -- لو أردتها لفرع محدد
+       OR EXISTS (                                         -- مدير الفرع يرى مشاريع فروعه فقط
             SELECT 1
             FROM usersBransh b1
             WHERE b1.user_id  = uC.id
-              AND b1.idBransh = ${id}
               AND b1.job      = 'مدير الفرع'
-       )
-       OR EXISTS (  -- المستخدم العادي يرى المشاريع المكلَّف بها
+              AND b1.idBransh = ${id}   AND cS.IDcompanySub = ${id}
+      )
+       OR EXISTS (                                         -- المستخدم العادي يرى المشاريع المكلف بها
             SELECT 1
             FROM usersProject up1
-            WHERE up1.user_id  = uC.id 
-			 AND up1.idBransh = ${id}
+            WHERE up1.user_id   = uC.id
+              AND up1.idBransh  = ${id}       AND cS.IDcompanySub = ${id}
               AND up1.ProjectID = cS.id
-       )
+      )
   )
 ORDER BY cS.id DESC
-${Limit};
-
+${Limit}
 ;
         `
           : `SELECT 
@@ -762,7 +698,7 @@ const SELECTTablecompanySubProjectFilter = (search, IDcompanySub, user_id) => {
 LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
 LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
 LEFT JOIN company EX ON EX.id = RE.NumberCompany
-WHERE uC.id = ${user_id} AND Nameproject LIKE '%${search}%'`,
+WHERE uC.id = ${user_id} AND cS.Disabled = 'true' AND Nameproject LIKE '%${search}%'`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -781,7 +717,7 @@ const SELECTProjectStartdate = (id, kind = "all", type = "id") => {
     db.serialize(function () {
       db.get(
         kind === "all"
-          ? `SELECT pr.ProjectStartdate,pr.Contractsigningdate,pr.Nameproject,pr.numberBuilding,pr.id,pr.IDcompanySub, RE.NumberCompany FROM companySubprojects pr LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub  WHERE pr.${type}=? `
+          ? `SELECT pr.ProjectStartdate,pr.Contractsigningdate,pr.Nameproject,pr.numberBuilding,pr.id,pr.IDcompanySub, RE.NumberCompany,pr.TypeOFContract FROM companySubprojects pr LEFT JOIN companySub RE ON RE.id = pr.IDcompanySub  WHERE pr.${type}=? `
           : "SELECT ca.id,EX.Cost AS ConstCompany FROM companySubprojects ca LEFT JOIN companySub RE ON RE.id = ca.IDcompanySub LEFT JOIN company EX ON EX.id = RE.NumberCompany  WHERE ca.id=?",
         [id],
         function (err, result) {
@@ -2257,7 +2193,7 @@ const SELECTallDatafromTableRequestsV2 = async (
               ${parseInt(lastID)} 
             ORDER BY re.RequestsID DESC,datetime(re.Date) DESC LIMIT 10`
           : `SELECT 
-    re.*,     ${add},
+    re.*, PR.Nameproject,    ${add},
     CASE
         WHEN re.Image IS NOT NULL THEN json_extract(re.Image, '$') 
         ELSE NULL
@@ -2270,7 +2206,7 @@ WHERE PR.IDcompanySub = ?
   AND re.RequestsID ${plus}  ${parseInt(lastID)} 
     ${whereAdd}
 ORDER BY re.RequestsID DESC, datetime(re.Date) DESC 
-LIMIT 10;`,
+LIMIT 10`,
         [ProjectID],
         function (err, rows) {
           if (err) {
@@ -2293,12 +2229,14 @@ const SELECTDataAndTaketDonefromTableRequests2 = async (
   Done,
   whereAdd
 ) => {
+
   return new Promise((resolve, reject) => {
     let sqlString =
       type === "part"
         ? `SELECT COUNT(Done) FROM Requests WHERE Done=? AND  ProjectID=?`
         : `SELECT COUNT(Done) FROM Requests re LEFT JOIN companySubprojects PR ON PR.id = re.ProjectID WHERE  ${whereAdd} Done=? AND PR.IDcompanySub=? `;
     let data = [Done, RequestsID];
+      console.log(sqlString,data);
     db.serialize(async () => {
       db.get(sqlString, data, function (err, rows) {
         // console.log(RequestsID);
@@ -2450,9 +2388,9 @@ const SELECTTablePostPublicSearch = (
         : [id, DateStart, DateEnd, `%${userName}%`, PostID];
     let query = `SELECT * FROM (SELECT ca.PostID, ca.postBy, ca.Date, ca.timeminet, ca.url, ca.Type, ca.Data, ca.StageID, cs.StageName,
         EX.NameCompany, RE.NameSub, PR.Nameproject,
-        (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
-        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
-        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = '${user}') AS UserLiked
+        (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS Comment,
+        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS Likes,
+        (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = '${user}') AS Likeuser
 
         FROM Post ca
         LEFT JOIN company EX ON EX.id = ca.CommpanyID
@@ -2471,7 +2409,6 @@ const SELECTTablePostPublicSearch = (
         WHERE ca.CommpanyID = ?
         AND Date(Date) BETWEEN ? AND ?  ${SqlStringOne} 
         ORDER BY ca.PostID ASC) AS subquery ORDER BY PostID DESC,datetime(Date) DESC LIMIT 10`;
-        console.log(query, data);
     db.serialize(function () {
       db.all(query, data, function (err, result) {
         if (err) {
@@ -2695,9 +2632,9 @@ const SELECTTablepostAll = (
       EX.NameCompany,
       RE.NameSub,
       PR.Nameproject,
-      (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS CommentCount,
-      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS LikesCount,
-      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS UserLiked
+      (SELECT COUNT(userName) FROM Comment WHERE PostId = ca.PostID) AS Comment,
+      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID) AS Likes,
+      (SELECT COUNT(userName) FROM Likes WHERE PostId = ca.PostID AND userName = ?) AS Likeuser
     FROM Post ca
     LEFT JOIN company EX ON EX.id = ca.CommpanyID
     LEFT JOIN companySub RE ON RE.id = ca.brunshCommpanyID

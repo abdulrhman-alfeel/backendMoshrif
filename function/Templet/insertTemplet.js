@@ -63,7 +63,7 @@ const insertStageHome = (uploadQueue) => {
       if (!isNonEmpty(cleanName) || !lenBetween(cleanName, 2, 150)) errors.StageName = "اسم المرحلة مطلوب (2–150)";
       if (!Number.isFinite(daysInt)) errors.Days = "الأيام يجب أن تكون رقمًا صحيحًا موجبًا";
       if (!Number.isFinite(ratioNum)) errors.Ratio = "النسبة (0–100)";
-      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+      if (Object.keys(errors).length) return res.status(200).json({ error: errors });
 
       if (await verificationfromdata([cleanType, cleanName, daysInt])) {
         const result = await SELECTFROMTableStageTempletmax(cleanType, userSession?.IDCompany);
@@ -73,7 +73,7 @@ const insertStageHome = (uploadQueue) => {
           const currentRatio = Number(result.TotalRatio || 0);
           const totalRatio   = cleanType !== "عام" ? currentRatio + ratioNum : ratioNum;
           if (totalRatio > 100) {
-            return res.status(400).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
+            return res.status(200).json({ error: "مجموع النسب لا يجب أن يتجاوز 100" });
           }
 
           await insertTablecompanySubProjectStagetemplet([
@@ -89,10 +89,10 @@ const insertStageHome = (uploadQueue) => {
 
           return res.status(200).json({ success: "تمت الإضافة بنجاح" });
         } else {
-          return res.status(400).json({ error: "هناك خطأ في قراءة رقم المرحلة الأخيرة" });
+          return res.status(200).json({ error: "هناك خطأ في قراءة رقم المرحلة الأخيرة" });
         }
       } else {
-        return res.status(400).json({ error: "يرجى إدخال البيانات بشكل صحيح" });
+        return res.status(200).json({ error: "يرجى إدخال البيانات بشكل صحيح" });
       }
     } catch (error) {
       console.log(error);
@@ -111,15 +111,15 @@ const insertStageSub = (uploadQueue) => {
       const userSession = req.session?.user;
       if (!userSession) return res.status(401).send("Invalid session");
 
-      const stageIdInt   = parsePositiveInt(StageID);
+      const stageIdInt   = StageID;
       const typeIdInt    = parsePositiveInt(Stagestype_id);
       const cleanSubName = sanitizeName(StageSubName);
 
       const errors = {};
-      if (!Number.isFinite(stageIdInt)) errors.StageID = "رقم المرحلة غير صالح";
+      if (!isNonEmpty(stageIdInt)) errors.StageID = "رقم المرحلة غير صالح";
       if (!Number.isFinite(typeIdInt))  errors.Stagestype_id = "رقم نوع المرحلة غير صالح";
       if (!isNonEmpty(cleanSubName) || !lenBetween(cleanSubName, 2, 150)) errors.StageSubName = "اسم خطوة المرحلة مطلوب (2–150)";
-      if (Object.keys(errors).length) return res.status(400).json({ error: errors });
+      if (Object.keys(errors).length) return res.status(200).json({ error: errors });
 
       const attached = req.file ? req.file.filename : null;
 
@@ -128,8 +128,8 @@ const insertStageSub = (uploadQueue) => {
           // تحقق من المرفق
           const mime = String(req.file.mimetype || "");
           const size = Number(req.file.size || 0);
-          if (!ALLOWED_MIMES.includes(mime)) return res.status(400).json({ error: "نوع المرفق غير مدعوم (صور/PDF)" });
-          if (size > MAX_FILE_SIZE)        return res.status(400).json({ error: "حجم المرفق يتجاوز 15MB" });
+          if (!ALLOWED_MIMES.includes(mime)) return res.status(200).json({ error: "نوع المرفق غير مدعوم (صور/PDF)" });
+          if (size > MAX_FILE_SIZE)        return res.status(200).json({ error: "حجم المرفق يتجاوز 15MB" });
 
           await insertTablecompanySubProjectStageSubtemplet2([
             stageIdInt,
@@ -151,7 +151,7 @@ const insertStageSub = (uploadQueue) => {
         }
         return res.status(200).json({ success: "تمت الإضافة بنجاح" });
       } else {
-        return res.status(400).json({ error: "يرجى إدخال البيانات بشكل صحيح" });
+        return res.status(200).json({ error: "يرجى إدخال البيانات بشكل صحيح" });
       }
     } catch (error) {
       console.log(error);
@@ -168,14 +168,14 @@ const insertStageTempletinDatabase = (uploadQueue) => {
     try {
       const userSession = req.session?.user;
       if (!userSession) return res.status(401).send("Invalid session");
-      if (!req.file || !req.file.path) return res.status(400).json({ error: "لم يتم رفع ملف" });
+      if (!req.file || !req.file.path) return res.status(200).json({ error: "لم يتم رفع ملف" });
 
       // قراءة الشيتين
       const data    = await StageTempletXsl2(req.file.path, 0); // [Type, StageName, Days, Ratio]
       const dataSub = await StageTempletXsl2(req.file.path, 1); // [StageIDRef(or TypeRef), StageSubName]
 
       if (!Array.isArray(data) || data.length === 0) {
-        return res.status(400).json({ error: "لا توجد بيانات في ملف الإكسل" });
+        return res.status(200).json({ error: "لا توجد بيانات في ملف الإكسل" });
       }
 
       // نبدأ بالـ StageID انطلاقاً من 'عام' كمرجع
@@ -195,17 +195,17 @@ const insertStageTempletinDatabase = (uploadQueue) => {
 
         // تحقق أساسي
         const msg = checkIfNumber(elements, 0) || checkIfNumber(elements, 3, "النسب");
-        if (msg) return res.status(400).json({ error: msg });
+        if (msg) return res.status(200).json({ error: msg });
 
         const cleanType  = String(typeRaw ?? "").trim();
         const cleanName  = sanitizeName(nameRaw);
         const daysInt    = parsePositiveInt(daysRaw);
         const ratioNum   = parseRatio0to100(ratioRaw);
 
-        if (!isNonEmpty(cleanType)) return res.status(400).json({ error: "نوع المرحلة غير صالح في الملف" });
-        if (!isNonEmpty(cleanName) || !lenBetween(cleanName, 2, 150)) return res.status(400).json({ error: `اسم مرحلة غير صالح: ${cleanName}` });
-        if (!Number.isFinite(daysInt)) return res.status(400).json({ error: `أيام غير صالحة للمرحلة: ${cleanName}` });
-        if (!Number.isFinite(ratioNum)) return res.status(400).json({ error: `نسبة تقديرية غير صالحة للمرحلة: ${cleanName}` });
+        if (!isNonEmpty(cleanType)) return res.status(200).json({ error: "نوع المرحلة غير صالح في الملف" });
+        if (!isNonEmpty(cleanName) || !lenBetween(cleanName, 2, 150)) return res.status(200).json({ error: `اسم مرحلة غير صالح: ${cleanName}` });
+        if (!Number.isFinite(daysInt)) return res.status(200).json({ error: `أيام غير صالحة للمرحلة: ${cleanName}` });
+        if (!Number.isFinite(ratioNum)) return res.status(200).json({ error: `نسبة تقديرية غير صالحة للمرحلة: ${cleanName}` });
 
         ratioByType[cleanType] = (ratioByType[cleanType] || 0) + ratioNum;
       }
@@ -213,7 +213,7 @@ const insertStageTempletinDatabase = (uploadQueue) => {
       // لا يجوز أن تتجاوز النِّسب الإجمالية 100 لأي نوع غير "عام"
       for (const [t, sum] of Object.entries(ratioByType)) {
         if (t !== "عام" && sum > 100) {
-          return res.status(400).json({ error: `يجب أن تكون النسبة التقديرية المجمعة لنوع '${t}' ≤ 100 (الموجودة: ${sum})` });
+          return res.status(200).json({ error: `يجب أن تكون النسبة التقديرية المجمعة لنوع '${t}' ≤ 100 (الموجودة: ${sum})` });
         }
       }
 
@@ -280,7 +280,7 @@ const insertTypeTemplet = () => {
       const cleanType = sanitizeName(TypeParam);
 
       if (!isNonEmpty(cleanType) || !lenBetween(cleanType, 1, 100)) {
-        return res.status(400).json({ error: "نوع المرحلة غير صالح" });
+        return res.status(200).json({ error: "نوع المرحلة غير صالح" });
       }
 
       await insertTableStagestype(userSession?.IDCompany, cleanType);

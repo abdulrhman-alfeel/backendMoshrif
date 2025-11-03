@@ -226,8 +226,8 @@ const BringProjectObjectone = () => {
         userSession.IDCompany,
         result?.IDcompanySub
       );
-
-      res.send({ success: "تم نجاح العملية", data: data }).status(200);
+      const datanew = data ? data : {}
+      res.send({ success: "تم نجاح العملية", data: datanew }).status(200);
     } catch (error) {
       console.log(error);
       res.status(500).send({ success: "فشل تنفيذ العملية" });
@@ -821,9 +821,11 @@ const BringDataRequestsV2 = () => {
       }
       const { ProjectID, Type, kind, Done, lastID } = req.query;
 
-      let verifyUser = ["طلبيات", "مدير الفرع", "Admin"].includes(
+      let verifyUser = [ "مدير الفرع", "Admin"].includes(
         userSession.job
       );
+      let requstAdmin = String(userSession.job).includes("طلبيات") ;
+
       // String(userdata.job).split(" ")[1] === "طلبيات" ||
       // userdata.job === "مدير الفرع" ||
       // userdata.job === "Admin";
@@ -832,14 +834,17 @@ const BringDataRequestsV2 = () => {
       let querytype = ["خفيفة", "ثقيلة"].includes(typeselect)
         ? typeselect
         : Type;
+
+
       const result = await SELECTallDatafromTableRequestsV2(
         querytype,
         ProjectID,
         kind,
         Done,
         lastID,
-        !verifyUser ? `AND InsertBy=${userSession.PhoneNumber}` : ""
+        !verifyUser && !requstAdmin ? `AND InsertBy=${userSession.PhoneNumber}` : ""
       );
+
 
       res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
     } catch (error) {
@@ -859,22 +864,23 @@ const BringCountRequstsV2 = () => {
       }
       const { ProjectID, type = "part" } = req.query;
 
-      let verifyUser = ["طلبيات", "مدير الفرع", "Admin"].includes(
+      let verifyUser = [ "مدير الفرع", "Admin"].includes(
         userSession.job
       );
-
+      let requstAdmin = String(userSession.job).includes("طلبيات") ;
       const countCLOSE = await SELECTDataAndTaketDonefromTableRequests2(
         ProjectID,
         type,
         "false",
-        !verifyUser ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
+        !verifyUser && !requstAdmin ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
       );
       const countOPEN = await SELECTDataAndTaketDonefromTableRequests2(
         ProjectID,
         type,
         "true",
-        !verifyUser ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
+        !verifyUser && !requstAdmin ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
       );
+
       res.send({
         success: "تمت العملية النجاح",
         data: {
@@ -1081,7 +1087,7 @@ const BringreportTimeline = () => {
     if (await checkIfFileExists(outputPrefix)) {
       return res
         .status(200)
-        .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+        .send({ success:true ,message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
     }
 
     const filePath = path.join(__dirname, "../../upload", namefile);
@@ -1093,12 +1099,12 @@ const BringreportTimeline = () => {
     } else {
       return res
         .status(400)
-        .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+        .send({ success:false,  message:"فشل في تنفيذ العملية - الملف غير موجود" });
     }
 
     res
       .status(200)
-      .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({ success:true ,message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
   };
 };
 const BringreportRequessts = () => {
@@ -1160,15 +1166,14 @@ const BringreportRequessts = () => {
 
     const resulttotal = await SelectOrdertabletotalreport(where);
     const result = await SelectdetailsOrders(where);
-
+    console.log(result.length);
     if (result.length === 0) {
       return res
-        .status(400)
-        .send({ success: "فشل في تنفيذ العملية - لا توجد بيانات لعرضها" });
+        .status(200)
+        .send({ success:false,message: "فشل في تنفيذ العملية - لا توجد بيانات لعرضها" });
     }
 
     const filePath = path.join(__dirname, "../../upload", namefile);
-
     await generateRequestsReportPDF({
       result,
       count: resulttotal,
@@ -1179,7 +1184,7 @@ const BringreportRequessts = () => {
       type: type,
     })
       .then((info) => {
-        // console.log("تم إنشاء التقرير:", info);
+        console.log("تم إنشاء التقرير:", info);
       })
       .catch(console.error);
     if (fs.existsSync(filePath)) {
@@ -1187,12 +1192,12 @@ const BringreportRequessts = () => {
       deleteFileSingle(namefile, "upload");
     } else {
       return res
-        .status(400)
-        .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+        .status(200)
+        .send({ success:false, message: "فشل في تنفيذ العملية - الملف غير موجود" });
     }
     res
       .status(200)
-      .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({ success: true ,message: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
   };
 };
 
@@ -1224,7 +1229,7 @@ const BringreportStage = () => {
     if (await checkIfFileExists(outputPrefix)) {
       return res
         .status(200)
-        .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+        .send({ success: true,  message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
     };
 
     if (!result) {
@@ -1250,12 +1255,12 @@ const BringreportStage = () => {
       deleteFileSingle(namefile, "upload");
     } else {
       return res
-        .status(400)
-        .send({ success: "فشل في تنفيذ العملية - الملف غير موجود" });
+        .status(200)
+        .send({ success: false,  message: "فشل في تنفيذ العملية - الملف غير موجود" });
     };
     res
       .status(200)
-      .send({ success: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({ success: true , message: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
   };
 };
 

@@ -237,9 +237,8 @@ const projectBrinshv2 = (uploadQueue) => {
       if (!isNonEmpty(Project_Space)) prelimErrors.Project_Space = "مساحة المشروع مطلوبة";
 
       if (Object.keys(prelimErrors).length > 0) {
-        console.log('hhhh')
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors: prelimErrors,
         });
@@ -272,7 +271,7 @@ const projectBrinshv2 = (uploadQueue) => {
       }
 
       // 5) رد النجاح
-      return res.status(200).json({
+      return res.status(200).send({
         success: true,
         message: "تم إنشاء مشروع بنجاح",
         idProject,
@@ -281,15 +280,15 @@ const projectBrinshv2 = (uploadQueue) => {
     } catch (err) {
       console.log(err.message);
       if (err && err.message === "VALIDATION_ERROR") {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors: err.details || {},
         });
       }
       console.error("projectBrinshv2 error:", err);
-      return res.status(500).json({
-        success: false,
+      return res.status(500).send({
+        success:  "فشل تنفيذ العملية",
         message: "فشل تنفيذ العملية",
       });
     }
@@ -399,8 +398,8 @@ const InsertStage = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success:  "أخطاء في التحقق من المدخلات",
           message: "أخطاء في التحقق من المدخلات",
           errors,
         });
@@ -412,7 +411,7 @@ const InsertStage = (uploadQueue) => {
         stageNameStr
       );
       if (Array.isArray(existingStage) && existingStage.length > 0) {
-        return res.status(409).json({ success: false, error: "اسم المرحلة موجود بالفعل" });
+        return res.status(200).send({ success:  "اسم المرحلة موجود بالفعل" , error: "اسم المرحلة موجود بالفعل" });
       }
 
       // ✅ جلب بيانات آخر مرحلة/ملخص للمشروع
@@ -425,8 +424,8 @@ const InsertStage = (uploadQueue) => {
       const currentRatio = Number(summary.TotalRatio) || 0;
       const totalRatio   = currentRatio + ratioNum;
       if (totalRatio > 100) {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success:  "مجموع النسب لا يجب أن يتجاوز 100",
           error: "مجموع النسب لا يجب أن يتجاوز 100",
           details: { currentRatio, adding: ratioNum, totalRatio }
         });
@@ -469,10 +468,10 @@ const InsertStage = (uploadQueue) => {
         console.warn("Stageinsert failed:", e);
       }
 
-      return res.status(200).json({ success: true, message: "تمت إضافة المرحلة بنجاح" });
+      return res.status(200).send({ success: "تمت إضافة المرحلة بنجاح" , message: "تمت إضافة المرحلة بنجاح" });
     } catch (error) {
       console.error("InsertStage error:", error);
-      return res.status(500).json({ success: false, error: "حدث خطأ أثناء إضافة المرحلة" });
+      return res.status(500).json({ success:  "حدث خطأ أثناء إضافة المرحلة", error: "حدث خطأ أثناء إضافة المرحلة" });
     }
   };
 };
@@ -491,20 +490,19 @@ const insertStageSub = (uploadQueue) => {
 
       // 2) التقاط وتطبيع المدخلات
       const { StageID, ProjectID, StageSubName } = req.body || {};
-      const stageIdNum   = parsePositiveInt(StageID);
+      const stageIdNum   = StageID;
       const projectIdNum = parsePositiveInt(ProjectID);
       const subNameStr   = String(StageSubName ?? "").trim();
 
       // 3) تحقق يدوي
       const errors = {};
       if (!Number.isFinite(projectIdNum)) errors.ProjectID = "رقم المشروع مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
-      if (!Number.isFinite(stageIdNum))   errors.StageID   = "رقم المرحلة مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
+      if (!isNonEmpty(stageIdNum))   errors.StageID   = "رقم المرحلة مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
       if (!isNonEmpty(subNameStr) || subNameStr.length < 2 || subNameStr.length > 120) {
         errors.StageSubName = "اسم الخطوة مطلوب (2 إلى 120 حرف)";
       }
-
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) تحقق من عدم تكرار اسم الخطوة داخل نفس المشروع/المرحلة
@@ -514,7 +512,7 @@ const insertStageSub = (uploadQueue) => {
         subNameStr
       );
       if (Array.isArray(existing) && existing.length > 0) {
-        return res.status(409).json({ success: false, message: "اسم الخطوة موجود بالفعل" });
+        return res.status(200).send({ success:  "اسم الخطوة موجود بالفعل", message: "اسم الخطوة موجود بالفعل" });
       }
 
       // 5) إدخال الخطوة الفرعية
@@ -543,8 +541,8 @@ const insertStageSub = (uploadQueue) => {
       }
 
       // 7) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت إضافة الخطوة بنجاح",
         message: "تمت إضافة الخطوة بنجاح",
         data: { ProjectID: projectIdNum, StageID: stageIdNum, StageSubName: subNameStr }
       });
@@ -570,14 +568,14 @@ const insertStageSubv2 = (uploadQueue) => {
 
       // 2) التقاط وتطبيع المدخلات
       const { StageID, ProjectID, StageSubName } = req.body || {};
-      const stageIdNum   = parsePositiveInt(StageID);
+      const stageIdNum   = StageID;
       const projectIdNum = parsePositiveInt(ProjectID);
       const subNameStr   = String(StageSubName ?? "").trim();
 
       // 3) تحقق يدوي
       const errors = {};
       if (!Number.isFinite(projectIdNum)) errors.ProjectID = "رقم المشروع مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
-      if (!Number.isFinite(stageIdNum))   errors.StageID   = "رقم المرحلة مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
+      if (!isNonEmpty(stageIdNum))   errors.StageID   = "رقم المرحلة مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
       if (!isNonEmpty(subNameStr) || subNameStr.length < 2 || subNameStr.length > 120) {
         errors.StageSubName = "اسم الخطوة مطلوب (2 إلى 120 حرف)";
       }
@@ -597,7 +595,7 @@ const insertStageSubv2 = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) منع التكرار داخل نفس المشروع/المرحلة
@@ -607,7 +605,7 @@ const insertStageSubv2 = (uploadQueue) => {
         subNameStr
       );
       if (Array.isArray(existing) && existing.length > 0) {
-        return res.status(409).json({ success: false, message: "اسم الخطوة موجود بالفعل" });
+        return res.status(200).send({ success:  "اسم الخطوة موجود بالفعل", message: "اسم الخطوة موجود بالفعل" });
       }
 
       // 5) الإدراج في قاعدة البيانات أولاً
@@ -636,8 +634,8 @@ const insertStageSubv2 = (uploadQueue) => {
       try { await StageSubinsert(projectIdNum, stageIdNum, userSession.userName); } catch (e) { console.warn("StageSubinsert failed:", e); }
 
       // 8) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: { ProjectID: projectIdNum, StageID: stageIdNum, StageSubName: subNameStr, attached: attachedName || null }
       });
@@ -685,13 +683,13 @@ const insertStageCustImage = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) تحضير اسم الملف الآمن
       const attachedName = sanitizeFilename(file.filename || file.originalname);
       if (!isNonEmpty(attachedName)) {
-        return res.status(400).json({ success: false, message: "اسم الملف غير صالح" });
+        return res.status(200).send({ success: "اسم الملف غير صالح", message: "اسم الملف غير صالح" });
       }
 
       // 5) رفع الملف أولاً (لضمان الاتساق)، ثم حذف المؤقت
@@ -699,7 +697,7 @@ const insertStageCustImage = (uploadQueue) => {
         await uploaddata(file); // يفترض ينقل من مجلد مؤقت إلى التخزين النهائي
       } catch (upErr) {
         console.error("uploaddata failed:", upErr);
-        return res.status(500).json({ success: false, message: "فشل رفع الملف" });
+        return res.status(200).send({ success:  "فشل رفع الملف", message: "فشل رفع الملف" });
       } finally {
         try { deleteFileSingle(attachedName, "upload"); } catch (e) { /* اختياري */ }
       }
@@ -713,8 +711,8 @@ const insertStageCustImage = (uploadQueue) => {
       ]);
 
       // 7) نجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: { ProjectID: projectIdNum, StageID: stageIdNum, attached: attachedName }
       });
@@ -789,7 +787,7 @@ const NotesStage = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) رفع الملف (إن وجد) قبل الإدراج لضمان الاتساق
@@ -798,7 +796,7 @@ const NotesStage = (uploadQueue) => {
           await uploaddata(file);
         } catch (upErr) {
           console.error("uploaddata failed:", upErr);
-          return res.status(500).json({ success: false, message: "فشل رفع المرفق" });
+          return res.status(200).send({ success: "فشل رفع المرفق" , message: "فشل رفع المرفق" });
         } finally {
           try { deleteFileSingle(attachedName, "upload"); } catch { /* اختياري */ }
         }
@@ -820,8 +818,8 @@ const NotesStage = (uploadQueue) => {
       catch (e) { console.warn("Delayinsert failed:", e); }
 
       // 8) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           ProjectID: projectIdNum,
@@ -878,13 +876,13 @@ const NotesStageSub = (uploadQueue) => {
         errors.idNote = "المعرّف الداخلي للملاحظة مطلوب ويجب أن يكون رقماً صحيحاً موجباً";
       }
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) جلب سجل الخطوة الفرعية للتعامل معه
       const bringData = await SELECTTablecompanySubProjectStagesSubSingl(stageSubIdNum);
       if (!bringData) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على الخطوة المطلوبة" });
+        return res.status(200).send({ success:  "لم يتم العثور على الخطوة المطلوبة", message: "لم يتم العثور على الخطوة المطلوبة" });
       }
 
       // 5) تنفيذ العملية حسب النوع
@@ -920,7 +918,7 @@ const NotesStageSub = (uploadQueue) => {
           kind
         );
       } else {
-        return res.status(500).json({ success: false, message: "فشل تجهيز بيانات الملاحظة" });
+        return res.status(200).send({ success:  "فشل تجهيز بيانات الملاحظة", message: "فشل تجهيز بيانات الملاحظة" });
       }
 
       // 7) (اختياري) سجلّ عمليات/إشعارات — لا نفشل العملية لو أخفق
@@ -937,11 +935,12 @@ const NotesStageSub = (uploadQueue) => {
 
       // 8) رد النجاح (201 للإضافة، 200 للتعديل/الحذف)
       const isCreated = type === "AddNote";
-      return res.status(isCreated ? 201 : 200).json({
-        success: true,
-        message: isCreated ? "تمت إضافة الملاحظة بنجاح" :
+      const message =  isCreated ? "تمت إضافة الملاحظة بنجاح" :
                  (type === "EditNote" ? "تم تعديل الملاحظة بنجاح" : "تم حذف الملاحظة بنجاح")
-      });
+
+      return res.status(200).send({
+        success: message,
+        message:message      });
 
     } catch (error) {
       console.error("NotesStageSub error:", error);
@@ -1077,8 +1076,8 @@ const AddORCanselAchievment = (uploadQueue) => {
       // 2) التقاط/تطبيع المدخلات
       const stageSubIdNum = parsePositiveInt(req.body?.StageSubID);
       if (!Number.isFinite(stageSubIdNum)) {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success: "StageSubID غير صالح (يجب أن يكون رقماً صحيحاً موجباً)",
           message: "StageSubID غير صالح (يجب أن يكون رقماً صحيحاً موجباً)",
         });
       }
@@ -1086,8 +1085,8 @@ const AddORCanselAchievment = (uploadQueue) => {
       // 3) جلب بيانات الخطوة الفرعية المستهدفة
       const bringData = await SELECTTablecompanySubProjectStagesSubSingl(stageSubIdNum);
       if (!bringData) {
-        return res.status(404).json({
-          success: false,
+        return res.status(200).send({
+          success: "لم يتم العثور على الخطوة الفرعية المطلوبة",
           message: "لم يتم العثور على الخطوة الفرعية المطلوبة",
         });
       }
@@ -1106,8 +1105,8 @@ const AddORCanselAchievment = (uploadQueue) => {
       catch (e) { console.warn("UpdaterateStage failed:", e); }
 
       // 6) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           StageSubID: stageSubIdNum,
@@ -1143,8 +1142,8 @@ const AddORCanselAchievmentarrayall = (uploadQueue) => {
       const selectAllarraycansle   = normalizeIds(req.body?.selectAllarraycansle);  // كانت مفعلة مسبقاً
 
       if (selectAllarray.length === 0 && selectAllarraycansle.length === 0) {
-        return res.status(400).json({
-          success: false,
+        return res.status(200).send({
+          success: "لا توجد عناصر لمعالجتها",
           message: "لا توجد عناصر لمعالجتها",
           errors: { selectAllarray:"فارغة", selectAllarraycansle:"فارغة" }
         });
@@ -1201,7 +1200,7 @@ const AddORCanselAchievmentarrayall = (uploadQueue) => {
 
       // 6) الرد النهائي
       return res.status(200).json({
-        success: true,
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         summary: results
       });
@@ -1308,14 +1307,14 @@ const ClassCloaseOROpenStage = (uploadQueue) => {
       if (!isNonEmpty(stageIdNum))   errors.StageID = "معرف المرحلة غير موجود";
       if (!Number.isFinite(projectIdNum)) errors.ProjectID = "رقم المشروع مطلوب ويجب أن يكون عدداً صحيحاً موجباً";
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
       console.log(errors,stageIdNum)
 
       // 4) جلب بيانات المرحلة
       const bringData = await SELECTTablecompanySubProjectStageCUSTONe(projectIdNum, stageIdNum);
       if (!bringData) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على المرحلة المطلوبة" });
+        return res.status(200).send({ success:  "لم يتم العثور على المرحلة المطلوبة", message: "لم يتم العثور على المرحلة المطلوبة" });
       }
 
       // 5) تحديد الحالة الحالية وإجراء الفتح/الإغلاق
@@ -1335,7 +1334,7 @@ const ClassCloaseOROpenStage = (uploadQueue) => {
         }
 
         if (Object.keys(closeErrors).length > 0) {
-          return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors: closeErrors });
+          return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors: closeErrors });
         }
 
         // محاولة الإغلاق
@@ -1469,7 +1468,7 @@ const ExpenseInsert = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) جلب رقم الفاتورة التالي (آمن مع أشكال مختلفة من الاستعلام)
@@ -1513,8 +1512,8 @@ const ExpenseInsert = (uploadQueue) => {
       } catch (e) { console.warn("UpdaterateCost failed:", e); }
 
       // 8) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح"
       });
 
@@ -1524,6 +1523,8 @@ const ExpenseInsert = (uploadQueue) => {
     }
   };
 };
+
+
 
 // ادخال بييانات العهد
 const RevenuesInsert = (uploadQueue) => {
@@ -1568,7 +1569,7 @@ const RevenuesInsert = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) رفع المرفقات (إن وجدت) قبل الإدراج
@@ -1602,8 +1603,8 @@ const RevenuesInsert = (uploadQueue) => {
       } catch (e) { console.warn("UpdaterateCost failed:", e); }
 
       // 8) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           projectID: projectIdNum,
@@ -1661,7 +1662,7 @@ const ReturnsInsert = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 5) رفع المرفقات (إن وجدت) قبل الإدراج
@@ -1694,8 +1695,8 @@ const ReturnsInsert = (uploadQueue) => {
       } catch (e) { console.warn("UpdaterateCost failed:", e); }
 
       // 8) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           projectID: projectIdNum,
@@ -1741,7 +1742,7 @@ const AddFolderArchivesnew = (uploadQueue) => {
       else if (!lenBetween(cleanedName, 2, 100)) errors.FolderName = "اسم المجلد يجب أن يكون بين 2 و 100 حرف";
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) الإدراج في قاعدة البيانات
@@ -1762,7 +1763,7 @@ const AddFolderArchivesnew = (uploadQueue) => {
       // معالجة لطيفة لحالة التكرار إذا كان لديك قيد UNIQUE في قاعدة البيانات
       const msg = String(err?.message || "").toLowerCase();
       if (msg.includes("duplicate") || msg.includes("unique")) {
-        return res.status(409).json({ success: false, message: "اسم المجلد موجود مسبقاً لهذا المشروع" });
+        return res.status(200).send({ success:  "اسم المجلد موجود مسبقاً لهذا المشروع", message: "اسم المجلد موجود مسبقاً لهذا المشروع" });
       }
 
       return res.status(500).json({ success: false, message: "فشل في تنفيذ العملية" });
@@ -1841,7 +1842,7 @@ const AddfileinFolderHomeinArchive = (uploadQueue) => {
               await uploaddata(file);
             } catch (upErr) {
               console.error("uploaddata failed:", upErr);
-              return res.status(500).json({ success: false, message: "فشل رفع الملف" });
+              return res.status(200).send({ success: "فشل رفع الملف", message: "فشل رفع الملف" });
             } finally {
               try { deleteFileSingle(file.filename, "upload"); } catch { /* اختياري */ }
             }
@@ -1856,13 +1857,13 @@ const AddfileinFolderHomeinArchive = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 3) جلب شجرة الأطفال الحالية
       const row = await SELECTTablecompanySubProjectarchivesotherroad(archivesIdNum);
       if (!row) {
-        return res.status(404).json({ success: false, message: "لم يتم العثور على سجل الأرشيف المطلوب" });
+        return res.status(200).send({ success:  "لم يتم العثور على سجل الأرشيف المطلوب", message: "لم يتم العثور على سجل الأرشيف المطلوب" });
       }
 
       let Children = [];
@@ -1885,7 +1886,7 @@ const AddfileinFolderHomeinArchive = (uploadQueue) => {
       );
 
       if (!childrenNew) {
-        return res.status(500).json({ success: false, message: "فشل تحديث بنية الأرشيف" });
+        return res.status(200).send({ success: "فشل تحديث بنية الأرشيف", message: "فشل تحديث بنية الأرشيف" });
       }
 
       // 5) حفظ الشجرة المحدثة
@@ -1895,8 +1896,8 @@ const AddfileinFolderHomeinArchive = (uploadQueue) => {
       ]);
 
       // 6) نجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success: "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           ArchivesID: archivesIdNum,
@@ -2056,7 +2057,7 @@ const InsertDatainTableRequests = (uploadQueue) => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).send({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 4) رفع المرفقات (إن وجدت) قبل الإدراج
@@ -2102,8 +2103,8 @@ const InsertDatainTableRequests = (uploadQueue) => {
       catch (e) { console.warn("sendNote failed:", e); }
 
       // 7) رد النجاح
-      return res.status(200).json({
-        success: true,
+      return res.status(200).send({
+        success:  "تمت العملية بنجاح",
         message: "تمت العملية بنجاح"
       });
 

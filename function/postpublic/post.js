@@ -37,7 +37,7 @@ const BringPost = () => {
         CompanyID,
         formattedDate,
         PostID,
-        user,
+        userSession.userName,
         userSession.jobdiscrption,
         userSession.PhoneNumber
       );
@@ -69,11 +69,10 @@ const BringCommentinsert = () => {
         );
         let data = {
           ...element,
-          job: user.job,
+          job: user?.job ?? "",
         };
         arraynew.push(data);
       }
-
       res.send({ success: "تمت العملية بنجاح", data: arraynew }).status(200);
     } catch (error) {
       console.log(error);
@@ -104,8 +103,8 @@ const BringPostforEmploaysCompany = async (
     const arrayPosts = result.map((element) => ({
       ...element,
       Likeuser: element.UserLiked > 0,
-      Comment: element.CommentCount,
-      Likes: element.LikesCount,
+      Comment: element.Comment,
+      Likes: element.Likes,
     }));
     return arrayPosts;
   } catch (error) {
@@ -175,7 +174,8 @@ const SearchPosts = () => {
         branch,
         parseInt(PostID),
         userSession.jobdiscrption,
-        user
+        userSession.userName,
+        userSession.PhoneNumber
       );
     
       // let arraynew = [];

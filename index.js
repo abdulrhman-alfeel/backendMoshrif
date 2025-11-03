@@ -22,8 +22,6 @@ const { CreateTable } = require("./sql/createteble");
 const { ChatOpration, ChatOprationView } = require("./function/chate/ChatJobs");
 const { uploads, handleUploadErrors } = require("./middleware/uploads");
 const { uploaddata, bucket } = require("./bucketClooud");
-const { fFmpegFunction } = require("./middleware/ffmpeg");
-const { verifyJWT } = require("./middleware/jwt");
 const limiter = require("./middleware/loginLimiter.js");
 const { Queue } = require("bullmq");
 const config = require("./config.js");
@@ -346,47 +344,7 @@ const insertDataproject = async () => {
 // insertDataproject();
 
 
-app.post(
-  "/api/file",
-  verifyJWT,
-  uploads.single("filechate"),
-  async (req, res) => {
-    try {
-      await uploaddata(req.file);
-      // console.log(req.file);
 
-      const timePosition = "00:00:00.100";
-      let filename =
-        req.file.filename.match(/\.([^.]+)$/)[1] === "MOV" ||
-        req.file.filename.match(/\.([^.]+)$/)[1] === "mov"
-          ? String(req.file.filename).replace("MOV", "png")
-          : String(req.file.filename).replace("mp4", "png");
-
-      const tempFilePathtimp = `upload/${filename}`;
-      // إنشاء وظيفة لمنع هذه الوظيفة للصور والملفات غير الفديو
-      if (
-        req.file.mimetype === "video/mp4" ||
-        req.file.mimetype === "video/quicktime"
-      ) {
-        await fFmpegFunction(tempFilePathtimp, req.file.path, timePosition);
-        const times = setTimeout(async () => {
-          await bucket.upload(tempFilePathtimp);
-        }, 1000);
-        res
-          .send({ success: "Full request", nameFile: req.file.filename })
-          .status(200);
-        return () => clearTimeout(times);
-      } else {
-        res
-          .send({ success: "Full request", nameFile: req.file.filename })
-          .status(200);
-      }
-    } catch (error) {
-      console.log(error);
-      res.send({ success: "فشلة عملية رفع الملف" }).status(500);
-    }
-  }
-);
 
 app.get("/updatecomapny", async (req, res) => {
   const idcompany = req.query.id;
@@ -428,26 +386,11 @@ io.on("connection", (socket) => {
 // Error handling middleware
 app.use(handleUploadErrors);
 
-// const cluster = require("cluster");
-// const os = require("os");
 
-// const numCPUs = os.cpus().length;
-// // console.log(`Number of CPUs: ${numCPUs}`);
-// if (cluster.isMaster) {
-//   console.log(`👑 Master ${cluster.isMaster} is running`);
-//   for (let i = 0; i < numCPUs; i++) {
-//     cluster.fork();
-//   }
-
-// } else {
-
-// }
 
 // جدولة المهمة لتعمل مرة باليوم (الساعة 12 صباحاً)
 cron.schedule("0 0 * * *",async () => {
-  await bucket.upload("./mydatabase23.db");
-
-  // console.log("⏰ تشغيل التحقق اليومي من الاشتراكات...");
+  await bucket.upload("./mydatabase.db");
   verificationSend(
     "502464530",
     null,
@@ -455,7 +398,10 @@ cron.schedule("0 0 * * *",async () => {
   );
   checkCompanySubscriptions();
 });
+
+
 const month = moment.parseZone(new Date()).format("yy-MM");
+
 cron.schedule(
   `0 0 ${calculateendDate(month)} ${moment(new Date()).format("MM")} *`,
   () => {

@@ -73,7 +73,7 @@ const userCompany = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 3) تحقق من التكرار/الانتظار
