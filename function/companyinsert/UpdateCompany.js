@@ -109,8 +109,8 @@ const UpdateDataCompany = () => {
       if (!isNonEmpty(countryStr) || !lenBetween(countryStr, 2, 100))
         errors.Country = "اسم الدولة مطلوب (2 إلى 100 حرف)";
       // الرقم الضريبي: أرقام فقط (مثلاً في السعودية 15 رقماً، نسمح 10–15 لتفادي رفض بيانات تاريخية)
-      if (!isNonEmpty(taxStr) || !/^\d{10,15}$/.test(taxStr))
-        errors.TaxNumber = "الرقم الضريبي يجب أن يتكون من 10 إلى 15 رقماً";
+      // if (!isNonEmpty(taxStr) || !/^\d{10,15}$/.test(taxStr))
+      //   errors.TaxNumber = "الرقم الضريبي يجب أن يتكون من 10 إلى 15 رقماً";
       // التكلفة: اختيارية؛ إن وُجدت يجب أن تكون ≥ 0
       if (req.body.hasOwnProperty("Cost") && !Number.isFinite(costNum))
         errors.Cost = "التكلفة (إن وُجدت) يجب أن تكون رقماً صفرياً أو موجباً";
@@ -235,137 +235,210 @@ const UpdateApiCompany = () => {
 
 
 
-
-// قبول تسجيل الشركة
 const AgreedRegistrationCompany = () => {
   return async (req, res) => {
     try {
-      // 1) التحقق من الجلسة
-      const userSession = req.session?.user;
+      const id = req.query.id;
+      const userSession = req.session.user;
       if (!userSession) {
-        return res.status(200).send({ success: false, message: "Invalid session" });
+        res.status(401).send("Invalid session");
       }
+      Addusertraffic(
+        userSession.userName,
+        userSession?.PhoneNumber,
+        "AgreedRegistrationCompany"
+      );
 
-      // 2) تسجيل الحركة (لا تُسقط العملية عند الفشل)
-      try {
-        Addusertraffic(
-          userSession.userName,
-          userSession?.PhoneNumber,
-          "AgreedRegistrationCompany"
-        );
-      } catch (e) { /* اختياري: console.warn */ }
 
-      // 3) قراءة/تحقق المعرّف
-      const idNum = parsePositiveInt(req.query?.id);
-      if (!Number.isFinite(idNum)) {
-        return res.status(200).send({ success: "المعرّف غير صالح" , message: "المعرّف غير صالح" });
-      }
-
-      // 4) جلب طلب التسجيل
-      const dataCompany = await SELECTTablecompanyRegistration(idNum);
-      if (!dataCompany) {
-        return res.status(200).json({ success:  "لم يتم العثور على طلب التسجيل", message: "لم يتم العثور على طلب التسجيل" });
-      }
-
-      // 5) تحقق من البيانات الأساسية في الطلب
-      const crnDigits = convertArabicToEnglish(dataCompany?.CommercialRegistrationNumber).replace(/\D/g, "");
-      const phoneLocal = normalizePhone(dataCompany?.PhoneNumber);
-      const nameStr = String(dataCompany?.NameCompany ?? "").trim();
-      if (!isDigits(crnDigits) || crnDigits.length < 5) {
-        return res.status(200).send({ success: "السجل التجاري غير صالح في طلب التسجيل", message: "السجل التجاري غير صالح في طلب التسجيل" });
-      }
-      if (!/^\d{9}$/.test(phoneLocal)) {
-        return res.status(200).send({ success:  "رقم الجوال غير صالح في طلب التسجيل", message: "رقم الجوال غير صالح في طلب التسجيل" });
-      }
-      if (!isNonEmpty(nameStr)) {
-        return res.status(200).send({ success:  "اسم الشركة غير صالح في طلب التسجيل", message: "اسم الشركة غير صالح في طلب التسجيل" });
-      }
-
-      // 6) التحقق من عدم وجود الشركة مسبقاً
-      // ملاحظة: دالتك SelectVerifycompanyexistence تُستخدم في عدّة سياقات.
-      // سنحاول التحقق في الجدول الرئيسي للشركات (إن كانت الدالة تدعم ذلك)،
-      // أو ستُمسك قاعدة البيانات خطأ التكرار.
-      const existingCompany = await SelectVerifycompanyexistence(crnDigits);
+  
+      const dataCompany = await SELECTTablecompanyRegistration(parseInt(id));
+      if (Boolean(dataCompany)) {
+    const existingCompany = await SelectVerifycompanyexistence(dataCompany?.CommercialRegistrationNumber);
       if (existingCompany) {
         // في حال كانت الشركة موجودة بالفعل، نحذف طلب التسجيل ونكتفي
-        await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
+        await DeleteTablecompanySubProjectall("companyRegistration", "id", id);
         return res.status(200).send({
           success: "الشركة مسجّلة بالفعل",
           message: "الشركة مسجّلة بالفعل",
         });
       }
+        await bcrypt.hash(
+          `${dataCompany?.CommercialRegistrationNumber}`,
+          10,
+          async function (err, hash) {
+            await insertTablecompany([
+              dataCompany?.CommercialRegistrationNumber,
+              dataCompany?.NameCompany,
+              dataCompany?.BuildingNumber,
+              dataCompany?.StreetName,
+              dataCompany?.NeighborhoodName,
+              dataCompany?.PostalCode,
+              dataCompany?.City,
+              dataCompany?.Country,
+              dataCompany?.TaxNumber,
+              hash,
+            ]);
+            const checkCompany = await SelectVerifycompanyexistence(
+              dataCompany?.CommercialRegistrationNumber
+            );
+            if (Boolean(checkCompany)) {
+              await insertTableuserComppany([
+                checkCompany?.id,
+                dataCompany?.userName,
+                0,
+                dataCompany?.PhoneNumber,
+                "Admin",
+                "موظف",
+                "Admin",
+                JSON.stringify([]),
+              ]);
+              // console.log("checkCompany", checkCompany);
+              // await DeleteTablecompanySubProjectall(
+              //   "companyRegistration",
+              //   "id",
+              //   id
+              // );
+              await verificationSend(
+                dataCompany?.PhoneNumber,
+                null,
+                `تم قبول طلب تسجيل شركتك في منصة مشرف`
+              );
 
-      // 7) توليد API hash من السجل التجاري
-      const hash = await bcrypt.hash(crnDigits, 10);
-
-      // 8) إدراج الشركة الجديدة
-      await insertTablecompany([
-        convertArabicToEnglish(esc(crnDigits)),
-        esc(nameStr),
-        convertArabicToEnglish(esc(toEnglishDigits(dataCompany?.BuildingNumber))),
-        esc(String(dataCompany?.StreetName ?? "").trim()),
-        esc(String(dataCompany?.NeighborhoodName ?? "").trim()),
-        convertArabicToEnglish(esc(toEnglishDigits(dataCompany?.PostalCode))),
-        esc(String(dataCompany?.City ?? "").trim()),
-        esc(String(dataCompany?.Country ?? "").trim()),
-        convertArabicToEnglish(esc(toEnglishDigits(dataCompany?.TaxNumber))),
-        esc(hash),
-      ]);
-
-      // 9) الحصول على الشركة المُدرجة (id)
-      const checkCompany = await SelectVerifycompanyexistence(crnDigits);
-      if (!checkCompany || !checkCompany.id) {
-        return res.status(200).send({ success: "تعذّر تأكيد إنشاء الشركة", message: "تعذّر تأكيد إنشاء الشركة" });
-      }
-
-      // 10) التحقق من المستخدم (الجوال) قبل إنشاء المستخدم الإداري
-      const existUser = await SELECTTableusersCompanyVerification(phoneLocal);
-      if (Array.isArray(existUser) && existUser.length > 0) {
-        // في حال الرقم مستخدم، نحذف الشركة التي أنشأناها للتو؟ (حسب منطقك)
-        // أو فقط نُرجع خطأ. هنا نرجع 409 ونبقي الشركة (يمكنك تعديل المنطق).
-        return res.status(200).send({
-          success:  "رقم الجوال مستخدم بالفعل في حساب شركة",
-          message: "رقم الجوال مستخدم بالفعل في حساب شركة",
-        });
-      }
-
-      // 11) إنشاء المستخدم الإداري الافتراضي للشركة
-      await insertTableuserComppany([
-        convertArabicToEnglish(esc(checkCompany.id)),
-        esc(String(dataCompany?.userName ?? "").trim()),
-        convertArabicToEnglish(esc("0")), // IDNumber غير متوفر في الطلب — تركته 0 كما في كودك
-        convertArabicToEnglish(esc(phoneLocal)),
-        esc("Admin"),
-        esc("موظف"),
-        esc("Admin"),
-        JSON.stringify([]),
-      ]);
-
-      // 12) حذف طلب التسجيل بعد النجاح
-      await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
-
-      // 13) إرسال إشعار نجاح
-      try {
-        await verificationSend(
-          phoneLocal,
-          null,
-          "تم قبول طلب تسجيل شركتك في منصة مشرف"
+              res
+                .send({ success: "تمت العملية بنجاح", data: `${hash}` })
+                .status(200);
+            }
+          }
         );
-      } catch (e) { /* اختياري: console.warn */ }
-
-      // 14) ردّ النجاح
-      return res.status(200).json({
-        success: "تمت العملية بنجاح",
-        message: "تمت العملية بنجاح",
-        data: { api: hash, companyId: checkCompany.id }
-      });
-
+      }
     } catch (error) {
-      console.error("AgreedRegistrationCompany error:", error);
-      return res.status(500).json({ success: false, message: "فشل تنفيذ العملية" });
+      res.send({ success: "فشل تنفيذ العملية" }).status(402);
     }
   };
 };
+
+
+
+
+// قبول تسجيل الشركة
+// const AgreedRegistrationCompany = () => {
+//   return async (req, res) => {
+//     try {
+//       // 1) التحقق من الجلسة
+//       const userSession = req.session?.user;
+//       if (!userSession) {
+//         return res.status(200).send({ success: false, message: "Invalid session" });
+//       }
+
+//       // 2) تسجيل الحركة (لا تُسقط العملية عند الفشل)
+//       try {
+//         Addusertraffic(
+//           userSession.userName,
+//           userSession?.PhoneNumber,
+//           "AgreedRegistrationCompany"
+//         );
+//       } catch (e) { /* اختياري: console.warn */ }
+
+//       // 3) قراءة/تحقق المعرّف
+//       const idNum = parsePositiveInt(req.query?.id);
+//       if (!Number.isFinite(idNum)) {
+//         return res.status(200).send({ success: "المعرّف غير صالح" , message: "المعرّف غير صالح" });
+//       }
+
+//       // 4) جلب طلب التسجيل
+//       const dataCompany = await SELECTTablecompanyRegistration(idNum);
+//       if (!dataCompany) {
+//         return res.status(200).json({ success:  "لم يتم العثور على طلب التسجيل", message: "لم يتم العثور على طلب التسجيل" });
+//       }
+
+//       // 5) تحقق من البيانات الأساسية في الطلب
+//       const crnDigits = convertArabicToEnglish(dataCompany?.CommercialRegistrationNumber);
+//       const phoneLocal = normalizePhone(dataCompany?.PhoneNumber);
+//       const nameStr = String(dataCompany?.NameCompany ?? "").trim();
+     
+//       const existingCompany = await SelectVerifycompanyexistence(crnDigits);
+//       if (existingCompany) {
+//         // في حال كانت الشركة موجودة بالفعل، نحذف طلب التسجيل ونكتفي
+//         await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
+//         return res.status(200).send({
+//           success: "الشركة مسجّلة بالفعل",
+//           message: "الشركة مسجّلة بالفعل",
+//         });
+//       }
+//       // 10) التحقق من المستخدم (الجوال) قبل إنشاء المستخدم الإداري
+//       const existUser = await SELECTTableusersCompanyVerification(phoneLocal);
+//       if (Array.isArray(existUser) && existUser.length > 0) {
+//         // في حال الرقم مستخدم، نحذف الشركة التي أنشأناها للتو؟ (حسب منطقك)
+//         // أو فقط نُرجع خطأ. هنا نرجع 409 ونبقي الشركة (يمكنك تعديل المنطق).
+//         return res.status(200).send({
+//           success:  "رقم الجوال مستخدم بالفعل في حساب شركة",
+//           message: "رقم الجوال مستخدم بالفعل في حساب شركة",
+//         });
+//       }
+
+
+
+//       // 7) توليد API hash من السجل التجاري
+//       const hash = await bcrypt.hash(crnDigits, 10);
+
+//       // 8) إدراج الشركة الجديدة
+//       await insertTablecompany([
+//         convertArabicToEnglish(esc(crnDigits)),
+//         esc(nameStr),
+//         convertArabicToEnglish(esc(dataCompany?.BuildingNumber)),
+//         esc(String(dataCompany?.StreetName ?? "").trim()),
+//         esc(String(dataCompany?.NeighborhoodName ?? "").trim()),
+//         convertArabicToEnglish(esc(dataCompany?.PostalCode)),
+//         esc(String(dataCompany?.City ?? "").trim()),
+//         esc(String(dataCompany?.Country ?? "").trim()),
+//         convertArabicToEnglish(esc(dataCompany?.TaxNumber)),
+//         hash,
+//       ]);
+
+//       // 9) الحصول على الشركة المُدرجة (id)
+//       const checkCompany = await SelectVerifycompanyexistence(crnDigits);
+//       if (!checkCompany || !checkCompany.id) {
+//         return res.status(200).send({ success: "تعذّر تأكيد إنشاء الشركة", message: "تعذّر تأكيد إنشاء الشركة" });
+//       }
+
+
+//       // 11) إنشاء المستخدم الإداري الافتراضي للشركة
+//       await insertTableuserComppany([
+//         convertArabicToEnglish(esc(checkCompany.id)),
+//         esc(String(dataCompany?.userName ?? "").trim()),
+//         convertArabicToEnglish(esc("0")), // IDNumber غير متوفر في الطلب — تركته 0 كما في كودك
+//         convertArabicToEnglish(esc(phoneLocal)),
+//         esc("Admin"),
+//         esc("موظف"),
+//         esc("Admin"),
+//         JSON.stringify([]),
+//       ]);
+
+//       // 12) حذف طلب التسجيل بعد النجاح
+//       // await DeleteTablecompanySubProjectall("companyRegistration", "id", idNum);
+
+//       // 13) إرسال إشعار نجاح
+//       try {
+//         await verificationSend(
+//           phoneLocal,
+//           null,
+//           "تم قبول طلب تسجيل شركتك في منصة مشرف"
+//         );
+//       } catch (e) { /* اختياري: console.warn */ }
+
+//       // 14) ردّ النجاح
+//       return res.status(200).json({
+//         success: "تمت العملية بنجاح",
+//         message: "تمت العملية بنجاح",
+//         data: { api: hash, companyId: checkCompany.id }
+//       });
+
+//     } catch (error) {
+//       console.error("AgreedRegistrationCompany error:", error);
+//       return res.status(500).json({ success: false, message: "فشل تنفيذ العملية" });
+//     }
+//   };
+// };
 
 
 const sendNotificationRegistration = async (name) => {
@@ -493,10 +566,10 @@ const UpdatedataRegistration = () => {
         errors.City = "اسم المدينة مطلوب (2 إلى 100 حرف)";
       if (!isNonEmpty(country) || !lenBetween(country, 2, 100))
         errors.Country = "اسم الدولة مطلوب (2 إلى 100 حرف)";
-      if (!isNonEmpty(taxStr) || !/^\d{10,15}$/.test(taxStr))
-        errors.TaxNumber = "الرقم الضريبي يجب أن يكون بين 10 و 15 رقماً";
-      if (!/^\d{9}$/.test(phoneLocal))
-        errors.PhoneNumber = "رقم الجوال غير صالح (يجب أن يكون 9 أرقام محلية بعد التطبيع)";
+      // if (!isNonEmpty(taxStr) || !/^\d{10,15}$/.test(taxStr))
+      //   errors.TaxNumber = "الرقم الضريبي يجب أن يكون بين 10 و 15 رقماً";
+      // if (!/^\d{9}$/.test(phoneLocal))
+      //   errors.PhoneNumber = "رقم الجوال غير صالح (يجب أن يكون 9 أرقام محلية بعد التطبيع)";
       if (isNonEmpty(reqUserName) && !lenBetween(reqUserName, 2, 100))
         errors.userName = "اسم المستخدم (إن وُجد) يجب أن يكون بين 2 و 100 حرف";
       if (apiStr.length > 255)

@@ -110,21 +110,22 @@ const userCompanyUpdat = () => {
       const errors = {};
       if (!Number.isFinite(idNum)) errors.id = "المعرف مطلوب ويكون رقماً صحيحاً موجباً";
       if (!isNonEmpty(nameStr) || !lenBetween(nameStr, 2, 100)) errors.userName = "اسم المستخدم مطلوب (2–100)";
-      if (isNonEmpty(idNoStr) && !lenBetween(idNoStr, 4, 50)) errors.IDNumber = "رقم الهوية/الإقامة حتى 50";
+      // if (isNonEmpty(idNoStr) && !lenBetween(idNoStr, 4, 50)) errors.IDNumber = "رقم الهوية/الإقامة حتى 50";
       if (!isValidLocalPhone9(phoneLocal)) errors.PhoneNumber = "رقم الجوال غير صالح (9 أرقام)";
       if (isNonEmpty(jobStr) && !lenBetween(jobStr, 2, 50)) errors.job = "المسمى الوظيفي حتى 50";
       if (isNonEmpty(jobDesc) && !lenBetween(jobDesc, 0, 2000)) errors.jobdiscrption = "الوصف حتى 2000";
-      if (Object.keys(errors).length) return res.status(200).json({ success:false, message:"أخطاء في التحقق", errors });
+      if (Object.keys(errors).length) return res.status(200).json({ success:"أخطاء في التحقق", message:"أخطاء في التحقق", errors });
 
       const verificationFinduser = await SELECTTableusersCompanyVerificationIDUpdate(phoneLocal, idNum);
       const findRegistrioncompany = await SelectVerifycompanyexistencePhonenumber(phoneLocal);
 
       if ((Array.isArray(verificationFinduser) && verificationFinduser.length > 0) || findRegistrioncompany) {
-        return res.status(200).json({
-          success:false,
-          message: findRegistrioncompany
+        const message = findRegistrioncompany
             ? "الرقم موجود في قائمة انتظار تسجيل حساب شركات"
-            : "الرقم الذي أضفته لمستخدم موجود"
+            : "الرقم الذي أضفته لمستخدم موجود";
+        return res.status(200).json({
+          success:message,
+          message: message
         });
       }
 
@@ -141,7 +142,7 @@ const userCompanyUpdat = () => {
         "job=?,jobdiscrption=?"
       );
 
-      return res.status(200).json({ success:true, message:"تمت العملية بنجاح" });
+      return res.status(200).json({ success:"تمت العملية بنجاح", message:"تمت العملية بنجاح" });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success:false, message:"فشل في تنفيذ العملية" });

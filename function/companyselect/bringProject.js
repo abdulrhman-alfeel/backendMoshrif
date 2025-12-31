@@ -37,6 +37,7 @@ const {
   SELECTTableStageCUST_IMAGE,
   SELECTTableStagesCUST_Image,
   SELECTTableStageStageSub,
+  select_table_company_subscriptions,
 } = require("../../sql/selected/selected");
 const fs = require("fs");
 const path = require("path");
@@ -98,7 +99,8 @@ const BringProject = () => {
 
       if (!userSession) {
         return res.status(401).send("Invalid session");
-      }
+      };
+
       const { IDcompanySub, IDfinlty, type = "cache" } = req.query;
       const PhoneNumber = userSession.PhoneNumber;
       const projects = await getProjectsForUser(
@@ -106,8 +108,10 @@ const BringProject = () => {
         IDcompanySub,
         IDfinlty
       );
+      
       const data = { success: true, data: projects, boss: projects[0]?.job };
       res.status(200).send(data);
+
     } catch (err) {
       console.error(err);
       res.status(400).send({ success: false, error: err.message });
@@ -122,7 +126,10 @@ async function getProjectsForUser(PhoneNumber, IDcompanySub, IDfinlty) {
     PhoneNumber
   );
   return result;
-}
+};
+
+
+
 //  فلتر المشاريع
 const FilterProjectdashbord = () => {
   return async (req, res) => {
@@ -136,7 +143,9 @@ const FilterProjectdashbord = () => {
 
       const result = await SELECTTablecompanySubProjectFilter(
         search,
-        IDCompanySub
+        IDCompanySub,
+        0,
+        'dashbord'
       );
       const arrayReturnProject = await BringTotalbalance(
         IDCompanySub,
@@ -155,6 +164,7 @@ const FilterProjectdashbord = () => {
     }
   };
 };
+
 const FilterProject = () => {
   return async (req, res) => {
     try {
@@ -164,13 +174,11 @@ const FilterProject = () => {
         res.status(401).send("Invalid session");
         // console.log("Invalid session");
       }
-      const Datausere = await SELECTTableusersCompanyonObject(
-        userSession.PhoneNumber
-      );
+    
       const result = await SELECTTablecompanySubProjectFilter(
         search,
         IDCompanySub,
-        Datausere.id
+        userSession.PhoneNumber
       );
 
       const massage =
@@ -226,7 +234,7 @@ const BringProjectObjectone = () => {
         userSession.IDCompany,
         result?.IDcompanySub
       );
-      const datanew = data ? data : {}
+      const datanew = data ? data : {};
       res.send({ success: "تم نجاح العملية", data: datanew }).status(200);
     } catch (error) {
       console.log(error);
@@ -259,7 +267,18 @@ const BringStage = () => {
       if (!userSession) {
         return res.status(401).send("Invalid session");
       }
+
       const { ProjectID, type } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
       const key = `Stage:${userSession?.PhoneNumber}:${ProjectID}`;
 
       const cached = await redis.get(key);
@@ -300,6 +319,16 @@ const BringStagev2 = () => {
         return res.status(401).send("Invalid session");
       }
       const { ProjectID, type, number } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
+
       const Limit = type === "cache" ? `LIMIT 8` : "";
       const result = await SELECTTablecompanySubProjectStageCUSTv2(
         ProjectID,
@@ -333,6 +362,15 @@ const BringStageOneObject = () => {
     try {
       const ProjectID = req.query.ProjectID;
       const StageID = req.query.StageID;
+
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
 
       let result = await SELECTTablecompanySubProjectStageCUSTONe(
         ProjectID,
@@ -387,6 +425,16 @@ const BringStagesub = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
       let numberv2 = number ?? 0;
       // const key = `StageSub:${userSession?.PhoneNumber}:${ProjectID}:${StageID}:${numberv2}`;
 
@@ -433,6 +481,16 @@ const BringStageNotes = () => {
   return async (req, res) => {
     try {
       const { ProjectID, StageID } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
       let types = Number(StageID) ? parseInt(StageID) : StageID;
       const result = await SELECTTablecompanySubProjectStageNotes(
         parseInt(ProjectID),
@@ -451,6 +509,14 @@ const BringExpense = () => {
   return async (req, res) => {
     try {
       const { idproject, lastID } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(idproject);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
+
       const result = await SELECTTablecompanySubProjectexpense(
         idproject,
         "all",
@@ -476,6 +542,15 @@ const BringRevenue = () => {
   return async (req, res) => {
     try {
       const { idproject, lastID } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(idproject);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
+
+
       const result = await SELECTTablecompanySubProjectREVENUE(
         idproject,
         lastID
@@ -500,6 +575,15 @@ const BringReturned = () => {
   return async (req, res) => {
     try {
       const { idproject, lastID } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(idproject);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
+
+
       const result = await SELECTTablecompanySubProjectReturned(
         idproject,
         lastID
@@ -524,6 +608,15 @@ const BringTotalAmountproject = () => {
   return async (req, res) => {
     try {
       const ProjectID = req.query.ProjectID;
+
+      const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
+
       const result = await SELECTSUMAmountandBring(ProjectID);
       res.send(result).status(200);
     } catch (error) {
@@ -540,6 +633,15 @@ const BringStatmentFinancialforproject = () => {
     try {
       // === 1) Validate input/session ===
       const { ProjectID, type } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: "Subscription inactive" });
+      }
+
+
       const isAll = type === "all";
 
       if (!ProjectID || !type) {
@@ -592,7 +694,7 @@ const BringStatmentFinancialforproject = () => {
 
       // 4.b توليد اسم ملف جديد ثابت
       const rand4 = Math.floor(1000 + Math.random() * 9000);
-      const baseName = `${totals?.Nameproject || "project"}${rand4}${
+      const baseName = `${totals?.ProjectID || "project"}${rand4}${
         isAll ? "all" : "party"
       }financial.pdf`;
 
@@ -659,6 +761,15 @@ const SearchinFinance = () => {
   return async (req, res) => {
     try {
       const { projectID, type, from, to, fromtime, totime, count } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(projectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: "Subscription inactive" });
+      }
+
+
       let array = [];
 
       let kind =
@@ -695,6 +806,13 @@ const BringArchives = () => {
   return async (req, res) => {
     try {
       const idproject = req.query.idproject;
+
+      const chack_for_subscription = await select_table_company_subscriptions(idproject);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
       const result = await SELECTTablecompanySubProjectarchives(idproject);
       res.send({ success: true, data: result }).status(200);
     } catch (err) {
@@ -708,6 +826,14 @@ const BringArchivesFolderdata = () => {
   return async (req, res) => {
     try {
       const { ArchivesID, idSub, type, idproject } = req.query;
+
+
+      const chack_for_subscription = await select_table_company_subscriptions(idproject);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
 
       let result;
       result = await SELECTTablecompanySubProjectarchivesotherroad(
@@ -749,10 +875,21 @@ const BringDataRequests = () => {
   return async (req, res) => {
     try {
       const { ProjectID, Type } = req.query;
+
+      const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({  success: "Subscription inactive" });
+      };
+
+
       const typeselect = String(Type).split(" ")[1];
       let querytype =
         typeselect === "خفيفة" || typeselect === "ثقيلة" ? typeselect : Type;
       const result = await SELECTallDatafromTableRequests(querytype, ProjectID);
+
+
       let arraynew = [];
       await Promise.all(
         result.map(async (pic) => {
@@ -790,6 +927,13 @@ const BringCountRequsts = () => {
     try {
       const ProjectID = req.query.ProjectID;
 
+      const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: "Subscription inactive" });
+      }
+
       const countCLOSE = await SELECTDataAndTaketDonefromTableRequests(
         ProjectID,
         "false"
@@ -818,23 +962,28 @@ const BringDataRequestsV2 = () => {
       if (!userSession) {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
-      }
+      };
+
       const { ProjectID, Type, kind, Done, lastID } = req.query;
 
-      let verifyUser = [ "مدير الفرع", "Admin"].includes(
-        userSession.job
-      );
-      let requstAdmin = String(userSession.job).includes("طلبيات") ;
+      if(kind === 'part'){
+        const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+        if (!chack_for_subscription) {
+          return res
+            .status(200)
+            .send({success:"Subscription inactive" });
+        };
+      }
 
-      // String(userdata.job).split(" ")[1] === "طلبيات" ||
-      // userdata.job === "مدير الفرع" ||
-      // userdata.job === "Admin";
+      let verifyUser = ["مدير الفرع", "Admin"].includes(userSession.job);
+      let requstAdmin = String(userSession.job).includes("طلبيات");
+
+
 
       const typeselect = String(Type).split(" ")[1];
       let querytype = ["خفيفة", "ثقيلة"].includes(typeselect)
         ? typeselect
         : Type;
-
 
       const result = await SELECTallDatafromTableRequestsV2(
         querytype,
@@ -842,9 +991,10 @@ const BringDataRequestsV2 = () => {
         kind,
         Done,
         lastID,
-        !verifyUser && !requstAdmin ? `AND InsertBy=${userSession.PhoneNumber}` : ""
+        !verifyUser && !requstAdmin
+          ? `AND InsertBy=${userSession.PhoneNumber}`
+          : ""
       );
-
 
       res.send({ success: "تمت العملية بنجاح", data: result }).status(200);
     } catch (error) {
@@ -864,21 +1014,23 @@ const BringCountRequstsV2 = () => {
       }
       const { ProjectID, type = "part" } = req.query;
 
-      let verifyUser = [ "مدير الفرع", "Admin"].includes(
-        userSession.job
-      );
-      let requstAdmin = String(userSession.job).includes("طلبيات") ;
+      let verifyUser = ["مدير الفرع", "Admin"].includes(userSession.job);
+      let requstAdmin = String(userSession.job).includes("طلبيات");
       const countCLOSE = await SELECTDataAndTaketDonefromTableRequests2(
         ProjectID,
         type,
         "false",
-        !verifyUser && !requstAdmin ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
+        !verifyUser && !requstAdmin
+          ? " InsertBy='" + userSession.PhoneNumber + "' AND"
+          : ""
       );
       const countOPEN = await SELECTDataAndTaketDonefromTableRequests2(
         ProjectID,
         type,
         "true",
-        !verifyUser && !requstAdmin ? " InsertBy='" + userSession.PhoneNumber + "' AND" : ""
+        !verifyUser && !requstAdmin
+          ? " InsertBy='" + userSession.PhoneNumber + "' AND"
+          : ""
       );
 
       res.send({
@@ -907,6 +1059,16 @@ const BringReportforProject = () => {
         console.log("Invalid session");
       }
       const ProjectID = req.query.ProjectID;
+
+
+
+      const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
 
       const result = await SELECTTablecompanySubProjectStageCUST(ProjectID);
       let arrayresult = [];
@@ -1072,6 +1234,16 @@ const BringreportTimeline = () => {
       res.status(401).send("Invalid session");
       return console.log("Invalid session");
     }
+
+
+    const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+      if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      }
+
+
     const company = await SELECTTablecompany(
       userSession?.IDCompany,
       "NameCompany,CommercialRegistrationNumber"
@@ -1087,7 +1259,11 @@ const BringreportTimeline = () => {
     if (await checkIfFileExists(outputPrefix)) {
       return res
         .status(200)
-        .send({ success:true ,message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
+        .send({
+          success: true,
+          message: "تم انشاء التقرير بنجاح",
+          namefile: outputPrefix,
+        });
     }
 
     const filePath = path.join(__dirname, "../../upload", namefile);
@@ -1099,12 +1275,19 @@ const BringreportTimeline = () => {
     } else {
       return res
         .status(400)
-        .send({ success:false,  message:"فشل في تنفيذ العملية - الملف غير موجود" });
+        .send({
+          success: false,
+          message: "فشل في تنفيذ العملية - الملف غير موجود",
+        });
     }
 
     res
       .status(200)
-      .send({ success:true ,message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({
+        success: true,
+        message: "تم انشاء التقرير بنجاح",
+        namefile: outputPrefix,
+      });
   };
 };
 const BringreportRequessts = () => {
@@ -1170,7 +1353,10 @@ const BringreportRequessts = () => {
     if (result.length === 0) {
       return res
         .status(200)
-        .send({ success:false,message: "فشل في تنفيذ العملية - لا توجد بيانات لعرضها" });
+        .send({
+          success: false,
+          message: "فشل في تنفيذ العملية - لا توجد بيانات لعرضها",
+        });
     }
 
     const filePath = path.join(__dirname, "../../upload", namefile);
@@ -1193,11 +1379,18 @@ const BringreportRequessts = () => {
     } else {
       return res
         .status(200)
-        .send({ success:false, message: "فشل في تنفيذ العملية - الملف غير موجود" });
+        .send({
+          success: false,
+          message: "فشل في تنفيذ العملية - الملف غير موجود",
+        });
     }
     res
       .status(200)
-      .send({ success: true ,message: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({
+        success: true,
+        message: "تم انشاء التقرير بنجاح",
+        namefile: outputPrefix,
+      });
   };
 };
 
@@ -1208,7 +1401,17 @@ const BringreportStage = () => {
     if (!userSession) {
       res.status(401).send("Invalid session");
       return console.log("Invalid session");
-    }
+    };
+
+    const chack_for_subscription = await select_table_company_subscriptions(ProjectID);
+    if (!chack_for_subscription) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive" });
+      };
+
+
+
     const company = await SELECTTablecompany(
       userSession?.IDCompany,
       "NameCompany,CommercialRegistrationNumber"
@@ -1220,35 +1423,36 @@ const BringreportStage = () => {
       ProjectID,
       StageID
     );
-    const StageSub = await SELECTTableStageStageSub(
-      ProjectID,
-      StageID
-    );
+    const StageSub = await SELECTTableStageStageSub(ProjectID, StageID);
     const stage_image = await SELECTTableStagesCUST_Image(ProjectID, StageID);
     const outputPrefix = `${company.CommercialRegistrationNumber}/report/${namefile}`;
     if (await checkIfFileExists(outputPrefix)) {
       return res
         .status(200)
-        .send({ success: true,  message:"تم انشاء التقرير بنجاح", namefile: outputPrefix });
-    };
+        .send({
+          success: true,
+          message: "تم انشاء التقرير بنجاح",
+          namefile: outputPrefix,
+        });
+    }
 
     if (!result) {
       return res
         .status(400)
         .send({ success: "فشل في تنفيذ العملية - لا توجد بيانات لعرضها" });
-    };
+    }
 
     const filePath = path.join(__dirname, "../../upload", namefile);
-      try {
-        const file = bucket.file(outputPrefix);
-        await file.delete();
-      } catch (err) {
-        // لا نُفشل العملية بسبب فشل الحذف؛ نُسجل فقط
-        // console.log("Delete previous file error:", err?.message || err);
-      };
-      
-  const html = HtmlStatmentStage(stage_image, result, company,StageSub);
-  await convertHtmlToPdf(html, filePath);
+    try {
+      const file = bucket.file(outputPrefix);
+      await file.delete();
+    } catch (err) {
+      // لا نُفشل العملية بسبب فشل الحذف؛ نُسجل فقط
+      // console.log("Delete previous file error:", err?.message || err);
+    }
+
+    const html = HtmlStatmentStage(stage_image, result, company, StageSub);
+    await convertHtmlToPdf(html, filePath);
 
     if (fs.existsSync(filePath)) {
       await uploadFile(outputPrefix, filePath);
@@ -1256,11 +1460,18 @@ const BringreportStage = () => {
     } else {
       return res
         .status(200)
-        .send({ success: false,  message: "فشل في تنفيذ العملية - الملف غير موجود" });
-    };
+        .send({
+          success: false,
+          message: "فشل في تنفيذ العملية - الملف غير موجود",
+        });
+    }
     res
       .status(200)
-      .send({ success: true , message: "تم انشاء التقرير بنجاح", namefile: outputPrefix });
+      .send({
+        success: true,
+        message: "تم انشاء التقرير بنجاح",
+        namefile: outputPrefix,
+      });
   };
 };
 

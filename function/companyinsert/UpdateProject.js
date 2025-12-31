@@ -233,7 +233,6 @@ const UpdataDataProject = (uploadQueue) => {
         {
           errors.TypeOFContract = 'لايمكن تعديل نوع العقد';
         return res.status(200).json({ success:  "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
-
       }
       // 6) تنفيذ التحديث
       const ok = await UpdateTablecompanySubProject([

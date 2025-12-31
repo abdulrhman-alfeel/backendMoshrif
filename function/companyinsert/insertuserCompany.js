@@ -45,20 +45,6 @@ const userCompany = () => {
       if (!isNonEmpty(nameStr) || !lenBetween(nameStr, 2, 100)) {
         errors.userName = "اسم المستخدم مطلوب (2 إلى 100 حرف)";
       }
-      // الهوية الوطنية/الإقامة: 10–15 رقم (مرن)
-      if (!isNonEmpty(idNumberStr) || !/^\d{10,15}$/.test(idNumberStr)) {
-        errors.IDNumber = "رقم الهوية/الإقامة يجب أن يكون بين 10 و 15 رقماً";
-      }
-      // الجوال المحلي: 9 أرقام بعد التطبيع
-      if (!/^\d{9}$/.test(phoneLocal)) {
-        errors.PhoneNumber = "رقم الجوال غير صالح؛ يجب أن يكون 9 أرقام محلية بعد التطبيع";
-      }
-      if (isNonEmpty(jobStr) && !lenBetween(jobStr, 2, 100)) {
-        errors.job = "المسمى الوظيفي (إن وُجد) يجب أن يكون بين 2 و 100 حرف";
-      }
-      if (isNonEmpty(jobDescStr) && !lenBetween(jobDescStr, 2, 500)) {
-        errors.jobdiscrption = "وصف الوظيفة (إن وُجد) يجب أن يكون بين 2 و 500 حرف";
-      }
       // Validity: نقبل object/array أو نص JSON صالح
       let validityPayload = null;
       if (Validity !== undefined) {
@@ -73,7 +59,7 @@ const userCompany = () => {
       }
 
       if (Object.keys(errors).length > 0) {
-        return res.status(200).json({ success: false, message: "أخطاء في التحقق من المدخلات", errors });
+        return res.status(200).json({ success: "أخطاء في التحقق من المدخلات", message: "أخطاء في التحقق من المدخلات", errors });
       }
 
       // 3) تحقق من التكرار/الانتظار
@@ -103,7 +89,7 @@ const userCompany = () => {
       ]);
 
       return res.status(200).json({
-        success: true,
+        success: "تمت العملية بنجاح",
         message: "تمت العملية بنجاح",
         data: {
           IDCompany: idCompanyNum,

@@ -203,7 +203,6 @@ const Sortdatauserfromnotificationv2 = (result, userName) => {
         if (item === userName) {
         const dataNotifction = JSON.parse(pic.data);
         const data = JSON.parse(dataNotifction?.data);
-        console.log(pic.id,data?.jobUser);
         const color = await switchColor(data?.jobUser);
         arrayNotifcation.push({
           id: pic.id,
@@ -229,7 +228,6 @@ const Sortdatauserfromnotificationv2 = (result, userName) => {
 
 const switchColor = (job) => {
   const arrayRed = ["مالك", "Admin", "مدير عام"];
-  console.log(job);
   if (arrayRed.includes(job)) return "#FF0F0F";
   if (job === "مدير الفرع") return "#10B982";
   return "#f6f8fe";

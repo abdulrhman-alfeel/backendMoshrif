@@ -28,56 +28,80 @@ const MAX_VIDEO_SIZE = 300 * 1024 * 1024; // 300MB (عدّل حسب حاجتك)
 // ===================================================================
 // insertPostURL: إدراج منشور فيديو (من رابط محفوظ لديك)
 // ===================================================================
+// const insertPostURL = async (items) => {
+//   try {
+//     // تحقق أساسي من الكائن
+//     if (!items || typeof items !== "object") return;
+
+//     // تحقق من وجود ملف ونوعه (فيديو)
+//     const file = items.File || {};
+//     const fileType = String(file.type || "").toLowerCase();
+//     const fileName = sanitizeFilename(file.name || "");
+//     if (!isNonEmpty(fileType) || !fileType.includes("video")) return;
+
+//     // (اختياري) لو توفر لديك الحجم:
+//     if (Number.isFinite(file.size) && file.size > MAX_VIDEO_SIZE) {
+//       console.warn("insertPostURL: video too large");
+//       return;
+//     }
+
+//     // تحقق من الحقول الضرورية
+//     const sender    = String(items.Sender ?? "").trim();
+//     const message   = String(items.message ?? "").trim();
+//     const stageId   = items.StageID;
+//     const projectId = parsePositiveInt(items.ProjectID);
+
+//     if (!isNonEmpty(sender))            throw new Error("Sender is required");
+//     if (!Number.isFinite(projectId))    throw new Error("ProjectID invalid");
+//     if (!isNonEmpty(stageId))           throw new Error("StageID invalid");
+//     if (!ALLOWED_VIDEO_MIMES.some(m => fileType.includes(m.split("/")[1]) || m === fileType)) {
+//       // نسمح بأي video/* لكن نفضّل من القائمة
+//       console.warn("insertPostURL: non-preferred video mime", fileType);
+//     }
+
+//     // جلب بيانات المشروع/الشركة
+//     const result = await SELECTTableIDcompanytoPost(projectId);
+//     if (!result) throw new Error("Project not found");
+
+//     const data = [
+//       sender,
+//       fileName || "video",           // اسم ظاهر
+//       fileType,
+//       message || '',               // قد يكون null
+//       toISO(),                       // وقت UTC ISO
+//       stageId,
+//       projectId,
+//       result.IDcompanySub,
+//       result.NumberCompany,
+//     ];
+
+//     await insertTablePostPublic(data);
+//   } catch (err) {
+//     console.log("insertPostURL error:", err.message);
+//   }
+// };
+
 const insertPostURL = async (items) => {
   try {
-    // تحقق أساسي من الكائن
-    if (!items || typeof items !== "object") return;
-
-    // تحقق من وجود ملف ونوعه (فيديو)
-    const file = items.File || {};
-    const fileType = String(file.type || "").toLowerCase();
-    const fileName = sanitizeFilename(file.name || "");
-    if (!isNonEmpty(fileType) || !fileType.includes("video")) return;
-
-    // (اختياري) لو توفر لديك الحجم:
-    if (Number.isFinite(file.size) && file.size > MAX_VIDEO_SIZE) {
-      console.warn("insertPostURL: video too large");
-      return;
+    if (Object.entries(items.File).length > 0) {
+      if (String(items.File.type).includes("video")) {
+        const result = await SELECTTableIDcompanytoPost(items.ProjectID);
+        const data = [
+          items.Sender,
+          items.File.name,
+          items.File.type,
+          items.message,
+          `${new Date().toUTCString()}`,
+          items.StageID,
+          items.ProjectID,
+          result.IDcompanySub,
+          result.NumberCompany,
+        ];
+        await insertTablePostPublic(data);
+      }
     }
-
-    // تحقق من الحقول الضرورية
-    const sender    = String(items.Sender ?? "").trim();
-    const message   = String(items.message ?? "").trim();
-    const stageId   = items.StageID;
-    const projectId = parsePositiveInt(items.ProjectID);
-
-    if (!isNonEmpty(sender))            throw new Error("Sender is required");
-    if (!Number.isFinite(projectId))    throw new Error("ProjectID invalid");
-    if (!isNonEmpty(stageId))           throw new Error("StageID invalid");
-    if (!ALLOWED_VIDEO_MIMES.some(m => fileType.includes(m.split("/")[1]) || m === fileType)) {
-      // نسمح بأي video/* لكن نفضّل من القائمة
-      console.warn("insertPostURL: non-preferred video mime", fileType);
-    }
-
-    // جلب بيانات المشروع/الشركة
-    const result = await SELECTTableIDcompanytoPost(projectId);
-    if (!result) throw new Error("Project not found");
-
-    const data = [
-      sender,
-      fileName || "video",           // اسم ظاهر
-      fileType,
-      message || '',               // قد يكون null
-      toISO(),                       // وقت UTC ISO
-      stageId,
-      projectId,
-      result.IDcompanySub,
-      result.NumberCompany,
-    ];
-
-    await insertTablePostPublic(data);
   } catch (err) {
-    console.log("insertPostURL error:", err.message);
+    console.log(err.message);
   }
 };
 

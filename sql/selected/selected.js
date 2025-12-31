@@ -177,7 +177,6 @@ const SELECTTablecompanySubCount = (id) => {
 // فروع الشركة
 const SELECTTablecompanySubuser = (PhoneNumber) => {
   return new Promise((resolve, reject) => {
-
     db.serialize(function () {
       db.all(
         `WITH u AS (
@@ -231,8 +230,6 @@ ORDER BY RE.id;
     });
   });
 };
-
-
 
 const SELECTTablecompanySub = (
   id,
@@ -385,9 +382,6 @@ const SELECTTABLEcompanyProjectall = (id) => {
   });
 };
 
-
-
-
 const selecttablecompanySubProjectall = (
   id,
   IDfinlty,
@@ -398,8 +392,6 @@ const selecttablecompanySubProjectall = (
 ) => {
   return new Promise((resolve, reject) => {
     let plase = parseInt(IDfinlty) === 0 ? ">" : "<";
- 
-
 
     db.serialize(function () {
       db.all(
@@ -439,13 +431,25 @@ SELECT
   (SELECT COUNT(*) FROM usersProject ut WHERE ut.ProjectID = cS.id) AS countuser,
   EX.Cost AS ConstCompany,
   EX.DisabledFinance,
-  (SELECT MAX(Li2.urlLink) FROM Linkevaluation Li2 WHERE Li2.IDcompanySub = cS.IDcompanySub) AS Linkevaluation,
   JSON_EXTRACT((
     SELECT MAX(bZ.ValidityBransh)
     FROM usersBransh bZ
     WHERE bZ.user_id = uC.id
       AND bZ.idBransh = cS.IDcompanySub
-  ), '$') AS ValidityBransh
+  ), '$') AS ValidityBransh,
+  CASE WHEN EXISTS (
+  SELECT 1
+  FROM project_subscription ps
+  JOIN company_subscriptions st
+    ON st.id = ps.company_subscriptions_id
+  AND st.status = 'active'
+  WHERE ps.project_id = cS.id
+) THEN 'true' ELSE 'false' END AS status_subscription,
+( SELECT st.id
+  FROM project_subscription ps
+  JOIN company_subscriptions st
+    ON st.id = ps.company_subscriptions_id
+  AND st.status = 'active'   WHERE ps.project_id = cS.id )  AS company_subscriptions_id
 FROM usersCompany uC
 JOIN company EX
   ON EX.id = uC.IDCompany
@@ -455,7 +459,7 @@ JOIN companySubprojects cS
   ON cS.IDcompanySub = RE.id
 WHERE
   REPLACE(TRIM(uC.PhoneNumber), ' ', '') = TRIM(${PhoneNumber})
-  AND cS.id ${plase} ${IDfinlty}
+  AND cS.id > ${IDfinlty}
   AND cS.Disabled = 'true'     -- إن كان منطقيًا استخدم TRUE
  AND (
        (uC.job = 'Admin' AND cS.IDcompanySub = ${id})         -- لو أردتها لفرع محدد
@@ -474,7 +478,7 @@ WHERE
               AND up1.ProjectID = cS.id
       )
   )
-ORDER BY cS.id DESC
+ORDER BY cS.id ASC
 ${Limit}
 ;
         `
@@ -508,6 +512,7 @@ ${Limit}
     });
   });
 };
+
 // جلب المشاريع للمنصة
 const SELECTTablecompanySubProject = (
   id,
@@ -652,11 +657,15 @@ const SELECTTablecompanySubProjectindividual = (id, IDcompanySub) => {
   });
 };
 // فلتر المشاريع
-const SELECTTablecompanySubProjectFilter = (search, IDcompanySub, user_id) => {
+const SELECTTablecompanySubProjectFilter = (
+  search,
+  IDcompanySub,
+  PhoneNumber,
+  type = "app"
+) => {
   return new Promise((resolve, reject) => {
-    db.serialize(function () {
-      db.all(
-        `SELECT 
+    let stringSql =
+      `SELECT 
         CASE  
         WHEN uC.job = 'Admin' THEN uC.job
         WHEN cS.Nameproject IS NULL  THEN NULL
@@ -679,7 +688,15 @@ const SELECTTablecompanySubProjectFilter = (search, IDcompanySub, user_id) => {
         cS.countuser,
         EX.Cost AS ConstCompany,
         EX.DisabledFinance,
-        Li.urlLink AS Linkevaluation
+        Li.urlLink AS Linkevaluation,
+        CASE WHEN EXISTS (
+        SELECT 1
+        FROM project_subscription ps
+        JOIN company_subscriptions st
+          ON st.id = ps.company_subscriptions_id
+        AND st.status = 'active'
+        WHERE ps.project_id = cS.id
+      ) THEN 'true' ELSE 'false' END AS status_subscription
         FROM usersCompany uC
         LEFT JOIN usersBransh uB 
             ON uC.id = uB.user_id 
@@ -688,26 +705,29 @@ const SELECTTablecompanySubProjectFilter = (search, IDcompanySub, user_id) => {
             ON uB.idBransh = uP.idBransh 
             AND uB.user_id = uP.user_id
         LEFT JOIN companySubprojects cS 
-     ON (
-         (uC.job = 'Admin' AND cS.IDcompanySub = ${IDcompanySub})
-         OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${IDcompanySub})
-         OR (uC.job NOT IN ('Admin','مدير الفرع') 
-             AND uP.ProjectID = cS.id 
-             AND uB.idBransh = ${IDcompanySub})
-     )
-LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
-LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
-LEFT JOIN company EX ON EX.id = RE.NumberCompany
-WHERE uC.id = ${user_id} AND cS.Disabled = 'true' AND Nameproject LIKE '%${search}%'`,
-        function (err, result) {
-          if (err) {
-            reject(err);
-            console.log(err.message);
-          } else {
-            resolve(result);
-          }
+      ON (
+          (uC.job = 'Admin' AND cS.IDcompanySub = ${IDcompanySub})
+          OR (uB.job = 'مدير الفرع' AND uB.idBransh = ${IDcompanySub})
+          OR (uC.job NOT IN ('Admin','مدير الفرع') 
+          AND uP.ProjectID = cS.id 
+          AND uB.idBransh = ${IDcompanySub})
+      )
+      LEFT JOIN Linkevaluation Li ON Li.IDcompanySub = cS.IDcompanySub
+      LEFT JOIN companySub RE ON RE.id = cS.IDcompanySub
+      LEFT JOIN company EX ON EX.id = RE.NumberCompany
+      ` +
+      (type === "app"
+        ? ` WHERE REPLACE(TRIM(uC.PhoneNumber), ' ', '') = TRIM(${PhoneNumber}) AND cS.Disabled = 'true' AND cS.IDcompanySub=${IDcompanySub} AND (cS.Nameproject LIKE '%${search}%' OR cS.numberBuilding LIKE '%${search}%') ORDER BY cS.id ASC`
+        : ` WHERE cS.Disabled = 'true' AND cS.IDcompanySub=${IDcompanySub} AND (cS.Nameproject LIKE '%${search}%' OR cS.numberBuilding LIKE '%${search}%') ORDER BY cS.id ASC`);
+    db.serialize(function () {
+      db.all(stringSql, function (err, result) {
+        if (err) {
+          reject(err);
+          console.log(err.message);
+        } else {
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
@@ -832,6 +852,7 @@ const SELECTSUMAmountandBring = (id) => {
       db.get(
         `SELECT 
         ca.Nameproject AS 'Nameproject', 
+        ca.id AS 'ProjectID',
         COALESCE(RE.total_revenue, 0.00) AS 'TotalRevenue', 
         COALESCE(EX.landers_count, 0.00) AS 'TotalExpense', 
         COALESCE(RT.total_Returns, 0.00) AS 'TotalReturns', 
@@ -939,7 +960,7 @@ const selectprojectdatabycompany = (id) => {
 //  سنبل المراحل والفروع
 
 // المراحل
-const SELECTFROMTableStageTempletall = (Type,number = 0) => {
+const SELECTFROMTableStageTempletall = (Type, number = 0) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
@@ -1078,9 +1099,9 @@ const selectStagestypeforProject = (IDCompany) => {
           }
         }
       );
-    })
+    });
   });
-}
+};
 const selectStagestypeTemplet = (IDCompany) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
@@ -1094,9 +1115,9 @@ const selectStagestypeTemplet = (IDCompany) => {
           }
         }
       );
-    })
+    });
   });
-}
+};
 
 // المراحل الفرعية
 
@@ -1124,33 +1145,34 @@ const SELECTFROMTablecompanysubprojectStagesubTeplet = (
     );
 `;
 
-const params = [StageID, Stagestype_id, IDCompany, StageID, Stagestype_id, StageID, IDCompany];
+    const params = [
+      StageID,
+      Stagestype_id,
+      IDCompany,
+      StageID,
+      Stagestype_id,
+      StageID,
+      IDCompany,
+    ];
 
     db.serialize(function () {
-      db.all(sql, params,
-        function (err, result) {
-          if (err) {
-            console.log(err, "err");
-            reject(err);
-
-          } else {
-            resolve(result);
-          }
+      db.all(sql, params, function (err, result) {
+        if (err) {
+          console.log(err, "err");
+          reject(err);
+        } else {
+          resolve(result);
         }
-      );
+      });
     });
   });
 };
 
 // مراحل المشروع
-const SELECTTableStageCUST_IMAGE = (
-ProjectID,
-StageID,
-count = 0
-) => {
+const SELECTTableStageCUST_IMAGE = (ProjectID, StageID, count = 0) => {
   let stringSql = `SELECT * FROM StagesCUST_Image cu   WHERE  cu.id > ? AND  cu.ProjectID=? AND cu.StageID=? ORDER BY cu.id ASC LIMIT 10`;
-    
-  let data = [count,ProjectID, StageID];
+
+  let data = [count, ProjectID, StageID];
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(stringSql, data, function (err, result) {
@@ -1307,44 +1329,41 @@ const SELECTTablecompanySubProjectStageCUSTONe = (
     });
   });
 };
-const SELECTTableStagesCUST_Image = (
-  ProjectID,
-  StageID,
-
-) => {
-
+const SELECTTableStagesCUST_Image = (ProjectID, StageID) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
-      db.all(`SELECT * FROM StagesCUST_Image WHERE ProjectID=? AND StageID = ?`, [ProjectID, StageID], function (err, result) {
-        if (err) {
-          reject(err);
-          console.error(err.message);
-        } else {
-          resolve(result);
+      db.all(
+        `SELECT * FROM StagesCUST_Image WHERE ProjectID=? AND StageID = ?`,
+        [ProjectID, StageID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
         }
-      });
+      );
     });
   });
 };
 
-
-const SELECTTableStageStageSub = (
-  ProjectID,
-  StageID,
-
-) => {
-
+const SELECTTableStageStageSub = (ProjectID, StageID) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
-      db.all(`SELECT StageSubName,CloseDate,Done,    
-            REPLACE(JSON_EXTRACT(closingoperations, '$[0].userName'), '"', '') AS userName FROM StagesSub WHERE ProjectID=? AND StagHOMID =?`, [ProjectID, StageID], function (err, result) {
-        if (err) {
-          reject(err);
-          console.error(err.message);
-        } else {
-          resolve(result);
+      db.all(
+        `SELECT StageSubName,CloseDate,Done,    
+            REPLACE(JSON_EXTRACT(closingoperations, '$[0].userName'), '"', '') AS userName FROM StagesSub WHERE ProjectID=? AND StagHOMID =?`,
+        [ProjectID, StageID],
+        function (err, result) {
+          if (err) {
+            reject(err);
+            console.error(err.message);
+          } else {
+            resolve(result);
+          }
         }
-      });
+      );
     });
   });
 };
@@ -1587,8 +1606,6 @@ const SELECTTablecompanySubProjectStageSubNotes = (
   });
 };
 
-
-
 // SELECT
 //   COALESCE(json_group_array(DISTINCT json_object(
 //     'Nameproject',    cs.Nameproject,
@@ -1612,17 +1629,11 @@ const SELECTTablecompanySubProjectStageSubNotes = (
 // LEFT JOIN usersCompany u2 ON trim(u2.PhoneNumber) = trim(rs.Implementedby)
 // WHERE cs.IDcompanySub = 1;
 
-
-
-
-
-const SelectOrdertabletotalreport = (
-  type= "IDcompanySub"
-) => {
+const SelectOrdertabletotalreport = (type = "IDcompanySub") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-  `SELECT
+        `SELECT
   COUNT(*) AS total,
   SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'false' THEN 1 ELSE 0 END) AS open_count,
   SUM(CASE WHEN lower(COALESCE(rs.Done,'false')) = 'true'
@@ -1632,8 +1643,7 @@ const SelectOrdertabletotalreport = (
   LEFT JOIN usersCompany u1 ON trim(u1.PhoneNumber) = trim(rs.InsertBy)
   JOIN companySubprojects cs ON cs.id = rs.ProjectID
   WHERE ${type} ;
-`
-      ,
+`,
         function (err, result) {
           if (err) {
             reject(err);
@@ -1646,9 +1656,7 @@ const SelectOrdertabletotalreport = (
     });
   });
 };
-const SelectdetailsOrders = (
-  type= "IDcompanySub"
-) => {
+const SelectdetailsOrders = (type = "IDcompanySub") => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
@@ -1688,7 +1696,7 @@ WHERE ${type}
 GROUP BY  cs.id, cs.Nameproject, rs.Type
 ORDER BY cs.Nameproject, rs.Type ;
 `,
-       
+
         function (err, result) {
           if (err) {
             reject(err);
@@ -2229,14 +2237,13 @@ const SELECTDataAndTaketDonefromTableRequests2 = async (
   Done,
   whereAdd
 ) => {
-
   return new Promise((resolve, reject) => {
     let sqlString =
       type === "part"
         ? `SELECT COUNT(Done) FROM Requests WHERE Done=? AND  ProjectID=?`
         : `SELECT COUNT(Done) FROM Requests re LEFT JOIN companySubprojects PR ON PR.id = re.ProjectID WHERE  ${whereAdd} Done=? AND PR.IDcompanySub=? `;
     let data = [Done, RequestsID];
-      console.log(sqlString,data);
+    console.log(sqlString, data);
     db.serialize(async () => {
       db.get(sqlString, data, function (err, rows) {
         // console.log(RequestsID);
@@ -2652,8 +2659,7 @@ const SELECTTablepostAll = (
 
     query += `
     WHERE ca.CommpanyID = ?
-      AND Date(ca.Date) = ?
-      AND (ca.PostID) ${plus} ? 
+    AND Date(ca.Date) = ? AND (ca.PostID) ${plus} ? 
     ORDER BY ca.PostID ASC
   ) AS subquery
   ORDER BY PostID DESC, datetime(Date) DESC
@@ -2663,7 +2669,7 @@ const SELECTTablepostAll = (
     // بناء مصفوفة القيم
     let values = [user];
     if (!isAdminOrBranchManager) values.push(PhoneNumber); // نضيف user_id فقط إذا كان شرط مفعّل
-    values.push(id, formattedDate, PostID);
+    values.push(id,formattedDate, PostID);
     db.serialize(function () {
       db.all(query, values, function (err, result) {
         if (err) {
@@ -3161,7 +3167,7 @@ const selectdetailsFcialCustodforreport = async (IDCompany, type = "") => {
   fy.Amount, fy.Statement, fy.Date, fy.Approvingperson, fy.ApprovalDate,
   fy.OrderStatus, fy.RejectionStatus, fy.Reasonforrejection, fy.Dateofrejection
   FROM FinancialCustody fy
-  LEFT JOIN usersCompany ON usersCompany.PhoneNumber = fy.Requestby`
+  LEFT JOIN usersCompany ON usersCompany.PhoneNumber = fy.Requestby`;
     db.serialize(function () {
       db.all(
         `SELECT *,cb.NameSub,cy.NameCompany,cy.CommercialRegistrationNumber
@@ -3190,7 +3196,7 @@ ORDER BY
   END,
   Date DESC;
 `,
-       
+
         function (err, result) {
           if (err) {
             reject(err);
@@ -3264,11 +3270,143 @@ const SELECTTableBranchdeletionRequests = async (
   });
 };
 
+// اشتراكات
+const SELECT_Table_subscription_types = async () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(`SELECT * FROM subscription_types`, function (err, result) {
+        if (err) {
+          resolve([]);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  });
+};
+const SELECT_Table_subscription_types_one_object = async (id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT * FROM subscription_types WHERE id=? `,
+        [id],
+        function (err, result) {
+          if (err) {
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+const Select_table_company_subscriptionsChack = async (project_id) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT cs.* FROM project_subscription cs  WHERE cs.project_id=? `,
+        [project_id],
+        function (err, result) {
+          if (err) {
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+const Select_table_company_subscriptions_onObject = async (
+  company_subscriptions_id,
+  type = "id"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT *,code_subscription  AS name FROM company_subscriptions  WHERE ${type}=? AND status='active' `,
+        [company_subscriptions_id],
+        function (err, result) {
+          if (err) {
+            resolve([]);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+const Select_table_company_subscriptions_vs2 = async (
+  company_subscriptions_id,
+  type = "id"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT *,code_subscription  AS name FROM company_subscriptions  WHERE ${type}=? AND status='inactive' `,
+        [company_subscriptions_id],
+        function (err, result) {
+          if (err) {
+            resolve(false);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  });
+};
+
+const select_table_company_subscriptions = async (
+  ProjectID,
+  type = "project_id"
+) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.all(
+        `SELECT ps.* FROM project_subscription ps LEFT JOIN company_subscriptions st ON st.id = ps.company_subscriptions_id WHERE ps.${type}=? AND st.status='active' `,
+        [ProjectID],
+        function (err, result) {
+          if (result.length === 0 || err) {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        }
+      );
+    });
+  });
+};
+
+const chack_subscripation_project_exist = async (ProjectID) => {
+  return new Promise((resolve, reject) => {
+    db.serialize(function () {
+      db.get(
+        `SELECT * AS count FROM project_subscription ps
+         LEFT JOIN  company_subscriptions cs ON cs.id = ps.company_subscriptions_id
+         WHERE ps.project_id = ? AND cs.status='active' `,
+        [ProjectID],
+        function (err, result) {
+          if (err) {
+            resolve(0);
+          } else {
+            resolve(1);
+          }
+        }
+      );
+    });
+  });
+};
+
 const SELECTTABLESUBSCRIPATION = async (IDCompany, StartDate) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.all(
-        `SELECT * FROM subscripation WHERE IDCompany=? AND strftime('%Y-%m',StartDate )=strftime('%Y-%m',? ) `,
+        `SELECT * FROM subscripation WHERE IDCompany=? AND strftime('%Y-%m',StartDate) = strftime('%Y-%m',? ) `,
         [IDCompany, StartDate],
         function (err, result) {
           if (err) {
@@ -3327,7 +3465,7 @@ const SelectReportTimeline = async (ProjectID, report_date) => {
   return new Promise((resolve, reject) => {
     db.serialize(function () {
       db.get(
-`WITH params(project_id, report_date) AS (VALUES (${ProjectID},'${report_date}')),
+        `WITH params(project_id, report_date) AS (VALUES (${ProjectID},'${report_date}')),
 stage_agg AS (
   SELECT
     ProjectID,
@@ -3386,7 +3524,7 @@ GROUP BY
   p.id, p.Nameproject, p.TypeOFContract, p.Contractsigningdate, p.ProjectStartdate,
   sa.ExpectedDurationDays, sa.StagesCount, sa.ExpectedDeliveryDate, sa.TotalDeviationDays;
 `,
-function (err, result) {
+        function (err, result) {
           if (err) {
             reject(err);
           } else {
@@ -3399,6 +3537,13 @@ function (err, result) {
 };
 
 module.exports = {
+  SELECT_Table_subscription_types,
+  SELECT_Table_subscription_types_one_object,
+  Select_table_company_subscriptions_onObject,
+  chack_subscripation_project_exist,
+  select_table_company_subscriptions,
+  Select_table_company_subscriptionsChack,
+
   selectprojectdatabycompany,
   SELECTTABLESUBSCRIPATION,
   SELECTTablecompanyApi,
@@ -3516,5 +3661,6 @@ module.exports = {
   SELECTTableStagesCUST_Image,
   SELECTTableStageStageSub,
   selectStagestypeforProject,
-  selectStagestypeTemplet
+  selectStagestypeTemplet,
+  Select_table_company_subscriptions_vs2
 };

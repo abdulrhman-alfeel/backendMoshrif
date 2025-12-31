@@ -812,7 +812,6 @@ const Postsnotification = async (
       result.userName,
       "PublicationsBransh"
     );
-    console.log(jobUser);
 
     // تحديد النص الظاهر في الإشعار
     const actionText =
@@ -967,7 +966,7 @@ const ChateNotfication = async (
 
     if (!specialStages.includes(StageID)) {
       const Project = await SELECTProjectStartdate(idProject);
-      IDCompanySub = Project?.IDCompanySub;
+      IDCompanySub = Project?.IDcompanySub;
       Nameproject = Project?.Nameproject;
 
       if (Number(StageID) || StageID === "A1" || StageID === ":A1") {
@@ -982,7 +981,7 @@ const ChateNotfication = async (
 
       const { token, arraynameuser, jobUser } = await Bringtokenuser(
         Project.NumberCompany,
-        Project?.IDCompanySub,
+        Project?.IDcompanySub,
         idProject,
         userName
       );
@@ -995,7 +994,7 @@ const ChateNotfication = async (
       const company = await SelectVerifycompanyexistence(idProject);
       const { token, arraynameuser, jobUser } = await Bringtokenuser(
         company.id,
-        0,
+        StageID,
         idProject,
         userName,
         StageID,
@@ -1372,8 +1371,9 @@ const Bringtokenuser = async (
         arraynameuser.push(item.userName);
       }
     })
+  
   );
-
+  
   return { token, users, arraynameuser, jobUser };
 };
 

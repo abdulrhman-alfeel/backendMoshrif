@@ -32,7 +32,23 @@ const { CheckAdmin, CheckGlobal } = require("./insertuserCompany");
 // اضافة شركة جديدة
 // ====== Helpers: تطبيع الأرقام العربية + أدوات بسيطة للتحقق ======
 
+const translaeteArabic = (char) => {
+  switch (char) {
+    case "CommercialRegistrationNumber": return "رقم السجل التجاري";
+    case "NameCompany": return "اسم الشركة";
+    case "BuildingNumber": return "رقم المبنى";
+    case "StreetName": return "اسم الشارع";   
+    case "NeighborhoodName": return "اسم الحي";
+    case "PostalCode": return "الرمز البريدي";
+    case "City": return "المدينة";
 
+    case "Country": return "الدولة";
+    case "TaxNumber": return "الرقم الضريبي";
+    case "PhoneNumber": return "رقم الجوال";
+    case "userName": return "اسم المستخدم";
+    default: return char;
+  }
+};
 
 // ====== المعالج الرئيسي ======
 const insertDataCompany = () => {
@@ -76,7 +92,7 @@ const insertDataCompany = () => {
 
       // الحقول المطلوبة
       Object.entries(normalized).forEach(([k, v]) => {
-        if (!isNonEmpty(v)) errors[k] = "هذا الحقل مطلوب";
+        if (!isNonEmpty(v)) errors[k] = `${translaeteArabic(k)} هذا الحقل مطلوب`;
       });
 
       // قواعد خاصة
@@ -101,17 +117,17 @@ const insertDataCompany = () => {
         errors.PostalCode = "الرمز البريدي يجب أن يتكون من 5 أرقام";
       }
 
-      if (normalized.TaxNumber && !isDigits(normalized.TaxNumber)) {
-        errors.TaxNumber = "الرقم الضريبي يجب أن يحتوي على أرقام فقط";
-      }
+      // if (normalized.TaxNumber && !isDigits(normalized.TaxNumber)) {
+      //   errors.TaxNumber = "الرقم الضريبي يجب أن يحتوي على أرقام فقط";
+      // }
 
       // رقم الجوال: 9 أرقام، مع السماح بصفر بادئ (يُحذف)
-      if (normalized.PhoneNumber) {
-        const pn = normalized.PhoneNumber;
-        if (!/^0?\d{9}$/.test(pn)) {
-          errors.PhoneNumber = "رقم الجوال غير صالح، استخدم 0XXXXXXXXX أو 9 أرقام بدون صفر";
-        }
-      }
+      // if (normalized.PhoneNumber) {
+      //   const pn = normalized.PhoneNumber;
+      //   if (!/^0?\d{9}$/.test(pn)) {
+      //     errors.PhoneNumber = "رقم الجوال غير صالح، استخدم 0XXXXXXXXX أو 9 أرقام بدون صفر";
+      //   }
+      // }
 
       // Api: مجرد نص غير فارغ (قد يكون مفتاح/Token وليس رابط)
       if (normalized.Api && !isNonEmpty(normalized.Api)) {
@@ -270,9 +286,9 @@ const inseertCompanybrinsh = () => {
       // 2) تحقق يدوي من المدخلات
       const errors = {};
 
-      if (!isNonEmpty(normalized.NumberCompany) || !isDigits(normalized.NumberCompany)) {
-        errors.NumberCompany = "رقم الشركة مطلوب ويجب أن يكون أرقاماً فقط";
-      }
+      // if (!isNonEmpty(normalized.NumberCompany) || !isDigits(normalized.NumberCompany)) {
+      //   errors.NumberCompany = "رقم الشركة مطلوب ويجب أن يكون أرقاماً فقط";
+      // }
       if (!isNonEmpty(normalized.NameSub) || !lenBetween(normalized.NameSub, 2, 100)) {
         errors.NameSub = "اسم الفرع مطلوب (2 إلى 100 حرف)";
       }
@@ -280,16 +296,16 @@ const inseertCompanybrinsh = () => {
         errors.BranchAddress = "عنوان الفرع مطلوب (4 إلى 200 حرف)";
       }
 
-      if (isNonEmpty(normalized.Email) && !isEmail(normalized.Email)) {
-        errors.Email = "البريد الإلكتروني غير صالح";
-      }
+      // if (!isNonEmpty(normalized.Email) && !isEmail(normalized.Email)) {
+      //   errors.Email = "البريد الإلكتروني غير صالح";
+      // }
 
       // رقم الجوال اختياري؛ إن وُجد نتحقق من 9 أرقام محلية بعد التطبيع
-      if (isNonEmpty(PhoneNumber)) {
-        if (!/^\d{9}$/.test(normalized.PhoneNumber)) {
-          errors.PhoneNumber = "رقم الجوال غير صالح؛ يجب أن يتكون من 9 أرقام محلية";
-        }
-      }
+      // if (!isNonEmpty(PhoneNumber)) {
+      //   if (!/^\d{9}$/.test(normalized.PhoneNumber)) {
+      //     errors.PhoneNumber = "رقم الجوال غير صالح؛ يجب أن يتكون من 9 أرقام محلية";
+      //   }
+      // }
 
       if (Object.keys(errors).length > 0) {
         return res.status(200).json({

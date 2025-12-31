@@ -23,7 +23,7 @@ const CommentUpdate = () => {
       if (!isNonEmpty(commentText) || !lenBetween(commentText, 1, 2000))
         errors.commentText = "نص التعليق مطلوب (1–2000 حرف)";
       if (Object.keys(errors).length) {
-        return res.status(400).json({ success:false, message:"أخطاء في التحقق من المدخلات", errors });
+        return res.status(400).json({ success:"أخطاء في التحقق من المدخلات", message:"أخطاء في التحقق من المدخلات", errors });
       }
 
 
@@ -35,7 +35,7 @@ const CommentUpdate = () => {
         await Postsnotification(0, "Comment", userSession.userName, "تعديل تعليقه", CommentID);
       } catch {}
 
-      return res.status(200).json({ success:true, message:"تم تعديل التعليق" });
+      return res.status(200).json({ success:"تم تعديل التعليق", message:"تم تعديل التعليق" });
     } catch (err) {
       console.error("CommentUpdate error:", err);
       return res.status(500).json({ success:false, message:"فشل تنفيذ العملية" });
@@ -57,7 +57,7 @@ const CommentDelete = () => {
       // 2) التقاط/تحقق المدخلات
       const CommentID = parsePositiveInt(req.query?.CommentID);
       if (!Number.isFinite(CommentID)) {
-        return res.status(400).json({ success:false, message:"معرّف التعليق غير صالح" });
+        return res.status(400).json({ success:"معرّف التعليق غير صالح", message:"معرّف التعليق غير صالح" });
       }
 
       // 3) التحقق من وجود التعليق (واختيارياً: الملكية)
@@ -66,10 +66,10 @@ const CommentDelete = () => {
       // 4) الحذف
       await DeleteTableCommentPostPublic([ convertArabicToEnglish(esc(CommentID)) ]);
 
-      return res.status(200).json({ success:true, message:"تم حذف التعليق" });
+      return res.status(200).json({ success:"تم حذف التعليق" , message:"تم حذف التعليق" });
     } catch (err) {
       console.error("CommentDelete error:", err);
-      return res.status(500).json({ success:false, message:"فشل تنفيذ العملية" });
+      return res.status(500).json({ success:"فشل تنفيذ العملية", message:"فشل تنفيذ العملية" });
     }
   };
 };

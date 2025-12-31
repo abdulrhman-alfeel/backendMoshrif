@@ -18,6 +18,7 @@ const {
   SELECTTableViewChateUser,
   SELECTLastmassgeuserinchat,
   SELECTfilterTableChate,
+  select_table_company_subscriptions,
 } = require("../../sql/selected/selected");
 const {
   ChateNotfication,
@@ -68,7 +69,7 @@ function isVideoFile(fileObj) {
 function shouldCreatePostForStage(stageId) {
   // استثناءات كما في منطقك
   const s = String(stageId ?? "").trim();
-  return !["قرارات", "استشارات", "اعتمادات", "تحضير"].includes(s);
+  return !["قرارات", "استشارات", "اعتمادات"].includes(s);
 }
 
 const OpreactionSend_message = async (data) => {
@@ -82,12 +83,14 @@ const OpreactionSend_message = async (data) => {
 
       // حذف من جداول الشات/المستخدمين
       result = await DeleteChatfromdatabaseanddatabaseuser(chackdata);
-
-      // إن كان مرفق فيديو: احذف البوست المرتبط
-      const fileObj = safeJsonParse(chackdata?.File, null);
-      if (isVideoFile(fileObj) && fileObj?.name) {
-        try { await Deleteposts(fileObj.name); } catch (e) { /* لا تُسقط العملية */ }
+    if (Object.entries(chackdata?.File).length > 0 && String(JSON.parse(chackdata?.File).type).startsWith("video")) {
+        await Deleteposts(JSON.parse(chackdata.File).name);
       }
+      // // إن كان مرفق فيديو: احذف البوست المرتبط
+      // const fileObj = safeJsonParse(chackdata?.File, null);
+      // if (isVideoFile(fileObj) && fileObj?.name) {
+      //   try { await Deleteposts(fileObj.name); } catch (e) { /* لا تُسقط العملية */ }
+      // }
 
       return result;
     }
@@ -122,6 +125,16 @@ const OpreactionSend_message = async (data) => {
         result.Reply = safeJsonParse(result.Reply, {});
         result.arrived = true;
         result.kind = "new";
+
+
+        await ChateNotfication(
+            data.ProjectID,
+            data?.StageID,
+            data.message,
+            data.Sender,
+            data.Reply,
+            data.File
+          );
       }
 
       return result;
@@ -301,6 +314,9 @@ const DeleteChatfromdatabaseanddatabaseuser = async (data) => {
 };
 
 // **************
+const specialStages = ["قرارات", "استشارات", "اعتمادات"];
+
+
 // جلب الرسائل الناقصة
 const ClassChackTableChat = () => {
   return async (req, res) => {
@@ -312,6 +328,18 @@ const ClassChackTableChat = () => {
         res.status(401).send("Invalid session");
         console.log("Invalid session");
       }
+
+      
+      const chack_for_subscription = await select_table_company_subscriptions(
+        ProjectID
+      );
+      if (!chack_for_subscription && !specialStages.includes(StageID)) {
+        return res
+          .status(200)
+          .send({ success: false, message: "Subscription inactive",subScripation:false });
+      }
+
+
       let arrayResult = [];
       //  جلب طول البيانات
       const Listchat = Number(StageID)
@@ -355,10 +383,10 @@ const ClassChackTableChat = () => {
         }
       }
       // ارسال البيانات
-      res.send({ success: true, data: arrayResult }).status(200);
+      res.send({ success: true, data: arrayResult,subScripation:true }).status(200);
     } catch (err) {
       console.log(err);
-      res.send({ success: false }).status(400);
+      res.send({ success: false,subScripation:true }).status(400);
     }
   };
 };

@@ -135,10 +135,11 @@ const SELECTTableusersBranshmanger = (
 
 //  مستخدم الشركة
 const SELECTTableusersCompanyonObject = (PhoneNumber, type = "*") => {
+ 
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.get(
-        `SELECT us.${type}, br.Acceptingcovenant FROM usersCompany us LEFT JOIN usersBransh br ON br.user_id = us.id   WHERE trim(PhoneNumber)=trim(?) AND Activation="true"`,
+        `SELECT us.${type}, MAX(br.Acceptingcovenant) AS Acceptingcovenant FROM usersCompany us LEFT JOIN usersBransh br ON br.user_id = us.id   WHERE trim(us.PhoneNumber)=trim(?) `,
         [PhoneNumber],
         function (err, result) {
           if (err) {
@@ -285,6 +286,7 @@ const SELECTTableusersCompanyVerificationID = (id) => {
     });
   });
 };
+const specialStages = ["قرارات", "استشارات", "اعتمادات"];
 
 //  التحقق من صلاحيات المستخد
 const SELECTTableusersCompanySub = (
@@ -300,6 +302,10 @@ const SELECTTableusersCompanySub = (
     // نجمع الشروط (OR) داخل قوس واحد
     const filters = ["uC.job = 'Admin'"];
 
+    if(specialStages.includes(IDcompanySub)){
+      // صلاحيات خاصة للمراحل
+      filters.push(`ca.jobdiscrption = 'موظف' `);
+    }
     // مدير الفرع
     if (IDcompanySub == null || IDcompanySub === 0) {
       // بدون تقييد على فرع معيّن
@@ -426,7 +432,7 @@ const SELECTTableLoginActivatActivatyall = (type = "*") => {
   return new Promise((resolve, reject) => {
     db.serialize(async () => {
       db.all(
-        `SELECT id,userName,PhoneNumber,job,jobdiscrption,codeVerification FROM LoginActivaty   `,
+        `SELECT id,userName,PhoneNumber,job,jobdiscrption,codeVerification FROM LoginActivaty WHERE TRIM(PhoneNumber)!='502464530'   `,
         [],
         function (err, result) {
           if (err) {

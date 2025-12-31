@@ -886,6 +886,77 @@ const inserttableUserPrepare = (data) => {
     console.log(error);
   }
 };
+
+
+const insert_table_subscription_types = (data) => {
+  try {
+    db.serialize(function () {  
+      db.run(
+        "INSERT INTO subscription_types (name, duration_in_months, price_per_project,discraption) VALUES (?,?,?,?)",
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+const insert_table_company_subscription = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO company_subscriptions (
+         company_id,
+         subscription_type_id,
+         code_subscription,
+         project_count, 
+         price, 
+         end_date,status) VALUES (?,?,?,?,?,?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message,data);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+const insert_table_project_subscription = (data) => {
+  try {
+    db.serialize(function () {
+      db.run(
+        `INSERT INTO project_subscription (
+         company_subscriptions_id,
+          project_id
+          ) VALUES (?,?)`,
+        data,
+        function (err) {
+          if (err) {
+            console.log(err.message);
+          }
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  } 
+};
+
+
+
+
 const inserTableSubscripation = (data) => {
   try {
     db.serialize(function () {
@@ -972,5 +1043,9 @@ module.exports = {
   insertTableusersBranshAcceptingcovenant,
   insertTableStagestype,
   insertTableallStagestype,
-  insertTableStageCUST_IMAGE
+  insertTableStageCUST_IMAGE,
+
+  insert_table_subscription_types,
+  insert_table_company_subscription,
+  insert_table_project_subscription
 };

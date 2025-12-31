@@ -10,6 +10,34 @@ const {
 const { DateTime } = require("luxon");
 const moment = require("moment-timezone");
 
+require("dotenv").config();
+
+const crypto = require("crypto");
+
+// أبجدية مناسبة (تقدر تغيّرها)
+// لاحظ: حذفت O و 0 و I و 1 لتقليل اللبس (اختياري)
+
+function randomChars(len, alphabet = process.env.ALPHABET) {
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    const idx = crypto.randomInt(0, alphabet.length); // unbiased
+    out += alphabet[idx];
+  }
+  return out;
+}
+
+/**
+ * generateSubscriptionCode("MOSHRIF", [4,4,4])
+ * => MOSHRIF-AB12-CD34-EF56
+ */
+function generateSubscriptionCode(prefix = "MOSHRIF", groups = [5, 5, 4]) {
+  const parts = groups.map((n) => randomChars(n));
+  return `${prefix}-${parts.join("-")}`;
+}
+
+// مثال
+// console.log(generateSubscriptionCode("MOSHRIF", [4, 4, 4]));
+
 const convertArabicToEnglish = (arabicNumber) => {
   const arabicToEnglishMap = {
     "٠": "0",
@@ -30,8 +58,6 @@ const convertArabicToEnglish = (arabicNumber) => {
     .map((char) => arabicToEnglishMap[char] || char)
     .join("");
 };
-
-
 
 function isDigits(str) {
   return /^\d+$/.test(str);
@@ -55,15 +81,19 @@ function isEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v));
 }
 
-function isValidLocalPhone9(v){ return /^\d{9}$/.test(String(v || "")); }
+function isValidLocalPhone9(v) {
+  return /^\d{9}$/.test(String(v || ""));
+}
 
 function isValidUrl(v) {
   try {
     const u = new URL(String(v));
     return /^https?:$/.test(u.protocol) && !!u.hostname;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
-function isHttpUrl(s){
+function isHttpUrl(s) {
   const str = String(s ?? "").trim();
   return /^https?:\/\/[^\s]+$/i.test(str);
 }
@@ -71,17 +101,19 @@ function isHttpUrl(s){
 function parseAmount(input) {
   if (input == null) return NaN;
   let s = convertArabicToEnglish(input);
-  s = s.replace(/[^\d.,]/g, "");     // إزالة أي رموز
-  s = s.replace(/،/g, ",");          // فاصلة عربية
-  s = s.replace(/٫/g, ".");          // نقطة عربية
-  s = s.replace(/,/g, "");           // إزالة الفواصل
+  s = s.replace(/[^\d.,]/g, ""); // إزالة أي رموز
+  s = s.replace(/،/g, ","); // فاصلة عربية
+  s = s.replace(/٫/g, "."); // نقطة عربية
+  s = s.replace(/,/g, ""); // إزالة الفواصل
   const n = parseFloat(s);
   return Number.isFinite(n) ? +n.toFixed(2) : NaN;
 }
 
-
 function parseRatio(v) {
-  const s = convertArabicToEnglish(v).replace(/،/g, ",").replace(/٫/g, ".").replace(/,/g, "");
+  const s = convertArabicToEnglish(v)
+    .replace(/،/g, ",")
+    .replace(/٫/g, ".")
+    .replace(/,/g, "");
   const n = Number(s);
   return Number.isFinite(n) ? n : NaN;
 }
@@ -89,11 +121,12 @@ function onlyDateISO(d) {
   const z = new Date(d);
   if (isNaN(+z)) return null;
   return new Date(Date.UTC(z.getFullYear(), z.getMonth(), z.getDate()))
-    .toISOString().split("T")[0];
+    .toISOString()
+    .split("T")[0];
 }
 
-function parseNonNegativeInt(v){
-  const s = convertArabicToEnglish(v).replace(/\D/g,"");
+function parseNonNegativeInt(v) {
+  const s = convertArabicToEnglish(v).replace(/\D/g, "");
   if (s === "") return NaN;
   const n = Number(s);
   return Number.isInteger(n) && n >= 0 ? n : NaN;
@@ -116,7 +149,10 @@ function parseNonNegativeFloat(v) {
 
 function parseRatio0to100(v) {
   if (v === undefined || v === null || String(v).trim() === "") return NaN;
-  let s = convertArabicToEnglish(v).replace(/،/g,",").replace(/٫/g,".").replace(/,/g,"");
+  let s = convertArabicToEnglish(v)
+    .replace(/،/g, ",")
+    .replace(/٫/g, ".")
+    .replace(/,/g, "");
   const n = Number(s);
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : NaN;
 }
@@ -127,16 +163,16 @@ function sanitizeFilename(name) {
     .trim();
 }
 function sanitizeFolderName(name) {
-  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، شرطة/شرطة سفلية، أقواس، نقطة، & 
+  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، شرطة/شرطة سفلية، أقواس، نقطة، &
   return String(name || "")
     .replace(/[^A-Za-z0-9\u0600-\u06FF\s\-_().&]/g, "") // إزالة المحارف غير المسموح بها
-    .replace(/\s+/g, " ")                                // مسافات متتالية -> مسافة واحدة
+    .replace(/\s+/g, " ") // مسافات متتالية -> مسافة واحدة
     .trim()
-    .replace(/^[.\-_\s]+|[.\-_\s]+$/g, "");             // إزالة محارف غير مرغوبة من البداية/النهاية
+    .replace(/^[.\-_\s]+|[.\-_\s]+$/g, ""); // إزالة محارف غير مرغوبة من البداية/النهاية
 }
 
 function sanitizeName(name) {
-  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، - _ . ( ) & 
+  // السماح بحروف عربية/إنجليزية، أرقام، مسافة، - _ . ( ) &
   return String(name || "")
     .replace(/[^A-Za-z0-9\u0600-\u06FF\s\-_().&]/g, "")
     .replace(/\s+/g, " ")
@@ -152,9 +188,10 @@ function collectSingleFile(req) {
   }
   return null;
 }
-function collectFiles(req){
+function collectFiles(req) {
   if (Array.isArray(req.files)) return req.files;
-  if (req.files && typeof req.files === "object") return Object.values(req.files).flat();
+  if (req.files && typeof req.files === "object")
+    return Object.values(req.files).flat();
   return [];
 }
 
@@ -167,7 +204,9 @@ function normalizePhone(raw) {
 }
 
 function isMeaningfulNote(v) {
-  const s = String(v ?? "").trim().toLowerCase();
+  const s = String(v ?? "")
+    .trim()
+    .toLowerCase();
   return s.length > 0 && s !== "null" && s !== "undefined";
 }
 
@@ -177,7 +216,7 @@ function ensureIdArray(val) {
   if (typeof val === "string") {
     const s = val.trim();
     if (!s) return [];
-    return s.split(",").map(x => x.trim());
+    return s.split(",").map((x) => x.trim());
   }
   if (typeof val === "number") return [val];
   return [];
@@ -187,11 +226,13 @@ function normalizeIds(arr) {
   const seen = new Set();
   for (const v of ensureIdArray(arr)) {
     const n = parsePositiveInt(v);
-    if (Number.isFinite(n) && !seen.has(n)) { seen.add(n); out.push(n); }
+    if (Number.isFinite(n) && !seen.has(n)) {
+      seen.add(n);
+      out.push(n);
+    }
   }
   return out;
 }
-
 
 function tryParseDateISO(v) {
   // يحاول تحويل المدخل إلى YYYY-MM-DD (اختياري)
@@ -209,14 +250,9 @@ function tryParseDateISO(v) {
   }
   if (isNaN(+d)) return null;
   return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-    .toISOString().split("T")[0];
+    .toISOString()
+    .split("T")[0];
 }
-
-
-
-
-
-
 
 const verificationfromdata = async (array) => {
   try {
@@ -258,11 +294,7 @@ function calculateDaysDifference(date1, date2) {
   // حساب الفرق بالميلي ثانية
   const diffTime = Math.abs(date2Obj - date1Obj);
   return Math.ceil(diffTime / (1000 * 3600 * 24)); // تحويل الميلي ثانية إلى أيام
-
-};
-
-
-
+}
 
 const esc = (v) =>
   String(v ?? "-")
@@ -272,22 +304,18 @@ const esc = (v) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
+function calculateendDate(time = new Date()) {
+  const today = new Date(time);
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  // نجيب اليوم الأخير (اليوم 0 من الشهر القادم هو آخر يوم في الشهر الحالي)
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  return daysInMonth;
+}
 
-
-
-function calculateendDate(time=new Date()){
-const today = new Date(time);
-const year = today.getFullYear();
-const month = today.getMonth();
-// نجيب اليوم الأخير (اليوم 0 من الشهر القادم هو آخر يوم في الشهر الحالي)
-const daysInMonth = new Date(year, month + 1, 0).getDate();
-return daysInMonth
-} 
-
-
-function calculateAcountsubscripation (subscripatiion){
-const daysInMonth = calculateendDate();
-return  subscripatiion / daysInMonth
+function calculateAcountsubscripation(subscripatiion) {
+  const daysInMonth = calculateendDate();
+  return subscripatiion / daysInMonth;
 }
 
 const dates = (time) => (String(time).length > 1 ? time : `0${time}`);
@@ -296,35 +324,32 @@ const DateDay = (date) =>
     date.getUTCDate()
   )}`;
 
-// Example usage:
-// const hoursBetween = calculateHoursBetween('2023-01-01T08:00:00', '2023-01-01T17:30:00');
-// console.log(`Hours between: ${hoursBetween.toFixed(2)}`); // Output: 9.50
-// ترتيب المراحل
+
 const ChangeDate = (teble, StartDate) => {
   const d3Value = new Date(StartDate); // replace with your D3.Value
   const newData = [...teble];
 
-  newData[0].StartDate = d3Value;
-  let days = newData[0].Days === 0 ? 1:newData[0].Days;
+  newData[0].StartDate = d3Value.toDateString();
   const dataend = new Date(
-    d3Value.setDate(d3Value.getDate() + days)
+    d3Value.setDate(d3Value.getDate() + newData[0].Days)
   );
-  newData[0].EndDate = dataend;
+  newData[0].EndDate = dataend.toDateString();
   newData[0].OrderBy = 1;
 
   for (let i = 1; i < newData.length; i++) {
     newData[i].OrderBy = newData[i - 1].OrderBy + 1;
-    newData[i].StartDate = new Date(newData[i - 1].EndDate);
-    let days2 = newData[i].Days === 0 ? 1:newData[i].Days;
+    newData[i].StartDate = new Date(newData[i - 1].EndDate).toDateString();
     const datanextEnd = new Date(
       d3Value.setDate(
-        new Date(newData[i].StartDate).getDate() + days2
+        new Date(newData[i].StartDate).getDate() + newData[i].Days
       )
     );
-    newData[i].EndDate = datanextEnd;
+    newData[i].EndDate = datanextEnd.toDateString();
   }
   return newData;
 };
+
+
 const subscripation = {
   company: 100,
   singular: 150,
@@ -344,7 +369,7 @@ const Stage = async (teble, StartDate, types = "new") => {
     for (let index = 0; index < newData.length; index++) {
       const item = teble[index];
       let number = types === "new" ? `(${index + 1})` : "";
-     
+    
       await insertTablecompanySubProjectStageCUSTv2([
         item.StageID,
         item.ProjectID,
@@ -357,7 +382,7 @@ const Stage = async (teble, StartDate, types = "new") => {
         item.Referencenumber,
         item.Ratio,
         item.attached,
-        item.rate
+        item.rate,
       ]);
     }
   } catch (err) {}
@@ -388,7 +413,8 @@ const AccountDays = (numberBuilding, Days) => {
       : (s = 5.5);
 
     const count = Days * s;
-    return Math.round(count);
+    // return Math.round(count);
+    return count;
   } catch (error) {
     console.log(error);
   }
@@ -397,7 +423,10 @@ const xlsx = require("xlsx");
 const { SELECTTableusersCompanyall } = require("../sql/selected/selectuser");
 const { UPDATECONVERTDATE } = require("../sql/update");
 
-const StageTempletXsl2 = async (type = "StagesTempletEXcel.xlsx",number=0) => {
+const StageTempletXsl2 = async (
+  type = "StagesTempletEXcel.xlsx",
+  number = 0
+) => {
   try {
     try {
       // Read the Excel file
@@ -508,7 +537,6 @@ const Addusertraffic = async (userName, PhoneNumber, Movementtype) => {
   }
 };
 
-
 function switchWeek(nameDays) {
   const day = nameDays.trim();
   switch (day) {
@@ -575,43 +603,47 @@ const convertTimeToMonth = (time) => {
   const month = switchMonth(currentDate.toFormat("MMMM")); // Extracting the full month name
   return month;
 };
-function toISO(d=new Date()){
+function toISO(d = new Date()) {
   // UTC ISO (اليوم فقط)
-  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
 }
 
-const moveviltayeuseer =()=>{
-  return new Promise(async(resolve,reject)=>{
+const moveviltayeuseer = () => {
+  return new Promise(async (resolve, reject) => {
     try {
       const data = await SELECTTableusersCompanyall();
-      if(data && data.length > 0){
+      if (data && data.length > 0) {
         for (const item of data) {
           const validity = item.Validity ? JSON.parse(item.Validity) : [];
           for (const key of validity) {
-            if(key.idBrinsh){
-              await insertTableusersBransh([key.idBrinsh,item.id,key.job]);
+            if (key.idBrinsh) {
+              await insertTableusersBransh([key.idBrinsh, item.id, key.job]);
               for (const key2 of key.project) {
-                if(key2.idProject){
-
-                  await insertTableusersProject([key.idBrinsh,key2.idProject,item.id,JSON.stringify(key2.ValidityProject)]);
+                if (key2.idProject) {
+                  await insertTableusersProject([
+                    key.idBrinsh,
+                    key2.idProject,
+                    item.id,
+                    JSON.stringify(key2.ValidityProject),
+                  ]);
                 }
               }
             }
-            }
-        };
-        resolve(true)
-      }else{
-        resolve(false)
+          }
+        }
+        resolve(true);
+      } else {
+        resolve(false);
       }
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
-}
+};
 // moveviltayeuseer()
 // تحويل صيغة التاريخ
 // UPDATECONVERTDATE("StartDate");
-// اضافة المعرفات والانواع لجدول الانواع 
+// اضافة المعرفات والانواع لجدول الانواع
 // insertTableallStagestype();
 
 module.exports = {
@@ -658,6 +690,6 @@ module.exports = {
   parseNonNegativeInt,
   isValidLocalPhone9,
   toISO,
-  parseRatio0to100
-
+  parseRatio0to100,
+  generateSubscriptionCode,
 };

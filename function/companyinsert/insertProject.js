@@ -65,10 +65,9 @@ const { Stage, AccountDays, isNonEmpty, convertArabicToEnglish, isValidUrl, pars
   parseNonNegativeFloat,
   parseNonNegativeInt
 } = require("../../middleware/Aid");
-const {
-  insertDataprojectsubScripation,
-} = require("../subscripation/opreationSubscripation");
+
 const { sendNote } = require("../chate/ChatJobsClass");
+const { chack_company_subscription, project_subscription } = require("../subscripation/opreationSubscripation");
 
 
 
@@ -164,7 +163,8 @@ const OpreationProjectInsertv2 = async (
       const daysCalc = await AccountDays(bCount, Number.isFinite(daysRaw) ? daysRaw : 0);
       table.push({
         ...element,
-        Days: Math.round(daysCalc || 0),
+        // Days: Math.round(daysCalc || 0),
+        Days: daysCalc ,
         ProjectID: idProject,
         StartDate: null,
         EndDate: null,
@@ -225,7 +225,16 @@ const projectBrinshv2 = (uploadQueue) => {
         Referencenumber,
         Cost_per_Square_Meter,
         Project_Space,
+        company_subscriptions_id
       } = req.body || {};
+      const chack_company = await chack_company_subscription(company_subscriptions_id);
+
+      if (!chack_company) {
+        return res.status(200).send({
+          success:  "الاشتراك غير صالح",
+          message: "الاشتراك غير صالح",
+        });
+      }
 
       // 2) تحقق أولي سريع (حتى لا نرمي على الدالة الداخلية مباشرة)
       const prelimErrors = {};
@@ -261,14 +270,7 @@ const projectBrinshv2 = (uploadQueue) => {
         Project_Space,
         userSession.IDCompany
       );
-
-      // 4) أي عمليات لاحقة لازمة (اشتراك/سجلّات، الخ)
-      try {
-        await insertDataprojectsubScripation(userSession.IDCompany, idProject);
-      } catch (subErr) {
-        console.warn("insertDataprojectsubScripation failed:", subErr);
-        // لا نفشل العملية الأساسية بسبب هذه الخطوة
-      }
+      await project_subscription(idProject, company_subscriptions_id);
 
       // 5) رد النجاح
       return res.status(200).send({

@@ -192,8 +192,46 @@ END;
     }
   });
 
-  db.run(`CREATE TABLE IF NOT EXISTS subscripation (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , ProjectID INTEGER NOT NULL ,price DECIMAL  NULL, StartDate DATE NULL,EndDate DATE NULL) `);
-  db.run(`CREATE TABLE IF NOT EXISTS Invoice (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , Amount DECIMAL NOT NULL ,Subscription_end_date DATE DEFAULT CURRENT_TIMESTAMP,State TEXT NULL )`);
+db.run(`
+    CREATE TABLE IF NOT EXISTS subscription_types (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,                  -- شهري / ربعي / سنوي
+    duration_in_months INTEGER NOT NULL, -- 1 / 3 / 12
+    price_per_project DECIMAL NOT NULL ,  -- سعر المشروع الواحد حسب المدة
+    discraption TEXT NULL
+    );
+`);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS company_subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    code_subscription TEXT NOT NULL,
+    subscription_type_id INTEGER NOT NULL,
+    project_count INTEGER NOT NULL,   -- يحدده المستخدم
+    price DECIMAL NOT NULL,            -- السعر النهائي المحسوب
+    start_date DATE DEFAULT CURRENT_DATE,
+    end_date DATE  NULL,
+    project_count_used INTEGER DEFAULT 0, -- عدد المشاريع المستخدمة من قبل الشركة
+    status TEXT DEFAULT 'active'
+);
+`);
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS project_subscription (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_subscriptions_id INTEGER NOT NULL,
+    project_id INTEGER NOT NULL,
+    startDate DATE DEFAULT CURRENT_DATE);
+`);   
+
+// price = project_count * price_per_project
+// end_date = start_date + duration_in_months
+
+
+
+
+  // db.run(`CREATE TABLE IF NOT EXISTS Invoice (id INTEGER PRIMARY KEY AUTOINCREMENT , IDCompany INTEGER NOT NULL , Amount DECIMAL NOT NULL ,Subscription_end_date DATE DEFAULT CURRENT_TIMESTAMP,State TEXT NULL )`);
   // console.log((100 / 30) * (30 - 25));
 
 

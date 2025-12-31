@@ -130,28 +130,24 @@ const BringDataFinancialCustody = () => {
       const resultUser = await SELECTTableusersCompanyonObject(
         userSession.PhoneNumber
       );
-      let kindOpreation =
-        resultUser.job === "Admin" || resultUser.job === "مالية"
-          ? "all"
-          : "Brinsh";
+   
       let Bringaway;
       const IDCompany = userSession.IDCompany;
       const {
-        kindRequest,
+        kindRequest="معلقة",
         IDCompanySub,
+        LastID = 0,
         type = "FinancialCustodyparty",
       } = req.query;
-      const LastID = req.query.LastID;
 
-      let Validityuser = "";
-      if (type === "FinancialCustodyparty") {
-        Validityuser = await KnowuserpermissioninCovenant(
+       const Validityuser = await KnowuserpermissioninCovenant(
           resultUser.Acceptingcovenant,
           IDCompanySub,
           userSession.PhoneNumber,
-          resultUser.job
+          resultUser.job,
+          type
         );
-      }
+      
 
       let plase = parseInt(LastID) === 0 ? ">" : "<";
       switch (kindRequest) {
@@ -182,14 +178,21 @@ const KnowuserpermissioninCovenant = (
   Acceptingcovenant,
   IDCompanySub,
   userName,
-  job
+  job,type
 ) => {
   try {
-    if (Acceptingcovenant === "true" || job === "Admin" || job === "مالية") {
-      return `IDCompanySub=${IDCompanySub} AND`;
-    } else {
-      return `IDCompanySub=${IDCompanySub} AND trim(Requestby)=trim(${userName}) AND`;
+    if(type !== "FinancialCustodyparty"){
+      if( job !== "Admin" && job !== "مالية"){
+        return `trim(Requestby)=trim(${userName}) AND`;
+      };
+    }else{
+      if (Acceptingcovenant === "true" || job === "Admin" || job === "مالية") {
+        return `IDCompanySub=${IDCompanySub} AND`;
+      } else {
+        return `IDCompanySub=${IDCompanySub} AND trim(Requestby)=trim(${userName}) AND`;
+      }
     }
+    return "";
   } catch (error) {
     console.log(error);
   }

@@ -1025,6 +1025,134 @@ const UPDATETablecheckPreparation = (
   }
 };
 
+const update_company_subscription = (id,plus='+') => {
+  // , status = CASE 
+  //     WHEN project_count_used ${plus} 1 >= project_count THEN 'inactive'
+  //     ELSE status
+  //     END
+  return new Promise((resolve,reject)=>{
+    db.run(
+      `UPDATE company_subscriptions SET 
+      project_count_used=project_count_used ${plus} 1 
+      WHERE id=?  AND project_count_used < project_count`,  
+      [id],
+      function (err) {
+        if (err) {
+          resolve('فشل العملية بسبب اكتمال عدد المشاريع في الباقة او انتهاء تاريخ الباقة')
+          console.log(err.message);
+        }
+        resolve('تم اضافة المشروع للباقة بنجاح')
+        console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+      }
+    );
+  })
+
+}
+
+
+
+
+const UPDATE_project_subscriptions = (data) => {
+  db.run(
+    `UPDATE project_subscription SET company_subscriptions_id=? WHERE project_id=? `,
+    data,
+    function (err) {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log(`Row with the ID ${this.lastID} has been UPDATEed.`);
+    } 
+  );
+
+}
+
+
+const UpdateState_Comany_all = () => {
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE company_subscriptions SET 
+          status='inactive WHERE DATE(end_date) = DATE('now') AND status <> 'inactive'`,
+          [],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+
+        );
+      }
+      );
+    }
+    catch (err) {
+      console.log(err);
+      reject(err);
+    } 
+  });
+}
+const UpdateState_company_subscriptions = (code_subscription) => {
+  return new Promise((resolve, reject) => {
+    try {
+
+      db.serialize(function () {
+        db.run(
+          `UPDATE company_subscriptions SET 
+          status="active" WHERE trim(code_subscription) = trim(?) `,
+          [code_subscription],
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+
+        );
+      }
+      );
+    }
+    catch (err) {
+      console.log(err);
+      reject(err);
+    } 
+  });
+}
+
+
+
+const Update_subscription_types = (data) => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.serialize(function () {
+        db.run(
+          `UPDATE subscription_types SET name=?, duration_in_months=?, price_per_project=?,discraption=? WHERE id=?`,
+          data,
+          function (err) {
+            if (err) {
+              console.log(err.message);
+              reject(err);
+            }
+            resolve(true);
+            console.log(`Row with the ID  has been inserted.`);
+          }
+        );
+      }
+      );
+    }
+    catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+}
+
+
 module.exports = {
   UPDATETablecheckPreparation,
   UPDATETableprepareOvertimeassignment,
@@ -1079,5 +1207,10 @@ module.exports = {
   UpdateTableusersBransh,
   UpdateTableusersProject,
   UPDATECONVERTDATE,
-  UPDATETableStagetype
+  UPDATETableStagetype,
+  UPDATE_project_subscriptions,
+  update_company_subscription,
+  UpdateState_Comany_all,
+  Update_subscription_types,
+  UpdateState_company_subscriptions
 };

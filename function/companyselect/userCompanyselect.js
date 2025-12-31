@@ -1,3 +1,4 @@
+const moment = require("moment");
 const { createTokens } = require("../../middleware/jwt");
 const { DELETETableLoginActivaty } = require("../../sql/delete");
 const { insertTableLoginActivaty } = require("../../sql/INsertteble");
@@ -258,6 +259,49 @@ const LoginVerificationv2 = () => {
     }
   };
 };
+const Login_Verification_visit = () => {
+  return async (req, res) => {
+    try {
+
+          const data = await SELECTTablecompany(2);
+
+        const user = {
+          IDCompany: 2,
+          CommercialRegistrationNumber: data.CommercialRegistrationNumber,
+          userName: 'ضيف',
+          PhoneNumber: 566331351,
+          IDNumber: 111111111111,
+          image: null,
+          job: "مدير الفرع",
+          jobdiscrption: "موظف",
+          token: "",
+          DateOFlogin: moment.parseZone().format('yyy-MM-dd'),
+          DateEndLogin: moment.parseZone().add(1,'day'),
+        };
+
+        const accessToken = createTokens(user);
+
+        // console.log(accessToken);
+        // bring data usres according to validity
+        // const ObjectData = await verificationfromValidity(result);
+
+        res
+          .send({
+            success: true,
+            accessToken: accessToken,
+            data: user,
+            DisabledFinance: data.DisabledFinance,
+          })
+          .status(200);
+
+    } catch (error) {
+      console.log(error);
+      res
+        .send({ success: false, masseg: "رمز التأكيد خاطاً تأكد من الرمز" })
+        .status(200);
+    }
+  };
+};
 
 const loginOut = () => {
   return async (req, res) => {
@@ -461,11 +505,15 @@ const CheckUserispresentornot = () => {
     }
   };
 };
+
+
+
 module.exports = {
   BringAllLoginActvity,
   Loginuser,
   LoginVerification,
   BringUserCompany,
+  Login_Verification_visit,
 
   CheckUserispresentornot,
   LoginVerificationv2,
@@ -474,3 +522,9 @@ module.exports = {
   BringUserCompanyinv2,
   loginOut,
 };
+
+
+
+
+
+// "m1p3-"
